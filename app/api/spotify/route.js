@@ -1,12 +1,12 @@
+import { NextResponse } from "next/server";
+
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const SPOTIFY_API =
   "https://api.spotify.com/v1";
 
-function normalize(
-  value = ""
-) {
+function normalize(value = "") {
   return value
     .toLowerCase()
     .normalize("NFD")
@@ -25,11 +25,8 @@ function normalize(
     .trim();
 }
 
-function hashString(
-  value
-) {
-  let hash =
-    2166136261;
+function hashString(value) {
+  let hash = 2166136261;
 
   for (
     let i = 0;
@@ -37,9 +34,7 @@ function hashString(
     i++
   ) {
     hash ^=
-      value.charCodeAt(
-        i
-      );
+      value.charCodeAt(i);
 
     hash =
       Math.imul(
@@ -227,7 +222,8 @@ async function getClientToken() {
               "client_credentials",
           }),
 
-        cache: "no-store",
+        cache:
+          "no-store",
       }
     );
 
@@ -249,6 +245,123 @@ async function getClientToken() {
   }
 
   return data.access_token;
+}
+
+async function refreshUserToken(
+  refreshToken
+) {
+  const clientId =
+    process.env
+      .SPOTIFY_CLIENT_ID;
+
+  const clientSecret =
+    process.env
+      .SPOTIFY_CLIENT_SECRET;
+
+  if (
+    !clientId ||
+    !clientSecret ||
+    !refreshToken
+  ) {
+    return null;
+  }
+
+  const response =
+    await fetch(
+      "https://accounts.spotify.com/api/token",
+      {
+        method: "POST",
+
+        headers: {
+          Authorization:
+            "Basic " +
+            Buffer.from(
+              `${clientId}:${clientSecret}`
+            ).toString(
+              "base64"
+            ),
+
+          "Content-Type":
+            "application/x-www-form-urlencoded",
+        },
+
+        body:
+          new URLSearchParams({
+            grant_type:
+              "refresh_token",
+
+            refresh_token:
+              refreshToken,
+          }),
+
+        cache:
+          "no-store",
+      }
+    );
+
+  if (!response.ok) {
+    return null;
+  }
+
+  return response.json();
+}
+
+function applyRefreshedToken(
+  response,
+  tokenData
+) {
+  if (
+    !tokenData?.access_token
+  ) {
+    return;
+  }
+
+  const secure =
+    (
+      process.env
+        .SPOTIFY_REDIRECT_URI ||
+      ""
+    ).startsWith(
+      "https://"
+    );
+
+  response.cookies.set(
+    "spotify_access_token",
+    tokenData.access_token,
+    {
+      httpOnly: true,
+      secure,
+      sameSite: "lax",
+      path: "/",
+
+      maxAge: Math.max(
+        60,
+        (tokenData.expires_in ||
+          3600) - 60
+      ),
+    }
+  );
+
+  if (
+    tokenData.refresh_token
+  ) {
+    response.cookies.set(
+      "spotify_refresh_token",
+      tokenData.refresh_token,
+      {
+        httpOnly: true,
+        secure,
+        sameSite: "lax",
+        path: "/",
+
+        maxAge:
+          60 *
+          60 *
+          24 *
+          30,
+      }
+    );
+  }
 }
 
 async function spotify(
@@ -297,7 +410,8 @@ async function searchTracks(
 ) {
   const params =
     new URLSearchParams({
-      q: query,
+      q:
+        query,
 
       type:
         "track",
@@ -368,10 +482,34 @@ async function findArtist(
       (artist) =>
         normalize(
           artist.name
-        ) === wanted
+        ) ===
+        wanted
     ) ||
     artists[0] ||
     null
+  );
+}
+
+function trackHasExcludedArtist(
+  track,
+  excludedArtistNames
+) {
+  if (
+    !excludedArtistNames.size
+  ) {
+    return false;
+  }
+
+  return (
+    track.artists ||
+    []
+  ).some(
+    (artist) =>
+      excludedArtistNames.has(
+        normalize(
+          artist.name
+        )
+      )
   );
 }
 
@@ -379,7 +517,9 @@ function addTracks(
   bucket,
   tracks,
   source,
-  knownFavoriteKeys
+  knownFavoriteKeys,
+  excludedArtistNames,
+  excludedTrackIds
 ) {
   for (
     const track of
@@ -389,6 +529,23 @@ function addTracks(
       !track?.id ||
       !track?.uri ||
       !track?.name
+    ) {
+      continue;
+    }
+
+    if (
+      excludedTrackIds.has(
+        track.id
+      )
+    ) {
+      continue;
+    }
+
+    if (
+      trackHasExcludedArtist(
+        track,
+        excludedArtistNames
+      )
     ) {
       continue;
     }
@@ -414,6 +571,7 @@ function addTracks(
 
     bucket.set(
       track.id,
+
       mapTrack(
         track,
         source
@@ -456,6 +614,32 @@ function pickUnique(
       item
     );
   }
+}
+
+function json(
+  data,
+  status = 200,
+  refreshed = null
+) {
+  const response =
+    NextResponse.json(
+      data,
+      {
+        status,
+
+        headers: {
+          "Cache-Control":
+            "no-store",
+        },
+      }
+    );
+
+  applyRefreshedToken(
+    response,
+    refreshed
+  );
+
+  return response;
 }
 
 export async function GET(
@@ -574,14 +758,12 @@ export async function POST(
     body =
       await request.json();
   } catch {
-    return Response.json(
+    return json(
       {
         error:
           "Invalid request data.",
       },
-      {
-        status: 400,
-      }
+      400
     );
   }
 
@@ -611,14 +793,12 @@ export async function POST(
   if (
     !artists.length
   ) {
-    return Response.json(
+    return json(
       {
         error:
           "Add at least one artist first.",
       },
-      {
-        status: 400,
-      }
+      400
     );
   }
 
@@ -657,22 +837,70 @@ export async function POST(
       ? body.favoriteSongs
       : {};
 
-  const excludedIds =
+  const likedTracks =
+    Array.isArray(
+      body.likedTracks
+    )
+      ? body.likedTracks.slice(
+          0,
+          20
+        )
+      : [];
+
+  const excludedTrackIds =
     new Set(
-      Array.isArray(
-        body.excludeIds
+      [
+        ...(
+          Array.isArray(
+            body.excludeIds
+          )
+            ? body.excludeIds
+            : []
+        ),
+
+        ...(
+          Array.isArray(
+            body.dislikedTrackIds
+          )
+            ? body.dislikedTrackIds
+            : []
+        ),
+      ]
+        .filter(
+          (id) =>
+            typeof id ===
+            "string"
+        )
+        .slice(
+          0,
+          150
+        )
+    );
+
+  const excludedArtistNames =
+    new Set(
+      (
+        Array.isArray(
+          body.excludedArtists
+        )
+          ? body.excludedArtists
+          : []
       )
-        ? body.excludeIds
-            .filter(
-              (id) =>
-                typeof id ===
-                "string"
-            )
-            .slice(
-              0,
-              100
-            )
-        : []
+        .filter(
+          (name) =>
+            typeof name ===
+            "string"
+        )
+        .map(
+          normalize
+        )
+        .filter(
+          Boolean
+        )
+        .slice(
+          0,
+          30
+        )
     );
 
   const knownFavoriteKeys =
@@ -712,6 +940,73 @@ export async function POST(
     }
   }
 
+  const likedArtistNames =
+    [];
+
+  for (
+    const track of
+    likedTracks
+  ) {
+    const trackArtists =
+      Array.isArray(
+        track?.artists
+      )
+        ? track.artists.map(
+            (artist) =>
+              typeof artist ===
+              "string"
+                ? artist
+                : artist?.name
+          )
+        : typeof track?.artist ===
+          "string"
+        ? track.artist.split(
+            ","
+          )
+        : [];
+
+    for (
+      const name of
+      trackArtists
+    ) {
+      const cleanName =
+        typeof name ===
+        "string"
+          ? name.trim()
+          : "";
+
+      if (
+        !cleanName ||
+        excludedArtistNames.has(
+          normalize(
+            cleanName
+          )
+        )
+      ) {
+        continue;
+      }
+
+      likedArtistNames.push(
+        cleanName
+      );
+    }
+  }
+
+  const uniqueLikedArtists =
+    [
+      ...new Map(
+        likedArtistNames.map(
+          (name) => [
+            normalize(name),
+            name,
+          ]
+        )
+      ).values(),
+    ].slice(
+      0,
+      5
+    );
+
   try {
     const token =
       await getClientToken();
@@ -731,10 +1026,25 @@ export async function POST(
         Boolean
       );
 
+    const likedArtistMatches =
+      (
+        await Promise.all(
+          uniqueLikedArtists.map(
+            (artist) =>
+              findArtist(
+                artist,
+                token
+              )
+          )
+        )
+      ).filter(
+        Boolean
+      );
+
     if (
       !artistMatches.length
     ) {
-      return Response.json({
+      return json({
         tracks: [],
 
         meta: {
@@ -748,6 +1058,10 @@ export async function POST(
 
           connectedTasteUsed:
             false,
+
+          feedbackUsed:
+            likedArtistMatches.length >
+            0,
         },
       });
     }
@@ -759,6 +1073,9 @@ export async function POST(
       new Map();
 
     const adventurous =
+      new Map();
+
+    const feedback =
       new Map();
 
     const collaboratorNames =
@@ -826,7 +1143,6 @@ export async function POST(
                       /"/g,
                       ""
                     )}"`,
-
                     token,
                     offset
                   )
@@ -865,7 +1181,11 @@ export async function POST(
 
               "close",
 
-              knownFavoriteKeys
+              knownFavoriteKeys,
+
+              excludedArtistNames,
+
+              excludedTrackIds
             );
 
             for (
@@ -884,6 +1204,11 @@ export async function POST(
                     trackArtist.id
                   ) &&
                   !seedNames.has(
+                    normalize(
+                      trackArtist.name
+                    )
+                  ) &&
+                  !excludedArtistNames.has(
                     normalize(
                       trackArtist.name
                     )
@@ -936,12 +1261,55 @@ export async function POST(
       )
     );
 
+    if (
+      likedArtistMatches.length
+    ) {
+      await Promise.all(
+        likedArtistMatches.map(
+          async (
+            artist,
+            index
+          ) => {
+            const offset =
+              (
+                hashString(
+                  `${nonce}-liked-${artist.id}-${index}`
+                ) % 2
+              ) * 10;
+
+            const tracks =
+              await searchTracks(
+                `artist:"${artist.name.replace(
+                  /"/g,
+                  ""
+                )}"`,
+                token,
+                offset
+              );
+
+            addTracks(
+              feedback,
+
+              tracks,
+
+              "feedback",
+
+              knownFavoriteKeys,
+
+              excludedArtistNames,
+
+              excludedTrackIds
+            );
+          }
+        )
+      );
+    }
+
     const collaboratorList =
       seededShuffle(
         [
           ...collaboratorNames.values(),
         ],
-
         `${nonce}-collaborators`
       ).slice(
         0,
@@ -966,8 +1334,7 @@ export async function POST(
                     )
                   ) %
                   3
-                ) *
-                10
+                ) * 10
               : 0;
 
           const tracks =
@@ -976,7 +1343,6 @@ export async function POST(
                 /"/g,
                 ""
               )}"`,
-
               token,
               offset
             );
@@ -988,7 +1354,11 @@ export async function POST(
 
             "collaborator",
 
-            knownFavoriteKeys
+            knownFavoriteKeys,
+
+            excludedArtistNames,
+
+            excludedTrackIds
           );
         }
       )
@@ -999,7 +1369,6 @@ export async function POST(
         [
           ...genreNames,
         ],
-
         `${nonce}-genres`
       ).slice(
         0,
@@ -1020,10 +1389,8 @@ export async function POST(
               (
                 hashString(
                   `${nonce}-${genre}-${index}`
-                ) %
-                3
-              ) *
-              10;
+                ) % 3
+              ) * 10;
 
             const tracks =
               await searchTracks(
@@ -1031,7 +1398,6 @@ export async function POST(
                   /"/g,
                   ""
                 )}"`,
-
                 token,
                 offset
               );
@@ -1043,7 +1409,11 @@ export async function POST(
 
               "genre",
 
-              knownFavoriteKeys
+              knownFavoriteKeys,
+
+              excludedArtistNames,
+
+              excludedTrackIds
             );
           }
         )
@@ -1053,32 +1423,81 @@ export async function POST(
     let connectedTasteUsed =
       false;
 
-    const userToken =
+    let refreshedUserToken =
+      null;
+
+    let userToken =
       request.cookies.get(
         "spotify_access_token"
-      )?.value;
+      )?.value ||
+      null;
+
+    const refreshToken =
+      request.cookies.get(
+        "spotify_refresh_token"
+      )?.value ||
+      null;
 
     if (
-      userToken &&
-      discovery >= 55
+      discovery >= 55 &&
+      (
+        userToken ||
+        refreshToken
+      )
     ) {
-      try {
-        const topResponse =
-          await fetch(
-            `${SPOTIFY_API}/me/top/artists?time_range=medium_term&limit=5`,
-            {
-              headers: {
-                Authorization:
-                  `Bearer ${userToken}`,
-              },
+      async function getTopArtists(
+        tokenToUse
+      ) {
+        return fetch(
+          `${SPOTIFY_API}/me/top/artists?time_range=medium_term&limit=5`,
+          {
+            headers: {
+              Authorization:
+                `Bearer ${tokenToUse}`,
+            },
 
-              cache:
-                "no-store",
-            }
-          );
+            cache:
+              "no-store",
+          }
+        );
+      }
+
+      try {
+        let topResponse =
+          userToken
+            ? await getTopArtists(
+                userToken
+              )
+            : null;
 
         if (
-          topResponse.ok
+          (
+            !topResponse ||
+            topResponse.status ===
+              401
+          ) &&
+          refreshToken
+        ) {
+          refreshedUserToken =
+            await refreshUserToken(
+              refreshToken
+            );
+
+          userToken =
+            refreshedUserToken
+              ?.access_token ||
+            null;
+
+          if (userToken) {
+            topResponse =
+              await getTopArtists(
+                userToken
+              );
+          }
+        }
+
+        if (
+          topResponse?.ok
         ) {
           const topData =
             await topResponse.json();
@@ -1091,6 +1510,11 @@ export async function POST(
               (artist) =>
                 !seedIds.has(
                   artist.id
+                ) &&
+                !excludedArtistNames.has(
+                  normalize(
+                    artist.name
+                  )
                 )
             );
 
@@ -1118,8 +1542,7 @@ export async function POST(
                         )
                       ) %
                       2
-                    ) *
-                    10;
+                    ) * 10;
 
                   const tracks =
                     await searchTracks(
@@ -1127,9 +1550,7 @@ export async function POST(
                         /"/g,
                         ""
                       )}"`,
-
                       token,
-
                       offset
                     );
 
@@ -1140,7 +1561,11 @@ export async function POST(
 
                     "spotify-taste",
 
-                    knownFavoriteKeys
+                    knownFavoriteKeys,
+
+                    excludedArtistNames,
+
+                    excludedTrackIds
                   );
                 }
               )
@@ -1180,18 +1605,44 @@ export async function POST(
         `${nonce}-adventure`
       );
 
+    const feedbackItems =
+      seededShuffle(
+        [
+          ...feedback.values(),
+        ],
+        `${nonce}-feedback`
+      );
+
     const progress =
       discovery / 100;
+
+    const feedbackQuota =
+      likedArtistMatches.length
+        ? Math.max(
+            1,
+            Math.round(
+              count *
+                0.22
+            )
+          )
+        : 0;
+
+    const remainingCount =
+      Math.max(
+        0,
+        count -
+          feedbackQuota
+      );
 
     const closeQuota =
       Math.max(
         2,
 
         Math.round(
-          count *
+          remainingCount *
             (
-              0.78 -
-              0.58 *
+              0.76 -
+              0.54 *
                 progress
             )
         )
@@ -1202,43 +1653,43 @@ export async function POST(
         1,
 
         Math.round(
-          count *
+          remainingCount *
             (
-              0.17 +
+              0.18 +
               0.28 *
                 progress
             )
         )
       );
 
-    const adventureQuota =
-      Math.max(
-        0,
-
-        count -
-          closeQuota -
-          collaboratorQuota
-      );
-
     const output = [];
 
     const used =
       new Set(
-        excludedIds
+        excludedTrackIds
       );
 
     pickUnique(
       output,
       used,
+      feedbackItems,
+      feedbackQuota
+    );
+
+    pickUnique(
+      output,
+      used,
       closeItems,
-      closeQuota
+      feedbackQuota +
+        closeQuota
     );
 
     pickUnique(
       output,
       used,
       collaboratorItems,
-      closeQuota +
+      feedbackQuota +
+        closeQuota +
         collaboratorQuota
     );
 
@@ -1252,6 +1703,7 @@ export async function POST(
     const allCandidates =
       seededShuffle(
         [
+          ...feedbackItems,
           ...closeItems,
           ...collaboratorItems,
           ...adventurousItems,
@@ -1267,69 +1719,58 @@ export async function POST(
       count
     );
 
-    if (
-      output.length <
-        count &&
-      excludedIds.size
-    ) {
-      const usedWithoutExclusion =
-        new Set(
-          output.map(
-            (track) =>
-              track.id
-          )
-        );
+    const response =
+      json(
+        {
+          tracks:
+            output.slice(
+              0,
+              count
+            ),
 
-      pickUnique(
-        output,
+          meta: {
+            discovery,
 
-        usedWithoutExclusion,
+            seedArtists:
+              artistMatches.map(
+                (artist) =>
+                  artist.name
+              ),
 
-        allCandidates,
+            usedGenres:
+              genres,
 
-        count
+            connectedTasteUsed,
+
+            feedbackUsed:
+              likedArtistMatches.length >
+              0,
+
+            excludedArtists:
+              [
+                ...excludedArtistNames,
+              ],
+          },
+        },
+        200,
+        refreshedUserToken
       );
-    }
 
-    return Response.json({
-      tracks:
-        output.slice(
-          0,
-          count
-        ),
-
-      meta: {
-        discovery,
-
-        seedArtists:
-          artistMatches.map(
-            (artist) =>
-              artist.name
-          ),
-
-        usedGenres:
-          genres,
-
-        connectedTasteUsed,
-      },
-    });
+    return response;
   } catch (error) {
     console.error(
       "TasteMaker discovery error:",
       error
     );
 
-    return Response.json(
+    return json(
       {
         error:
           error.message ||
           "Could not build recommendations.",
       },
-      {
-        status:
-          error.status ||
-          502,
-      }
+      error.status ||
+        502
     );
   }
 }

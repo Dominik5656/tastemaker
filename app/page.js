@@ -1,426 +1,397 @@
 "use client";
 
-import {
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { useEffect, useMemo, useState } from "react";
 
-function normalize(
-  text = ""
-) {
+function normalize(text = "") {
   return text
     .toLowerCase()
     .normalize("NFD")
-    .replace(
-      /[\u0300-\u036f]/g,
-      ""
-    )
-    .replace(
-      /[^a-z0-9\s]/g,
-      ""
-    )
-    .replace(
-      /\s+/g,
-      " "
-    )
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9\s]/g, "")
+    .replace(/\s+/g, " ")
     .trim();
 }
 
-function distance(
-  a,
-  b
-) {
-  const matrix =
-    Array.from(
-      {
-        length:
-          b.length + 1,
-      },
-      () =>
-        Array(
-          a.length + 1
-        ).fill(0)
-    );
+function distance(a, b) {
+  const matrix = Array.from({ length: b.length + 1 }, () =>
+    Array(a.length + 1).fill(0)
+  );
 
-  for (
-    let i = 0;
-    i <= a.length;
-    i++
-  ) {
-    matrix[0][i] = i;
-  }
+  for (let i = 0; i <= a.length; i++) matrix[0][i] = i;
+  for (let j = 0; j <= b.length; j++) matrix[j][0] = j;
 
-  for (
-    let j = 0;
-    j <= b.length;
-    j++
-  ) {
-    matrix[j][0] = j;
-  }
-
-  for (
-    let j = 1;
-    j <= b.length;
-    j++
-  ) {
-    for (
-      let i = 1;
-      i <= a.length;
-      i++
-    ) {
-      if (
-        a[i - 1] ===
-        b[j - 1]
-      ) {
-        matrix[j][i] =
-          matrix[j - 1][
-            i - 1
-          ];
+  for (let j = 1; j <= b.length; j++) {
+    for (let i = 1; i <= a.length; i++) {
+      if (a[i - 1] === b[j - 1]) {
+        matrix[j][i] = matrix[j - 1][i - 1];
       } else {
-        matrix[j][i] =
-          Math.min(
-            matrix[j - 1][
-              i
-            ] + 1,
-
-            matrix[j][
-              i - 1
-            ] + 1,
-
-            matrix[j - 1][
-              i - 1
-            ] + 1
-          );
+        matrix[j][i] = Math.min(
+          matrix[j - 1][i] + 1,
+          matrix[j][i - 1] + 1,
+          matrix[j - 1][i - 1] + 1
+        );
       }
     }
   }
 
-  return matrix[
-    b.length
-  ][a.length];
+  return matrix[b.length][a.length];
 }
 
-function Icon({
-  name,
-  size = 18,
-}) {
+function Icon({ name, size = 18 }) {
   const common = {
     width: size,
     height: size,
-    viewBox:
-      "0 0 24 24",
+    viewBox: "0 0 24 24",
     fill: "none",
-    stroke:
-      "currentColor",
+    stroke: "currentColor",
     strokeWidth: 1.9,
-    strokeLinecap:
-      "round",
-    strokeLinejoin:
-      "round",
-
-    "aria-hidden":
-      true,
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+    "aria-hidden": true,
   };
 
-  if (
-    name ===
-    "sparkles"
-  ) {
-    return (
-      <svg {...common}>
+  const icons = {
+    sparkles: (
+      <>
         <path d="M12 3l1.15 3.3L16.5 7.5l-3.35 1.2L12 12l-1.15-3.3L7.5 7.5l3.35-1.2L12 3Z" />
-
         <path d="M18.5 13.5l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7.7-2Z" />
-
-        <path d="M5.5 14.5l.85 2.35 2.35.85-2.35.85L5.5 21l-.85-2.45-2.35-.85 2.35-.85L5.5 14.5Z" />
-      </svg>
-    );
-  }
-
-  if (
-    name === "music"
-  ) {
-    return (
-      <svg {...common}>
+      </>
+    ),
+    music: (
+      <>
         <path d="M9 18V5l11-2v13" />
-        <circle
-          cx="6"
-          cy="18"
-          r="3"
-        />
-        <circle
-          cx="17"
-          cy="16"
-          r="3"
-        />
-      </svg>
-    );
-  }
-
-  if (
-    name ===
-    "spotify"
-  ) {
-    return (
-      <svg {...common}>
-        <circle
-          cx="12"
-          cy="12"
-          r="9"
-        />
-
+        <circle cx="6" cy="18" r="3" />
+        <circle cx="17" cy="16" r="3" />
+      </>
+    ),
+    spotify: (
+      <>
+        <circle cx="12" cy="12" r="9" />
         <path d="M7.3 9.8c3.3-1 6.8-.8 9.8.7" />
-
         <path d="M7.9 12.7c2.7-.75 5.7-.55 8.2.65" />
-
         <path d="M8.5 15.4c2.15-.55 4.4-.4 6.4.5" />
-      </svg>
-    );
-  }
-
-  if (
-    name === "plus"
-  ) {
-    return (
-      <svg {...common}>
-        <path d="M12 5v14M5 12h14" />
-      </svg>
-    );
-  }
-
-  if (
-    name === "arrow"
-  ) {
-    return (
-      <svg {...common}>
+      </>
+    ),
+    plus: <path d="M12 5v14M5 12h14" />,
+    arrow: (
+      <>
         <path d="M5 12h14" />
         <path d="m14 7 5 5-5 5" />
-      </svg>
-    );
-  }
-
-  if (
-    name === "copy"
-  ) {
-    return (
-      <svg {...common}>
-        <rect
-          x="8"
-          y="8"
-          width="11"
-          height="11"
-          rx="2"
-        />
-
+      </>
+    ),
+    copy: (
+      <>
+        <rect x="8" y="8" width="11" height="11" rx="2" />
         <path d="M5 16H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v1" />
-      </svg>
-    );
-  }
-
-  if (
-    name === "trash"
-  ) {
-    return (
-      <svg {...common}>
+      </>
+    ),
+    trash: (
+      <>
         <path d="M4 7h16" />
         <path d="M10 11v6M14 11v6" />
         <path d="m6 7 1 13h10l1-13" />
         <path d="M9 7V4h6v3" />
-      </svg>
-    );
-  }
-
-  if (
-    name === "refresh"
-  ) {
-    return (
-      <svg {...common}>
+      </>
+    ),
+    refresh: (
+      <>
         <path d="M20 7v5h-5" />
         <path d="M4 17v-5h5" />
         <path d="M6.1 9A7 7 0 0 1 18.7 7.7L20 12" />
         <path d="M17.9 15A7 7 0 0 1 5.3 16.3L4 12" />
-      </svg>
-    );
-  }
+      </>
+    ),
+    check: <path d="m5 12 4 4L19 6" />,
+    up: (
+      <>
+        <path d="M7 10v11" />
+        <path d="M3 10h4v11H3z" />
+        <path d="M7 19h9.4a2 2 0 0 0 1.9-1.4l2.1-7A2 2 0 0 0 18.5 8H14l.7-3.1A2.4 2.4 0 0 0 10.2 3L7 10Z" />
+      </>
+    ),
+    down: (
+      <>
+        <path d="M7 14V3" />
+        <path d="M3 3h4v11H3z" />
+        <path d="M7 5h9.4a2 2 0 0 1 1.9 1.4l2.1 7a2 2 0 0 1-1.9 2.6H14l.7 3.1a2.4 2.4 0 0 1-4.5 1.9L7 14Z" />
+      </>
+    ),
+    ban: (
+      <>
+        <circle cx="12" cy="12" r="9" />
+        <path d="m5.6 5.6 12.8 12.8" />
+      </>
+    ),
+    history: (
+      <>
+        <path d="M3 12a9 9 0 1 0 3-6.7L3 8" />
+        <path d="M3 3v5h5" />
+        <path d="M12 7v5l3 2" />
+      </>
+    ),
+  };
 
-  if (
-    name === "check"
-  ) {
-    return (
-      <svg {...common}>
-        <path d="m5 12 4 4L19 6" />
-      </svg>
-    );
-  }
-
-  return null;
+  return <svg {...common}>{icons[name] || null}</svg>;
 }
 
-function sourceLabel(
-  source
-) {
-  if (
-    source === "close"
-  ) {
-    return "Close match";
-  }
-
-  if (
-    source ===
-    "collaborator"
-  ) {
-    return "Connected artist";
-  }
-
-  if (
-    source === "genre"
-  ) {
-    return "Genre discovery";
-  }
-
-  if (
-    source ===
-    "spotify-taste"
-  ) {
-    return "Your Spotify taste";
-  }
-
+function sourceLabel(source) {
+  if (source === "close") return "Close match";
+  if (source === "collaborator") return "Connected artist";
+  if (source === "genre") return "Genre discovery";
+  if (source === "spotify-taste") return "Your Spotify taste";
+  if (source === "feedback") return "More like your picks";
   return "Discovery";
 }
 
+function buildMixName(discovery, meta, tracks) {
+  const soft = [
+    "Velvet",
+    "Quiet",
+    "Soft",
+    "Golden",
+    "Sunday",
+    "Afterglow",
+  ];
+
+  const balanced = [
+    "Neon",
+    "Midnight",
+    "Parallel",
+    "Electric",
+    "Satellite",
+    "Side B",
+  ];
+
+  const wild = [
+    "Static",
+    "Uncharted",
+    "Off Grid",
+    "Wild Signal",
+    "After Hours",
+    "Deep Cut",
+  ];
+
+  const nouns = [
+    "Signal",
+    "Drift",
+    "Frequency",
+    "Room",
+    "Radio",
+    "Current",
+    "Archive",
+    "Pulse",
+  ];
+
+  const firstPool =
+    discovery <= 30
+      ? soft
+      : discovery <= 70
+      ? balanced
+      : wild;
+
+  const seed =
+    (tracks?.[0]?.id || "tastemaker") +
+    (meta?.usedGenres?.join("") || "") +
+    String(Date.now());
+
+  let total = 0;
+
+  for (let i = 0; i < seed.length; i++) {
+    total += seed.charCodeAt(i);
+  }
+
+  return `${firstPool[total % firstPool.length]} ${
+    nouns[(total * 7) % nouns.length]
+  }`;
+}
+
+function CoverCollage({
+  tracks,
+  large = false,
+}) {
+  const images = tracks
+    .filter((track) => track.image)
+    .slice(0, 4);
+
+  if (!images.length) {
+    return (
+      <div
+        className={`coverCollage coverFallback ${
+          large ? "large" : ""
+        }`}
+      >
+        <Icon
+          name="music"
+          size={large ? 42 : 26}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={`coverCollage ${
+        large ? "large" : ""
+      }`}
+    >
+      {Array.from({
+        length: 4,
+      }).map((_, index) => {
+        const item =
+          images[index % images.length];
+
+        return (
+          <img
+            key={`${item.id}-${index}`}
+            src={item.image}
+            alt=""
+          />
+        );
+      })}
+    </div>
+  );
+}
+
 export default function Home() {
-  const [
-    input,
-    setInput,
-  ] =
+  const [input, setInput] =
     useState("");
 
   const [
     songInput,
     setSongInput,
-  ] =
-    useState("");
+  ] = useState("");
 
   const [
     favorites,
     setFavorites,
-  ] =
-    useState([]);
+  ] = useState([]);
 
   const [
     favoriteSongs,
     setFavoriteSongs,
-  ] =
-    useState({});
+  ] = useState({});
 
   const [
     favoriteArtistData,
     setFavoriteArtistData,
-  ] =
-    useState({});
+  ] = useState({});
 
   const [
     artistResults,
     setArtistResults,
-  ] =
-    useState([]);
+  ] = useState([]);
 
   const [
     searchingArtists,
     setSearchingArtists,
-  ] =
-    useState(false);
+  ] = useState(false);
 
   const [
     selectedArtist,
     setSelectedArtist,
-  ] =
-    useState(null);
+  ] = useState(null);
 
   const [
     songResults,
     setSongResults,
-  ] =
-    useState([]);
+  ] = useState([]);
 
   const [
     searchingSongs,
     setSearchingSongs,
-  ] =
-    useState(false);
+  ] = useState(false);
 
   const [
     selectedSong,
     setSelectedSong,
-  ] =
-    useState(null);
+  ] = useState(null);
 
   const [
     tracks,
     setTracks,
-  ] =
-    useState([]);
+  ] = useState([]);
 
   const [
     trackCount,
     setTrackCount,
-  ] =
-    useState(15);
+  ] = useState(15);
 
   const [
     discovery,
     setDiscovery,
-  ] =
-    useState(55);
+  ] = useState(55);
 
   const [
     mixMeta,
     setMixMeta,
-  ] =
-    useState(null);
+  ] = useState(null);
+
+  const [
+    mixName,
+    setMixName,
+  ] = useState(
+    "TasteMaker Mix"
+  );
 
   const [
     loading,
     setLoading,
-  ] =
-    useState(false);
+  ] = useState(false);
 
   const [
     loadingStage,
     setLoadingStage,
-  ] =
-    useState("");
+  ] = useState("");
 
   const [
     saving,
     setSaving,
-  ] =
-    useState(false);
+  ] = useState(false);
 
   const [
     message,
     setMessage,
-  ] =
-    useState("");
+  ] = useState("");
 
   const [
     playlistUrl,
     setPlaylistUrl,
-  ] =
-    useState("");
+  ] = useState("");
 
   const [
     spotifyUser,
     setSpotifyUser,
-  ] =
-    useState(null);
+  ] = useState(null);
 
   const [
     profileLoaded,
     setProfileLoaded,
-  ] =
-    useState(false);
+  ] = useState(false);
+
+  const [
+    excludedInput,
+    setExcludedInput,
+  ] = useState("");
+
+  const [
+    excludedArtists,
+    setExcludedArtists,
+  ] = useState([]);
+
+  const [
+    likedTrackIds,
+    setLikedTrackIds,
+  ] = useState([]);
+
+  const [
+    dislikedTrackIds,
+    setDislikedTrackIds,
+  ] = useState([]);
+
+  const [
+    mixHistory,
+    setMixHistory,
+  ] = useState([]);
 
   const busy =
     loading || saving;
@@ -436,84 +407,63 @@ export default function Home() {
             songs
           ) =>
             total +
-            (
-              Array.isArray(
-                songs
-              )
-                ? songs.length
-                : 0
-            ),
-
+            (Array.isArray(
+              songs
+            )
+              ? songs.length
+              : 0),
           0
         ),
-
       [favoriteSongs]
     );
 
   const discoveryLabel =
-    useMemo(
-      () => {
-        if (
-          discovery <= 25
-        ) {
-          return "Familiar";
-        }
+    useMemo(() => {
+      if (discovery <= 25) {
+        return "Familiar";
+      }
 
-        if (
-          discovery <= 55
-        ) {
-          return "Balanced";
-        }
+      if (discovery <= 55) {
+        return "Balanced";
+      }
 
-        if (
-          discovery <= 80
-        ) {
-          return "Explorer";
-        }
+      if (discovery <= 80) {
+        return "Explorer";
+      }
 
-        return "Wild card";
-      },
-      [discovery]
-    );
+      return "Wild card";
+    }, [discovery]);
 
   const discoveryHint =
-    useMemo(
-      () => {
-        if (
-          discovery <= 25
-        ) {
-          return "Mostly close to the artists you added.";
-        }
+    useMemo(() => {
+      if (discovery <= 25) {
+        return "Stay close to the artists you already know.";
+      }
 
-        if (
-          discovery <= 55
-        ) {
-          return "A mix of familiar names and connected artists.";
-        }
+      if (discovery <= 55) {
+        return "Mix familiar artists with fresh connections.";
+      }
 
-        if (
-          discovery <= 80
-        ) {
-          return "More collaborators, genres and unexpected picks.";
-        }
+      if (discovery <= 80) {
+        return "Reach further into collaborators and genres.";
+      }
 
-        return "Push far outside the obvious choices.";
-      },
-      [discovery]
-    );
+      return "Go hunting for the least obvious picks.";
+    }, [discovery]);
 
   useEffect(() => {
     try {
       const saved =
+        localStorage.getItem(
+          "tastemaker-profile-v4"
+        ) ||
         localStorage.getItem(
           "tastemaker-profile-v3"
         );
 
       if (saved) {
         const parsed =
-          JSON.parse(
-            saved
-          );
+          JSON.parse(saved);
 
         if (
           Array.isArray(
@@ -564,35 +514,64 @@ export default function Home() {
             parsed.discovery
           );
         }
+
+        if (
+          Array.isArray(
+            parsed.excludedArtists
+          )
+        ) {
+          setExcludedArtists(
+            parsed.excludedArtists
+          );
+        }
+      }
+
+      const history =
+        localStorage.getItem(
+          "tastemaker-history-v1"
+        );
+
+      if (history) {
+        const parsedHistory =
+          JSON.parse(history);
+
+        if (
+          Array.isArray(
+            parsedHistory
+          )
+        ) {
+          setMixHistory(
+            parsedHistory.slice(
+              0,
+              6
+            )
+          );
+        }
       }
     } catch (error) {
       console.warn(
-        "Could not restore TasteMaker profile:",
+        "Could not restore TasteMaker data:",
         error
       );
     } finally {
-      setProfileLoaded(
-        true
-      );
+      setProfileLoaded(true);
     }
   }, []);
 
   useEffect(() => {
-    if (
-      !profileLoaded
-    ) {
+    if (!profileLoaded) {
       return;
     }
 
     localStorage.setItem(
-      "tastemaker-profile-v3",
-
+      "tastemaker-profile-v4",
       JSON.stringify({
         favorites,
         favoriteSongs,
         favoriteArtistData,
         trackCount,
         discovery,
+        excludedArtists,
       })
     );
   }, [
@@ -602,11 +581,27 @@ export default function Home() {
     favoriteArtistData,
     trackCount,
     discovery,
+    excludedArtists,
   ]);
 
   useEffect(() => {
-    let cancelled =
-      false;
+    if (!profileLoaded) {
+      return;
+    }
+
+    localStorage.setItem(
+      "tastemaker-history-v1",
+      JSON.stringify(
+        mixHistory
+      )
+    );
+  }, [
+    profileLoaded,
+    mixHistory,
+  ]);
+
+  useEffect(() => {
+    let cancelled = false;
 
     async function loadSpotifyUser() {
       try {
@@ -631,9 +626,7 @@ export default function Home() {
         }
       } catch {
         if (!cancelled) {
-          setSpotifyUser(
-            null
-          );
+          setSpotifyUser(null);
         }
       }
     }
@@ -644,23 +637,21 @@ export default function Home() {
       );
 
     const spotifyStatus =
-      params.get(
-        "spotify"
-      );
+      params.get("spotify");
 
     if (
       spotifyStatus ===
       "connected"
     ) {
       setMessage(
-        "Spotify connected. Your TasteMaker mix can now use your Spotify taste too."
+        "Spotify connected. Your listening taste can now help shape mixes."
       );
     } else if (
       spotifyStatus ===
       "verification_failed"
     ) {
       setMessage(
-        "Spotify login verification failed. Try Connect Spotify again from this site."
+        "Spotify login verification failed. Try connecting again from this site."
       );
     } else if (
       spotifyStatus ===
@@ -700,10 +691,7 @@ export default function Home() {
     if (
       query.length < 2
     ) {
-      setArtistResults(
-        []
-      );
-
+      setArtistResults([]);
       setSearchingArtists(
         false
       );
@@ -715,15 +703,9 @@ export default function Home() {
       selectedArtist &&
       normalize(
         selectedArtist.name
-      ) ===
-        normalize(
-          query
-        )
+      ) === normalize(query)
     ) {
-      setArtistResults(
-        []
-      );
-
+      setArtistResults([]);
       setSearchingArtists(
         false
       );
@@ -747,7 +729,6 @@ export default function Home() {
                 `/api/search-artists?q=${encodeURIComponent(
                   query
                 )}`,
-
                 {
                   signal:
                     controller.signal,
@@ -757,9 +738,7 @@ export default function Home() {
             const data =
               await response.json();
 
-            if (
-              !response.ok
-            ) {
+            if (!response.ok) {
               throw new Error(
                 data.error ||
                   "Artist search failed."
@@ -819,10 +798,7 @@ export default function Home() {
     if (
       query.length < 2
     ) {
-      setSongResults(
-        []
-      );
-
+      setSongResults([]);
       setSearchingSongs(
         false
       );
@@ -835,14 +811,9 @@ export default function Home() {
       normalize(
         selectedSong.name
       ) ===
-        normalize(
-          query
-        )
+        normalize(query)
     ) {
-      setSongResults(
-        []
-      );
-
+      setSongResults([]);
       setSearchingSongs(
         false
       );
@@ -871,9 +842,7 @@ export default function Home() {
                 q: query,
               });
 
-            if (
-              artistName
-            ) {
+            if (artistName) {
               params.set(
                 "artist",
                 artistName
@@ -883,7 +852,6 @@ export default function Home() {
             const response =
               await fetch(
                 `/api/search-songs?${params.toString()}`,
-
                 {
                   signal:
                     controller.signal,
@@ -893,9 +861,7 @@ export default function Home() {
             const data =
               await response.json();
 
-            if (
-              !response.ok
-            ) {
+            if (!response.ok) {
               throw new Error(
                 data.error ||
                   "Song search failed."
@@ -952,17 +918,14 @@ export default function Home() {
 
   useEffect(() => {
     if (!loading) {
-      setLoadingStage(
-        ""
-      );
-
+      setLoadingStage("");
       return;
     }
 
     const stages = [
       "Reading your taste...",
-      "Finding connected artists...",
-      "Digging past the obvious picks...",
+      "Following artist connections...",
+      "Filtering the obvious stuff...",
       "Building your mix...",
     ];
 
@@ -973,32 +936,34 @@ export default function Home() {
     );
 
     const timer =
-      setInterval(
-        () => {
-          index =
-            Math.min(
-              index + 1,
-              stages.length -
-                1
-            );
+      setInterval(() => {
+        index = Math.min(
+          index + 1,
+          stages.length - 1
+        );
 
-          setLoadingStage(
-            stages[index]
-          );
-        },
-        900
-      );
+        setLoadingStage(
+          stages[index]
+        );
+      }, 900);
 
     return () =>
-      clearInterval(
-        timer
-      );
+      clearInterval(timer);
   }, [loading]);
 
-  function clearResults() {
+  function clearResults({
+    keepFeedback = false,
+  } = {}) {
     setTracks([]);
     setMixMeta(null);
     setPlaylistUrl("");
+
+    if (!keepFeedback) {
+      setLikedTrackIds([]);
+      setDislikedTrackIds(
+        []
+      );
+    }
   }
 
   function saveArtistAndSong(
@@ -1035,8 +1000,7 @@ export default function Home() {
 
           [normalize(
             artistName
-          )]:
-            artistData,
+          )]: artistData,
         })
       );
     }
@@ -1051,13 +1015,9 @@ export default function Home() {
 
           const existing =
             Array.isArray(
-              previous[
-                key
-              ]
+              previous[key]
             )
-              ? previous[
-                  key
-                ]
+              ? previous[key]
               : [];
 
           const exists =
@@ -1094,18 +1054,9 @@ export default function Home() {
       null
     );
 
-    setSelectedSong(
-      null
-    );
-
-    setArtistResults(
-      []
-    );
-
-    setSongResults(
-      []
-    );
-
+    setSelectedSong(null);
+    setArtistResults([]);
+    setSongResults([]);
     setMessage("");
 
     clearResults();
@@ -1137,9 +1088,7 @@ export default function Home() {
         ? selectedSong.name
         : typedSong;
 
-    if (
-      !typedArtist
-    ) {
+    if (!typedArtist) {
       setMessage(
         "Enter an artist name first."
       );
@@ -1158,9 +1107,7 @@ export default function Home() {
     ) {
       saveArtistAndSong(
         selectedArtist.name,
-
         songTitle,
-
         selectedArtist
       );
 
@@ -1175,9 +1122,7 @@ export default function Home() {
           )}`
         );
 
-      if (
-        !response.ok
-      ) {
+      if (!response.ok) {
         saveArtistAndSong(
           typedArtist,
           songTitle
@@ -1190,8 +1135,7 @@ export default function Home() {
         await response.json();
 
       const spotifyArtists =
-        data.artists ||
-        [];
+        data.artists || [];
 
       if (
         !spotifyArtists.length
@@ -1221,9 +1165,7 @@ export default function Home() {
       if (exactMatch) {
         saveArtistAndSong(
           exactMatch.name,
-
           songTitle,
-
           exactMatch
         );
 
@@ -1248,9 +1190,7 @@ export default function Home() {
               const maxLength =
                 Math.max(
                   normalizedInput.length,
-
                   artistName.length,
-
                   1
                 );
 
@@ -1293,9 +1233,7 @@ export default function Home() {
         if (confirmed) {
           saveArtistAndSong(
             bestMatch.name,
-
             songTitle,
-
             bestMatch
           );
 
@@ -1327,35 +1265,28 @@ export default function Home() {
     setFavoriteSongs(
       (previous) => {
         const key =
-          normalize(
-            artist
-          );
+          normalize(artist);
 
         const updated = {
           ...previous,
         };
 
-        updated[key] =
-          (
-            updated[key] ||
-            []
-          ).filter(
-            (song) =>
-              normalize(
-                song
-              ) !==
-              normalize(
-                title
-              )
-          );
+        updated[key] = (
+          updated[key] || []
+        ).filter(
+          (song) =>
+            normalize(
+              song
+            ) !==
+            normalize(
+              title
+            )
+        );
 
         if (
-          !updated[key]
-            .length
+          !updated[key].length
         ) {
-          delete updated[
-            key
-          ];
+          delete updated[key];
         }
 
         return updated;
@@ -1416,6 +1347,179 @@ export default function Home() {
     clearResults();
   }
 
+  function addExcludedArtist() {
+    const name =
+      excludedInput.trim();
+
+    if (!name) {
+      return;
+    }
+
+    setExcludedArtists(
+      (previous) => {
+        const exists =
+          previous.some(
+            (artist) =>
+              normalize(
+                artist
+              ) ===
+              normalize(name)
+          );
+
+        return exists
+          ? previous
+          : [
+              ...previous,
+              name,
+            ].slice(0, 30);
+      }
+    );
+
+    setExcludedInput("");
+    clearResults();
+  }
+
+  function removeExcludedArtist(
+    name
+  ) {
+    setExcludedArtists(
+      (previous) =>
+        previous.filter(
+          (artist) =>
+            normalize(
+              artist
+            ) !==
+            normalize(name)
+        )
+    );
+
+    clearResults();
+  }
+
+  function toggleLike(
+    trackId
+  ) {
+    setLikedTrackIds(
+      (previous) =>
+        previous.includes(
+          trackId
+        )
+          ? previous.filter(
+              (id) =>
+                id !==
+                trackId
+            )
+          : [
+              ...previous,
+              trackId,
+            ]
+    );
+
+    setDislikedTrackIds(
+      (previous) =>
+        previous.filter(
+          (id) =>
+            id !== trackId
+        )
+    );
+  }
+
+  function toggleDislike(
+    trackId
+  ) {
+    setDislikedTrackIds(
+      (previous) =>
+        previous.includes(
+          trackId
+        )
+          ? previous.filter(
+              (id) =>
+                id !==
+                trackId
+            )
+          : [
+              ...previous,
+              trackId,
+            ]
+    );
+
+    setLikedTrackIds(
+      (previous) =>
+        previous.filter(
+          (id) =>
+            id !== trackId
+        )
+    );
+  }
+
+  function rememberMix(
+    name,
+    newTracks,
+    meta
+  ) {
+    const entry = {
+      id:
+        `${Date.now()}-${Math.random()
+          .toString(36)
+          .slice(2, 7)}`,
+
+      name,
+
+      createdAt:
+        Date.now(),
+
+      discovery,
+
+      tracks:
+        newTracks,
+
+      meta,
+    };
+
+    setMixHistory(
+      (previous) => [
+        entry,
+        ...previous,
+      ].slice(0, 6)
+    );
+  }
+
+  function loadHistoryMix(
+    item
+  ) {
+    setMixName(item.name);
+
+    setTracks(
+      item.tracks || []
+    );
+
+    setMixMeta(
+      item.meta || null
+    );
+
+    setDiscovery(
+      item.discovery ??
+        discovery
+    );
+
+    setLikedTrackIds([]);
+    setDislikedTrackIds([]);
+    setPlaylistUrl("");
+
+    setMessage(
+      `Loaded ${item.name} from your recent mixes.`
+    );
+
+    window.scrollTo({
+      top:
+        document.body
+          .scrollHeight,
+
+      behavior:
+        "smooth",
+    });
+  }
+
   function clearTasteProfile() {
     if (
       !window.confirm(
@@ -1426,20 +1530,14 @@ export default function Home() {
     }
 
     setFavorites([]);
-
-    setFavoriteSongs(
-      {}
-    );
-
+    setFavoriteSongs({});
     setFavoriteArtistData(
       {}
     );
 
-    setTracks([]);
+    setExcludedArtists([]);
 
-    setMixMeta(null);
-
-    setPlaylistUrl("");
+    clearResults();
 
     setMessage(
       "Taste profile cleared."
@@ -1460,17 +1558,37 @@ export default function Home() {
     }
 
     setLoading(true);
-
     setMessage("");
-
     setPlaylistUrl("");
+
+    const likedTracks =
+      tracks
+        .filter(
+          (track) =>
+            likedTrackIds.includes(
+              track.id
+            )
+        )
+        .map(
+          (track) => ({
+            id:
+              track.id,
+
+            artist:
+              track.artist,
+
+            artists:
+              track.artists,
+          })
+        );
 
     try {
       const response =
         await fetch(
           "/api/spotify",
           {
-            method: "POST",
+            method:
+              "POST",
 
             headers: {
               "Content-Type":
@@ -1501,6 +1619,12 @@ export default function Home() {
                           track.id
                       )
                     : [],
+
+                likedTracks,
+
+                dislikedTrackIds,
+
+                excludedArtists,
               }),
           }
         );
@@ -1508,56 +1632,71 @@ export default function Home() {
       const data =
         await response.json();
 
-      if (
-        !response.ok
-      ) {
+      if (!response.ok) {
         throw new Error(
           data.error ||
             "Recommendation search failed."
         );
       }
 
+      const newTracks =
+        data.tracks || [];
+
+      const newMeta =
+        data.meta || null;
+
+      const newName =
+        buildMixName(
+          discovery,
+          newMeta,
+          newTracks
+        );
+
       setTracks(
-        data.tracks ||
-          []
+        newTracks
       );
 
       setMixMeta(
-        data.meta ||
-          null
+        newMeta
+      );
+
+      setMixName(
+        newName
+      );
+
+      setLikedTrackIds([]);
+      setDislikedTrackIds(
+        []
       );
 
       if (
-        !data.tracks
-          ?.length
+        !newTracks.length
       ) {
         setMessage(
-          "No mix came back this time. Try another artist or discovery level."
-        );
-      } else if (
-        regenerate
-      ) {
-        setMessage(
-          `Fresh mix generated with ${data.tracks.length} songs.`
+          "No mix came back this time. Try another discovery level or fewer exclusions."
         );
       } else {
+        rememberMix(
+          newName,
+          newTracks,
+          newMeta
+        );
+
         setMessage(
-          `Built a ${data.tracks.length}-song mix around your taste.`
+          regenerate
+            ? `Fresh mix generated: ${newName}.`
+            : `Built ${newName} with ${newTracks.length} tracks.`
         );
       }
     } catch (error) {
-      console.error(
-        error
-      );
+      console.error(error);
 
       setMessage(
         error.message ||
           "Could not build your playlist."
       );
     } finally {
-      setLoading(
-        false
-      );
+      setLoading(false);
     }
   }
 
@@ -1568,14 +1707,10 @@ export default function Home() {
         .writeText(
           tracks
             .map(
-              (
-                track
-              ) =>
+              (track) =>
                 `${track.artist} — ${track.title}`
             )
-            .join(
-              "\n"
-            )
+            .join("\n")
         );
 
       setMessage(
@@ -1597,7 +1732,6 @@ export default function Home() {
     }
 
     setSaving(true);
-
     setPlaylistUrl("");
 
     setMessage(
@@ -1609,7 +1743,8 @@ export default function Home() {
         await fetch(
           "/api/spotify/save",
           {
-            method: "POST",
+            method:
+              "POST",
 
             headers: {
               "Content-Type":
@@ -1619,13 +1754,12 @@ export default function Home() {
             body:
               JSON.stringify({
                 name:
+                  mixName ||
                   `TasteMaker ${discoveryLabel} Mix`,
 
                 uris:
                   tracks.map(
-                    (
-                      track
-                    ) =>
+                    (track) =>
                       track.uri
                   ),
               }),
@@ -1643,9 +1777,7 @@ export default function Home() {
         );
       }
 
-      if (
-        !response.ok
-      ) {
+      if (!response.ok) {
         if (
           data.needsLogin
         ) {
@@ -1670,18 +1802,9 @@ export default function Home() {
         "Saving could not be confirmed."
       );
     } finally {
-      setSaving(
-        false
-      );
+      setSaving(false);
     }
   }
-
-  const heroCover =
-    tracks.find(
-      (track) =>
-        track.image
-    )?.image ||
-    null;
 
   return (
     <main className="tm">
@@ -1696,12 +1819,12 @@ export default function Home() {
 
         html {
           scroll-behavior: smooth;
-          background: #050705;
+          background: #09090b;
         }
 
         body {
           margin: 0;
-          background: #050705;
+          background: #09090b;
         }
 
         button,
@@ -1716,45 +1839,34 @@ export default function Home() {
         }
 
         .tm {
-          --bg: #050705;
-          --surface: rgba(11, 15, 12, .78);
-          --surface2: rgba(15, 20, 16, .92);
-          --line: rgba(255,255,255,.075);
-          --line2: rgba(255,255,255,.12);
-          --text: #f5f8f6;
-          --muted: #89958d;
-          --dim: #5d6861;
-          --green: #6af08e;
-          --green2: #35d96a;
+          --bg: #09090b;
+          --panel: #121216;
+          --panel2: #18181e;
+          --soft: #202027;
+          --line: #292930;
+          --text: #f7f4eb;
+          --muted: #aaa7a0;
+          --dim: #76736e;
+          --lime: #b7ff5a;
+          --purple: #8b78ff;
+          --pink: #ff7f9f;
 
           min-height: 100vh;
           overflow-x: hidden;
-          position: relative;
-
           color: var(--text);
 
           background:
             radial-gradient(
-              circle at 18% -5%,
-              rgba(87,255,139,.15),
-              transparent 31%
+              circle at 92% 8%,
+              rgba(139,120,255,.17),
+              transparent 28%
             ),
             radial-gradient(
-              circle at 100% 18%,
-              rgba(31,185,82,.12),
-              transparent 27%
+              circle at 5% 32%,
+              rgba(183,255,90,.10),
+              transparent 23%
             ),
-            radial-gradient(
-              circle at 52% 100%,
-              rgba(52,221,104,.07),
-              transparent 38%
-            ),
-            linear-gradient(
-              180deg,
-              #071008 0%,
-              #050705 45%,
-              #030403 100%
-            );
+            #09090b;
 
           font-family:
             Inter,
@@ -1770,327 +1882,166 @@ export default function Home() {
           content: "";
           position: fixed;
           inset: 0;
-
           pointer-events: none;
-
-          z-index: 0;
+          opacity: .45;
 
           background-image:
-            linear-gradient(
-              rgba(255,255,255,.012) 1px,
-              transparent 1px
-            ),
-            linear-gradient(
-              90deg,
-              rgba(255,255,255,.012) 1px,
-              transparent 1px
+            radial-gradient(
+              rgba(255,255,255,.06)
+              .7px,
+              transparent .7px
             );
 
           background-size:
-            56px 56px;
+            18px 18px;
 
           mask-image:
             linear-gradient(
               to bottom,
               #000,
-              transparent 84%
+              transparent 78%
             );
-        }
-
-        .ambient {
-          position: absolute;
-          inset: 0;
-          overflow: hidden;
-          pointer-events: none;
-        }
-
-        .blob {
-          position: absolute;
-
-          border-radius: 999px;
-
-          filter:
-            blur(95px);
-
-          opacity: .42;
-
-          animation:
-            float 16s
-            ease-in-out
-            infinite;
-        }
-
-        .blob.one {
-          width: 380px;
-          height: 380px;
-
-          top: 120px;
-          left: -170px;
-
-          background:
-            rgba(
-              78,
-              245,
-              125,
-              .18
-            );
-        }
-
-        .blob.two {
-          width: 360px;
-          height: 360px;
-
-          top: 620px;
-          right: -180px;
-
-          background:
-            rgba(
-              34,
-              202,
-              91,
-              .13
-            );
-
-          animation-delay:
-            -6s;
-        }
-
-        .blob.three {
-          width: 280px;
-          height: 280px;
-
-          top: 1260px;
-          left: 38%;
-
-          background:
-            rgba(
-              93,
-              240,
-              135,
-              .08
-            );
-
-          animation-delay:
-            -10s;
-        }
-
-        @keyframes float {
-          0%,
-          100% {
-            transform:
-              translate3d(
-                0,
-                0,
-                0
-              )
-              scale(1);
-          }
-
-          50% {
-            transform:
-              translate3d(
-                0,
-                34px,
-                0
-              )
-              scale(1.08);
-          }
         }
 
         .shell {
+          position: relative;
+          z-index: 1;
+
           width:
             min(
-              1180px,
-              calc(
-                100% - 28px
-              )
+              1220px,
+              calc(100% - 32px)
             );
 
           margin:
             0 auto;
 
           padding:
-            16px 0 70px;
-
-          position:
-            relative;
-
-          z-index: 1;
+            18px 0 64px;
         }
 
         .nav {
-          position:
-            sticky;
+          position: sticky;
+          top: 12px;
+          z-index: 500;
 
-          top:
-            12px;
-
-          z-index:
-            300;
-
-          min-height:
-            68px;
+          min-height: 70px;
 
           padding:
-            10px 11px
-            10px 18px;
+            10px 12px;
 
-          display:
-            flex;
-
-          align-items:
-            center;
-
+          display: flex;
+          align-items: center;
           justify-content:
             space-between;
 
-          gap:
-            14px;
+          gap: 18px;
 
           border:
             1px solid
-            var(--line);
+            rgba(
+              255,
+              255,
+              255,
+              .08
+            );
 
           border-radius:
-            22px;
+            20px;
 
           background:
             rgba(
-              7,
-              10,
-              8,
-              .66
+              11,
+              11,
+              14,
+              .86
             );
 
           backdrop-filter:
-            blur(24px)
-            saturate(140%);
+            blur(20px);
 
           box-shadow:
-            0 20px 65px
+            0 18px 60px
             rgba(
               0,
               0,
               0,
-              .28
-            ),
-            inset
-            0 1px 0
-            rgba(
-              255,
-              255,
-              255,
-              .025
+              .30
             );
         }
 
-        .brand img {
-          width:
-            170px;
+        .brand {
+          display: flex;
+          align-items: center;
 
-          max-width:
-            42vw;
+          gap: 12px;
 
-          display:
-            block;
+          min-width: 0;
+        }
+
+        .brandLogo {
+          width: 44px;
+          height: 44px;
+
+          border-radius:
+            12px;
+
+          object-fit:
+            cover;
+
+          background:
+            #050505;
+
+          box-shadow:
+            inset
+            0 0 0 1px
+            rgba(
+              255,
+              255,
+              255,
+              .08
+            );
+        }
+
+        .brandText {
+          display: flex;
+          flex-direction:
+            column;
+
+          line-height: 1;
+        }
+
+        .brandText strong {
+          font-size:
+            17px;
+
+          letter-spacing:
+            -.03em;
+        }
+
+        .brandText span {
+          margin-top:
+            5px;
+
+          color:
+            var(--dim);
+
+          font-size:
+            11px;
         }
 
         .navRight {
-          display:
-            flex;
-
+          display: flex;
           align-items:
             center;
 
-          gap:
-            9px;
-
-          min-width:
-            0;
-        }
-
-        .modePill {
-          display:
-            inline-flex;
-
-          align-items:
-            center;
-
-          gap:
-            7px;
-
-          min-height:
-            40px;
-
-          padding:
-            0 12px;
-
-          border:
-            1px solid
-            rgba(
-              255,
-              255,
-              255,
-              .06
-            );
-
-          border-radius:
-            999px;
-
-          color:
-            #8e9a92;
-
-          background:
-            rgba(
-              255,
-              255,
-              255,
-              .025
-            );
-
-          font-size:
-            10px;
-
-          font-weight:
-            850;
-
-          letter-spacing:
-            .09em;
-
-          text-transform:
-            uppercase;
-
-          white-space:
-            nowrap;
-        }
-
-        .liveDot {
-          width:
-            7px;
-
-          height:
-            7px;
-
-          border-radius:
-            50%;
-
-          background:
-            var(--green);
-
-          box-shadow:
-            0 0 15px
-            rgba(
-              106,
-              240,
-              142,
-              .9
-            );
+          gap: 10px;
         }
 
         .connect,
         .userPill {
           min-height:
-            43px;
+            44px;
 
           display:
             inline-flex;
@@ -2101,21 +2052,15 @@ export default function Home() {
           justify-content:
             center;
 
-          gap:
-            9px;
+          gap: 9px;
 
           border-radius:
-            999px;
+            14px;
 
           text-decoration:
             none;
 
           transition:
-            transform
-            .16s ease,
-            filter
-            .16s ease,
-            background
             .16s ease;
         }
 
@@ -2124,43 +2069,27 @@ export default function Home() {
             0 16px;
 
           color:
-            #061008;
+            #090b07;
 
           background:
-            linear-gradient(
-              135deg,
-              #95f9ad,
-              #55e47f 48%,
-              #2dca63
-            );
+            var(--lime);
 
           font-size:
-            11px;
+            14px;
 
           font-weight:
-            950;
-
-          box-shadow:
-            0 12px 34px
-            rgba(
-              47,
-              213,
-              97,
-              .18
-            );
+            900;
         }
 
         .connect:hover,
         .userPill:hover {
           transform:
-            translateY(
-              -2px
-            );
+            translateY(-2px);
         }
 
         .userPill {
           max-width:
-            220px;
+            230px;
 
           justify-content:
             flex-start;
@@ -2171,77 +2100,48 @@ export default function Home() {
 
           border:
             1px solid
-            rgba(
-              106,
-              240,
-              142,
-              .12
-            );
+            var(--line);
 
           background:
-            rgba(
-              106,
-              240,
-              142,
-              .055
-            );
+            var(--panel2);
 
           color:
-            #e8f7ec;
+            var(--text);
         }
 
-        .userAvatar {
-          width:
-            33px;
+        .userAvatar,
+        .userAvatarFallback {
+          width: 34px;
+          height: 34px;
 
-          height:
-            33px;
+          flex:
+            0 0 auto;
 
           border-radius:
-            50%;
+            10px;
 
           object-fit:
             cover;
 
           background:
-            #172019;
-
-          border:
-            1px solid
-            rgba(
-              255,
-              255,
-              255,
-              .08
-            );
+            #0d0d10;
         }
 
         .userAvatarFallback {
-          display:
-            grid;
-
+          display: grid;
           place-items:
             center;
 
           color:
-            var(--green);
-
-          flex:
-            0 0 auto;
+            var(--lime);
         }
 
         .userText {
-          min-width:
-            0;
+          min-width: 0;
 
-          display:
-            flex;
-
+          display: flex;
           flex-direction:
             column;
-
-          line-height:
-            1.05;
         }
 
         .userText strong {
@@ -2255,108 +2155,86 @@ export default function Home() {
             nowrap;
 
           font-size:
-            11px;
-
-          font-weight:
-            900;
+            13px;
         }
 
         .userText small {
           margin-top:
-            4px;
+            3px;
 
           color:
-            #72db8e;
+            var(--lime);
 
           font-size:
-            8px;
-
-          font-weight:
-            800;
-
-          text-transform:
-            uppercase;
-
-          letter-spacing:
-            .07em;
+            10px;
         }
 
         .hero {
-          padding:
-            102px 0 62px;
+          min-height:
+            610px;
 
-          text-align:
+          padding:
+            92px 26px
+            72px;
+
+          display: grid;
+
+          grid-template-columns:
+            minmax(
+              0,
+              1.25fr
+            )
+            minmax(
+              300px,
+              .75fr
+            );
+
+          gap: 62px;
+
+          align-items:
             center;
         }
 
-        .eyebrow {
+        .heroEyebrow {
           display:
             inline-flex;
 
           align-items:
             center;
 
-          gap:
-            8px;
+          gap: 8px;
 
-          padding:
-            9px 13px;
-
-          border:
-            1px solid
-            rgba(
-              106,
-              240,
-              142,
-              .14
-            );
-
-          border-radius:
-            999px;
-
-          background:
-            rgba(
-              106,
-              240,
-              142,
-              .05
-            );
+          margin-bottom:
+            24px;
 
           color:
-            #9bf5b4;
+            var(--lime);
 
           font-size:
-            10px;
+            13px;
 
           font-weight:
-            900;
-
-          letter-spacing:
-            .13em;
-
-          text-transform:
-            uppercase;
+            850;
         }
 
         .hero h1 {
-          max-width:
-            1020px;
+          margin: 0;
 
-          margin:
-            24px auto 0;
+          max-width:
+            820px;
 
           font-size:
             clamp(
-              55px,
-              8.8vw,
-              112px
+              58px,
+              8.2vw,
+              110px
             );
 
           line-height:
-            .88;
+            .91;
 
           letter-spacing:
-            -.073em;
+            -.068em;
 
           font-weight:
             950;
@@ -2365,88 +2243,56 @@ export default function Home() {
             balance;
         }
 
-        .accent {
-          background:
-            linear-gradient(
-              135deg,
-              #d8ffe1 0%,
-              #8df6aa 30%,
-              #57e683 58%,
-              #27c95f
-            );
-
-          -webkit-background-clip:
-            text;
-
-          background-clip:
-            text;
-
+        .hero h1 .stroke {
           color:
             transparent;
 
-          filter:
-            drop-shadow(
-              0 10px
-              28px
-              rgba(
-                55,
-                220,
-                103,
-                .14
-              )
+          -webkit-text-stroke:
+            1px
+            rgba(
+              247,
+              244,
+              235,
+              .55
             );
         }
 
-        .hero p {
-          width:
-            min(
-              720px,
-              100%
-            );
+        .hero h1 .lime {
+          color:
+            var(--lime);
+        }
+
+        .heroCopy {
+          max-width:
+            690px;
 
           margin:
-            27px auto 0;
+            28px 0 0;
 
           color:
-            #8d9991;
+            #b7b3ac;
 
           font-size:
-            clamp(
-              15px,
-              2vw,
-              18px
-            );
+            18px;
 
           line-height:
-            1.72;
-
-          text-wrap:
-            balance;
+            1.7;
         }
 
-        .heroChips {
-          display:
-            flex;
-
-          justify-content:
-            center;
-
+        .heroActions {
+          display: flex;
           flex-wrap:
             wrap;
 
-          gap:
-            8px;
+          gap: 10px;
 
           margin-top:
-            27px;
+            30px;
         }
 
-        .heroChip {
-          min-height:
-            34px;
-
+        .heroBadge {
           padding:
-            0 11px;
+            10px 13px;
 
           display:
             inline-flex;
@@ -2454,98 +2300,16 @@ export default function Home() {
           align-items:
             center;
 
-          gap:
-            7px;
+          gap: 8px;
 
-          border:
-            1px solid
-            rgba(
-              255,
-              255,
-              255,
-              .05
-            );
-
-          border-radius:
-            999px;
-
-          background:
-            rgba(
-              255,
-              255,
-              255,
-              .02
-            );
-
-          color:
-            #748077;
-
-          font-size:
-            10px;
-
-          font-weight:
-            750;
-        }
-
-        .workspace {
-          display:
-            grid;
-
-          grid-template-columns:
-            minmax(
-              0,
-              1fr
-            )
-            318px;
-
-          gap:
-            18px;
-
-          align-items:
-            start;
-        }
-
-        .glass {
           border:
             1px solid
             var(--line);
 
           border-radius:
-            30px;
+            12px;
 
           background:
-            linear-gradient(
-              145deg,
-              rgba(
-                255,
-                255,
-                255,
-                .036
-              ),
-              rgba(
-                255,
-                255,
-                255,
-                .009
-              )
-            ),
-            rgba(
-              9,
-              13,
-              10,
-              .8
-            );
-
-          box-shadow:
-            0 30px 100px
-            rgba(
-              0,
-              0,
-              0,
-              .34
-            ),
-            inset
-            0 1px 0
             rgba(
               255,
               255,
@@ -2553,344 +2317,38 @@ export default function Home() {
               .025
             );
 
-          backdrop-filter:
-            blur(22px)
-            saturate(130%);
-        }
-
-        .builder {
-          position:
-            relative;
-
-          z-index:
-            5;
-
-          padding:
-            30px;
-
-          overflow:
-            visible;
-        }
-
-        .builder::before {
-          content:
-            "";
-
-          position:
-            absolute;
-
-          width:
-            230px;
-
-          height:
-            230px;
-
-          top:
-            -120px;
-
-          right:
-            -100px;
-
-          border-radius:
-            50%;
-
-          background:
-            rgba(
-              81,
-              226,
-              123,
-              .075
-            );
-
-          filter:
-            blur(58px);
-
-          pointer-events:
-            none;
-        }
-
-        .sectionLabel {
-          display:
-            flex;
-
-          align-items:
-            center;
-
-          gap:
-            8px;
-
           color:
-            #70e992;
-
-          font-size:
-            9px;
-
-          font-weight:
-            950;
-
-          letter-spacing:
-            .15em;
-
-          text-transform:
-            uppercase;
-        }
-
-        .sectionTitle {
-          margin:
-            9px 0 0;
-
-          color:
-            #f8fbf9;
-
-          font-size:
-            clamp(
-              28px,
-              4vw,
-              39px
-            );
-
-          line-height:
-            1.03;
-
-          letter-spacing:
-            -.046em;
-
-          font-weight:
-            950;
-        }
-
-        .sectionCopy {
-          max-width:
-            650px;
-
-          margin:
-            10px 0 0;
-
-          color:
-            #7c8980;
-
-          font-size:
-            12px;
-
-          line-height:
-            1.7;
-        }
-
-        .formGrid {
-          margin-top:
-            27px;
-
-          display:
-            grid;
-
-          grid-template-columns:
-            minmax(
-              0,
-              1fr
-            )
-            minmax(
-              0,
-              1fr
-            )
-            auto;
-
-          gap:
-            10px;
-
-          align-items:
-            end;
-        }
-
-        .field {
-          position:
-            relative;
-
-          min-width:
-            0;
-        }
-
-        .field label {
-          display:
-            block;
-
-          margin:
-            0 0 8px
-            2px;
-
-          color:
-            #98a49c;
-
-          font-size:
-            9px;
-
-          font-weight:
-            850;
-
-          letter-spacing:
-            .1em;
-
-          text-transform:
-            uppercase;
-        }
-
-        .input {
-          width:
-            100%;
-
-          height:
-            56px;
-
-          padding:
-            0 16px;
-
-          border:
-            1px solid
-            rgba(
-              255,
-              255,
-              255,
-              .075
-            );
-
-          border-radius:
-            16px;
-
-          outline:
-            none;
-
-          background:
-            rgba(
-              4,
-              7,
-              5,
-              .74
-            );
-
-          color:
-            #f6faf7;
+            #c9c6bf;
 
           font-size:
             13px;
 
           font-weight:
-            650;
-
-          transition:
-            .16s ease;
+            700;
         }
 
-        .input::placeholder {
-          color:
-            #505a53;
-        }
+        .heroArt {
+          position:
+            relative;
 
-        .input:focus {
-          border-color:
-            rgba(
-              106,
-              240,
-              142,
-              .4
-            );
+          min-height:
+            370px;
 
-          background:
-            rgba(
-              5,
-              9,
-              6,
-              .95
-            );
+          display: grid;
 
-          box-shadow:
-            0 0 0 4px
-            rgba(
-              91,
-              232,
-              132,
-              .07
-            );
-        }
-
-        .addBtn {
-          height:
-            56px;
-
-          padding:
-            0 20px;
-
-          display:
-            inline-flex;
-
-          align-items:
+          place-items:
             center;
-
-          justify-content:
-            center;
-
-          gap:
-            8px;
-
-          border:
-            0;
-
-          border-radius:
-            16px;
-
-          background:
-            #eef4ef;
-
-          color:
-            #09100b;
-
-          font-size:
-            12px;
-
-          font-weight:
-            950;
-
-          cursor:
-            pointer;
-
-          transition:
-            .16s ease;
-
-          white-space:
-            nowrap;
         }
 
-        .addBtn:hover:not(:disabled) {
-          transform:
-            translateY(
-              -2px
-            );
-
-          background:
-            #fff;
-        }
-
-        .dropdown {
+        .orbit {
           position:
             absolute;
 
-          left:
-            0;
+          width:
+            340px;
 
-          right:
-            0;
-
-          top:
-            calc(
-              100% + 8px
-            );
-
-          z-index:
-            700;
-
-          max-height:
-            390px;
-
-          overflow-y:
-            auto;
+          height:
+            340px;
 
           border:
             1px solid
@@ -2902,27 +2360,536 @@ export default function Home() {
             );
 
           border-radius:
-            18px;
+            50%;
+        }
+
+        .orbit::before,
+        .orbit::after {
+          content: "";
+
+          position:
+            absolute;
+
+          border-radius:
+            50%;
+
+          border:
+            1px solid
+            rgba(
+              255,
+              255,
+              255,
+              .07
+            );
+        }
+
+        .orbit::before {
+          inset: 36px;
+        }
+
+        .orbit::after {
+          inset: 76px;
+        }
+
+        .heroCard {
+          position:
+            relative;
+
+          width:
+            min(
+              310px,
+              100%
+            );
+
+          padding:
+            24px;
+
+          border:
+            1px solid
+            rgba(
+              255,
+              255,
+              255,
+              .10
+            );
+
+          border-radius:
+            26px;
 
           background:
-            rgba(
-              8,
-              11,
-              9,
-              .985
+            linear-gradient(
+              160deg,
+              rgba(
+                139,
+                120,
+                255,
+                .20
+              ),
+              rgba(
+                18,
+                18,
+                22,
+                .96
+              ) 48%,
+              rgba(
+                183,
+                255,
+                90,
+                .08
+              )
             );
 
           box-shadow:
-            0 28px 74px
+            0 35px 90px
+            rgba(
+              0,
+              0,
+              0,
+              .42
+            );
+
+          transform:
+            rotate(4deg);
+        }
+
+        .heroCardTop {
+          display: flex;
+
+          align-items:
+            center;
+
+          justify-content:
+            space-between;
+
+          gap: 12px;
+        }
+
+        .heroCardLabel {
+          color:
+            #d8d4cc;
+
+          font-size:
+            13px;
+
+          font-weight:
+            800;
+        }
+
+        .heroDot {
+          width: 10px;
+          height: 10px;
+
+          border-radius:
+            50%;
+
+          background:
+            var(--lime);
+
+          box-shadow:
+            0 0 20px
+            rgba(
+              183,
+              255,
+              90,
+              .8
+            );
+        }
+
+        .heroCardBig {
+          margin-top:
+            42px;
+
+          font-size:
+            52px;
+
+          font-weight:
+            950;
+
+          letter-spacing:
+            -.06em;
+        }
+
+        .heroCardSmall {
+          margin-top:
+            6px;
+
+          color:
+            #aaa7a0;
+
+          font-size:
+            14px;
+
+          line-height:
+            1.55;
+        }
+
+        .heroBars {
+          display: grid;
+
+          gap: 8px;
+
+          margin-top:
+            28px;
+        }
+
+        .heroBar {
+          height: 10px;
+
+          border-radius:
+            999px;
+
+          background:
+            #24242b;
+
+          overflow:
+            hidden;
+        }
+
+        .heroBar span {
+          display: block;
+
+          height: 100%;
+
+          border-radius:
+            inherit;
+
+          background:
+            linear-gradient(
+              90deg,
+              var(--purple),
+              var(--lime)
+            );
+        }
+
+        .section {
+          margin-top:
+            20px;
+
+          border:
+            1px solid
+            var(--line);
+
+          border-radius:
+            26px;
+
+          background:
+            var(--panel);
+
+          overflow:
+            visible;
+        }
+
+        .sectionHead {
+          padding:
+            28px 30px 0;
+
+          display: flex;
+
+          align-items:
+            flex-start;
+
+          justify-content:
+            space-between;
+
+          gap: 20px;
+        }
+
+        .kicker {
+          color:
+            var(--lime);
+
+          font-size:
+            13px;
+
+          font-weight:
+            850;
+        }
+
+        .sectionTitle {
+          margin:
+            7px 0 0;
+
+          font-size:
+            clamp(
+              30px,
+              4vw,
+              46px
+            );
+
+          line-height: 1;
+
+          letter-spacing:
+            -.045em;
+        }
+
+        .sectionCopy {
+          max-width:
+            650px;
+
+          margin:
+            12px 0 0;
+
+          color:
+            var(--muted);
+
+          font-size:
+            16px;
+
+          line-height:
+            1.65;
+        }
+
+        .builderGrid {
+          padding:
+            28px 30px
+            30px;
+
+          display: grid;
+
+          grid-template-columns:
+            minmax(
+              0,
+              1.35fr
+            )
+            minmax(
+              320px,
+              .65fr
+            );
+
+          gap: 18px;
+        }
+
+        .panel {
+          border:
+            1px solid
+            var(--line);
+
+          border-radius:
+            20px;
+
+          background:
+            #0d0d10;
+        }
+
+        .seedPanel {
+          padding:
+            22px;
+        }
+
+        .controlPanel {
+          padding:
+            22px;
+        }
+
+        .panelTitle {
+          margin: 0;
+
+          font-size:
+            20px;
+
+          letter-spacing:
+            -.025em;
+        }
+
+        .panelCopy {
+          margin:
+            7px 0 0;
+
+          color:
+            var(--muted);
+
+          font-size:
+            14px;
+
+          line-height:
+            1.55;
+        }
+
+        .formGrid {
+          margin-top:
+            22px;
+
+          display: grid;
+
+          grid-template-columns:
+            minmax(
+              0,
+              1fr
+            )
+            minmax(
+              0,
+              1fr
+            )
+            auto;
+
+          gap: 10px;
+
+          align-items:
+            end;
+        }
+
+        .field {
+          position:
+            relative;
+
+          min-width: 0;
+        }
+
+        .field label {
+          display: block;
+
+          margin:
+            0 0 8px
+            2px;
+
+          color:
+            #c9c6bf;
+
+          font-size:
+            13px;
+
+          font-weight:
+            750;
+        }
+
+        .input {
+          width: 100%;
+          height: 54px;
+
+          padding:
+            0 15px;
+
+          border:
+            1px solid
+            #303038;
+
+          border-radius:
+            13px;
+
+          outline: none;
+
+          background:
+            #15151a;
+
+          color:
+            var(--text);
+
+          font-size:
+            15px;
+
+          font-weight:
+            650;
+
+          transition:
+            .15s ease;
+        }
+
+        .input::placeholder {
+          color:
+            #68656f;
+        }
+
+        .input:focus {
+          border-color:
+            var(--purple);
+
+          box-shadow:
+            0 0 0 3px
+            rgba(
+              139,
+              120,
+              255,
+              .12
+            );
+        }
+
+        .addBtn {
+          height: 54px;
+
+          padding:
+            0 18px;
+
+          display:
+            inline-flex;
+
+          align-items:
+            center;
+
+          justify-content:
+            center;
+
+          gap: 8px;
+
+          border: 0;
+
+          border-radius:
+            13px;
+
+          background:
+            var(--text);
+
+          color:
+            #0c0c0f;
+
+          font-size:
+            14px;
+
+          font-weight:
+            900;
+
+          cursor:
+            pointer;
+
+          white-space:
+            nowrap;
+
+          transition:
+            .15s ease;
+        }
+
+        .addBtn:hover:not(:disabled) {
+          transform:
+            translateY(-2px);
+        }
+
+        .dropdown {
+          position:
+            absolute;
+
+          left: 0;
+          right: 0;
+
+          top:
+            calc(
+              100% + 8px
+            );
+
+          z-index: 700;
+
+          max-height:
+            360px;
+
+          overflow-y:
+            auto;
+
+          border:
+            1px solid
+            #34343c;
+
+          border-radius:
+            15px;
+
+          background:
+            #111116;
+
+          box-shadow:
+            0 24px 70px
             rgba(
               0,
               0,
               0,
               .52
             );
-
-          backdrop-filter:
-            blur(22px);
         }
 
         .searching {
@@ -2930,81 +2897,55 @@ export default function Home() {
             15px;
 
           color:
-            #7d8981;
+            var(--muted);
 
           font-size:
-            11px;
-
-          font-weight:
-            750;
+            14px;
         }
 
         .searchResult {
-          width:
-            100%;
+          width: 100%;
 
-          padding:
-            10px 12px;
+          padding: 11px;
 
-          display:
-            flex;
+          display: flex;
 
           align-items:
             center;
 
-          gap:
-            11px;
+          gap: 12px;
 
-          border:
-            0;
+          border: 0;
 
           border-bottom:
             1px solid
-            rgba(
-              255,
-              255,
-              255,
-              .043
-            );
+            #24242a;
 
           background:
             transparent;
 
           color:
-            #fff;
+            var(--text);
 
           text-align:
             left;
 
           cursor:
             pointer;
-
-          transition:
-            background
-            .14s ease;
-        }
-
-        .searchResult:last-child {
-          border-bottom:
-            0;
         }
 
         .searchResult:hover {
           background:
-            rgba(
-              106,
-              240,
-              142,
-              .05
-            );
+            #19191f;
+        }
+
+        .searchResult:last-child {
+          border-bottom: 0;
         }
 
         .resultArt {
-          width:
-            46px;
-
-          height:
-            46px;
+          width: 48px;
+          height: 48px;
 
           flex:
             0 0 auto;
@@ -3012,17 +2953,8 @@ export default function Home() {
           object-fit:
             cover;
 
-          border:
-            1px solid
-            rgba(
-              255,
-              255,
-              255,
-              .06
-            );
-
           background:
-            #161c18;
+            #202027;
         }
 
         .resultArt.artist {
@@ -3036,27 +2968,22 @@ export default function Home() {
         }
 
         .resultFallback {
-          display:
-            grid;
+          display: grid;
 
           place-items:
             center;
 
           color:
-            var(--green);
+            var(--lime);
         }
 
         .resultText {
-          min-width:
-            0;
+          min-width: 0;
         }
 
         .resultName {
-          color:
-            #f3f7f4;
-
           font-size:
-            12px;
+            14px;
 
           font-weight:
             850;
@@ -3076,10 +3003,10 @@ export default function Home() {
             4px;
 
           color:
-            #68746c;
+            var(--muted);
 
           font-size:
-            10px;
+            12px;
 
           white-space:
             nowrap;
@@ -3093,10 +3020,9 @@ export default function Home() {
 
         .tasteGrid {
           margin-top:
-            21px;
+            18px;
 
-          display:
-            grid;
+          display: grid;
 
           grid-template-columns:
             repeat(
@@ -3107,19 +3033,15 @@ export default function Home() {
               )
             );
 
-          gap:
-            9px;
+          gap: 9px;
         }
 
         .tasteCard {
-          min-width:
-            0;
+          min-width: 0;
 
-          padding:
-            11px;
+          padding: 12px;
 
-          display:
-            grid;
+          display: grid;
 
           grid-template-columns:
             auto
@@ -3132,104 +3054,50 @@ export default function Home() {
           align-items:
             center;
 
-          gap:
-            11px;
+          gap: 11px;
 
           border:
             1px solid
-            rgba(
-              255,
-              255,
-              255,
-              .05
-            );
+            #292930;
 
           border-radius:
-            17px;
+            15px;
 
           background:
-            rgba(
-              255,
-              255,
-              255,
-              .02
-            );
-
-          transition:
-            .15s ease;
-        }
-
-        .tasteCard:hover {
-          transform:
-            translateY(
-              -1px
-            );
-
-          border-color:
-            rgba(
-              106,
-              240,
-              142,
-              .13
-            );
-
-          background:
-            rgba(
-              106,
-              240,
-              142,
-              .026
-            );
+            #15151a;
         }
 
         .tasteAvatar {
-          width:
-            44px;
-
-          height:
-            44px;
+          width: 46px;
+          height: 46px;
 
           border-radius:
-            50%;
+            12px;
 
           object-fit:
             cover;
 
-          border:
-            1px solid
-            rgba(
-              255,
-              255,
-              255,
-              .06
-            );
-
           background:
-            #151c17;
+            #202027;
         }
 
         .tasteFallback {
-          display:
-            grid;
+          display: grid;
 
           place-items:
             center;
 
           color:
-            var(--green);
+            var(--lime);
         }
 
         .tasteText {
-          min-width:
-            0;
+          min-width: 0;
         }
 
         .tasteArtist {
-          color:
-            #f1f6f2;
-
           font-size:
-            12px;
+            14px;
 
           font-weight:
             900;
@@ -3249,97 +3117,17 @@ export default function Home() {
             4px;
 
           color:
-            #647068;
+            var(--muted);
 
           font-size:
-            9px;
-        }
-
-        .songSeeds {
-          grid-column:
-            2 / 4;
-
-          display:
-            flex;
-
-          flex-wrap:
-            wrap;
-
-          gap:
-            5px;
-
-          margin-top:
-            -2px;
-        }
-
-        .songSeed {
-          max-width:
-            100%;
-
-          padding:
-            5px 8px;
-
-          border:
-            1px solid
-            rgba(
-              106,
-              240,
-              142,
-              .08
-            );
-
-          border-radius:
-            999px;
-
-          background:
-            rgba(
-              106,
-              240,
-              142,
-              .03
-            );
-
-          color:
-            #829187;
-
-          font-size:
-            9px;
-
-          cursor:
-            pointer;
-
-          white-space:
-            nowrap;
-
-          overflow:
-            hidden;
-
-          text-overflow:
-            ellipsis;
-        }
-
-        .songSeed:hover {
-          color:
-            #c8f7d4;
-
-          border-color:
-            rgba(
-              106,
-              240,
-              142,
-              .18
-            );
+            12px;
         }
 
         .removeBtn {
-          width:
-            30px;
+          width: 34px;
+          height: 34px;
 
-          height:
-            30px;
-
-          display:
-            grid;
+          display: grid;
 
           place-items:
             center;
@@ -3349,65 +3137,79 @@ export default function Home() {
             transparent;
 
           border-radius:
-            50%;
+            10px;
 
           background:
             transparent;
 
           color:
-            #59645d;
+            #7c7981;
 
           cursor:
             pointer;
         }
 
         .removeBtn:hover {
-          color:
-            #fff;
-
-          background:
-            rgba(
-              255,
-              255,
-              255,
-              .04
-            );
+          color: #fff;
 
           border-color:
-            rgba(
-              255,
-              255,
-              255,
-              .06
-            );
+            #323239;
+
+          background:
+            #202027;
         }
 
-        .settings {
+        .songSeeds {
+          grid-column:
+            2 / 4;
+
+          display: flex;
+
+          flex-wrap:
+            wrap;
+
+          gap: 6px;
+        }
+
+        .songSeed {
+          padding:
+            6px 9px;
+
+          border:
+            1px solid
+            #2d2d34;
+
+          border-radius:
+            999px;
+
+          background:
+            #1b1b20;
+
+          color:
+            #bbb8b1;
+
+          font-size:
+            11px;
+
+          cursor:
+            pointer;
+        }
+
+        .controlBlock +
+        .controlBlock {
           margin-top:
-            22px;
+            24px;
 
           padding-top:
-            20px;
+            24px;
 
           border-top:
             1px solid
-            rgba(
-              255,
-              255,
-              255,
-              .052
-            );
-
-          display:
-            grid;
-
-          gap:
-            18px;
+            #26262c;
         }
 
-        .settingRow {
-          display:
-            flex;
+        .controlTop {
+          display: flex;
 
           align-items:
             center;
@@ -3415,165 +3217,143 @@ export default function Home() {
           justify-content:
             space-between;
 
-          gap:
-            16px;
+          gap: 12px;
         }
 
-        .controlLabel {
-          color:
-            #eaf0eb;
-
+        .controlName {
           font-size:
-            11px;
+            15px;
 
           font-weight:
             850;
         }
 
         .controlHint {
-          max-width:
-            450px;
-
           margin-top:
-            4px;
+            6px;
 
           color:
-            #606b63;
+            var(--muted);
 
           font-size:
-            9px;
+            13px;
 
           line-height:
-            1.45;
+            1.5;
         }
 
         .select {
-          height:
-            42px;
+          height: 42px;
 
           padding:
-            0 34px
-            0 13px;
+            0 32px
+            0 12px;
 
           border:
             1px solid
-            rgba(
-              255,
-              255,
-              255,
-              .07
-            );
+            #303038;
 
           border-radius:
-            12px;
-
-          outline:
-            0;
+            11px;
 
           background:
-            #0a0e0b;
+            #15151a;
 
           color:
-            #edf2ee;
+            var(--text);
 
           font-size:
-            11px;
+            14px;
 
           font-weight:
             800;
-
-          cursor:
-            pointer;
-        }
-
-        .sliderWrap {
-          width:
-            min(
-              330px,
-              48%
-            );
-
-          min-width:
-            230px;
-        }
-
-        .sliderTop {
-          display:
-            flex;
-
-          align-items:
-            center;
-
-          justify-content:
-            space-between;
-
-          gap:
-            10px;
-
-          margin-bottom:
-            8px;
-
-          color:
-            #7d8981;
-
-          font-size:
-            9px;
-        }
-
-        .sliderTop strong {
-          color:
-            #aef7c0;
-
-          font-size:
-            10px;
         }
 
         .range {
-          width:
-            100%;
+          width: 100%;
+
+          margin-top:
+            14px;
 
           accent-color:
-            #55e47f;
+            var(--lime);
 
           cursor:
             pointer;
         }
 
         .rangeLabels {
-          display:
-            flex;
+          margin-top:
+            7px;
+
+          display: flex;
 
           justify-content:
             space-between;
 
-          margin-top:
-            6px;
-
           color:
-            #4f5a52;
+            var(--dim);
 
           font-size:
-            8px;
-
-          font-weight:
-            800;
-
-          text-transform:
-            uppercase;
-
-          letter-spacing:
-            .06em;
+            11px;
         }
 
-        .generate {
-          width:
-            100%;
+        .excludeRow {
+          margin-top:
+            13px;
 
-          height:
-            60px;
+          display: flex;
+
+          gap: 8px;
+        }
+
+        .excludeRow .input {
+          height: 44px;
+
+          font-size:
+            14px;
+        }
+
+        .miniBtn {
+          min-width:
+            44px;
+
+          height: 44px;
+
+          display: grid;
+
+          place-items:
+            center;
+
+          border: 0;
+
+          border-radius:
+            11px;
+
+          background:
+            var(--purple);
+
+          color: #fff;
+
+          cursor:
+            pointer;
+        }
+
+        .excludeChips {
+          display: flex;
+
+          flex-wrap:
+            wrap;
+
+          gap: 7px;
 
           margin-top:
-            18px;
+            10px;
+        }
+
+        .excludeChip {
+          padding:
+            7px 9px;
 
           display:
             inline-flex;
@@ -3581,46 +3361,75 @@ export default function Home() {
           align-items:
             center;
 
-          justify-content:
-            center;
-
-          gap:
-            10px;
+          gap: 6px;
 
           border:
-            0;
+            1px solid
+            rgba(
+              255,
+              127,
+              159,
+              .24
+            );
 
           border-radius:
-            17px;
+            999px;
 
           background:
-            linear-gradient(
-              135deg,
-              #96f9ad 0%,
-              #59e684 45%,
-              #2fd168 100%
+            rgba(
+              255,
+              127,
+              159,
+              .08
             );
 
           color:
-            #061008;
+            #ffb0c3;
 
           font-size:
-            13px;
+            12px;
+
+          cursor:
+            pointer;
+        }
+
+        .generate {
+          width: 100%;
+
+          height: 60px;
+
+          margin-top:
+            22px;
+
+          display: flex;
+
+          align-items:
+            center;
+
+          justify-content:
+            center;
+
+          gap: 10px;
+
+          border: 0;
+
+          border-radius:
+            15px;
+
+          background:
+            var(--lime);
+
+          color:
+            #0b0d08;
+
+          font-size:
+            16px;
 
           font-weight:
             950;
 
           cursor:
             pointer;
-
-          box-shadow:
-            0 15px 38px
-            rgba(
-              42,
-              207,
-              95,
-              .17
-            );
 
           transition:
             .16s ease;
@@ -3628,403 +3437,236 @@ export default function Home() {
 
         .generate:hover:not(:disabled) {
           transform:
-            translateY(
-              -2px
-            );
-
-          filter:
-            brightness(
-              1.035
-            );
+            translateY(-2px);
 
           box-shadow:
-            0 20px 46px
+            0 14px 40px
             rgba(
-              42,
-              207,
-              95,
-              .22
+              183,
+              255,
+              90,
+              .14
             );
         }
 
         .status {
           min-height:
-            18px;
+            22px;
 
           margin:
-            12px 0 0;
+            14px 0 0;
+
+          color:
+            var(--muted);
 
           text-align:
             center;
 
-          color:
-            #78857c;
-
           font-size:
-            10px;
+            13px;
 
           line-height:
-            1.55;
+            1.5;
         }
 
-        .sidePanel {
-          position:
-            sticky;
-
-          top:
-            98px;
-
-          padding:
-            22px;
-        }
-
-        .sidePanel h3 {
-          margin:
-            8px 0 0;
-
-          color:
-            #f4f8f5;
-
-          font-size:
-            21px;
-
-          line-height:
-            1.06;
-
-          letter-spacing:
-            -.035em;
-
-          font-weight:
-            950;
-        }
-
-        .sidePanel p {
-          margin:
-            9px 0 0;
-
-          color:
-            #717d75;
-
-          font-size:
-            10px;
-
-          line-height:
-            1.62;
-        }
-
-        .stats {
+        .profileStrip {
           margin-top:
-            19px;
+            18px;
 
-          display:
-            grid;
-
-          gap:
-            8px;
-        }
-
-        .stat {
           padding:
-            12px 13px;
+            16px 18px;
 
-          display:
-            flex;
+          display: grid;
 
-          align-items:
-            center;
+          grid-template-columns:
+            repeat(
+              4,
+              minmax(
+                0,
+                1fr
+              )
+            );
 
-          justify-content:
-            space-between;
-
-          gap:
-            12px;
+          gap: 8px;
 
           border:
             1px solid
-            rgba(
-              255,
-              255,
-              255,
-              .047
-            );
+            var(--line);
 
           border-radius:
-            14px;
+            18px;
 
           background:
-            rgba(
-              255,
-              255,
-              255,
-              .017
-            );
+            #0d0d10;
+        }
+
+        .stat {
+          padding: 12px;
+
+          border-radius:
+            12px;
+
+          background:
+            #15151a;
         }
 
         .stat span {
           color:
-            #6d7971;
+            var(--muted);
 
           font-size:
-            9px;
-
-          font-weight:
-            800;
-
-          letter-spacing:
-            .05em;
-
-          text-transform:
-            uppercase;
+            12px;
         }
 
         .stat strong {
-          color:
-            #f6faf7;
+          display: block;
+
+          margin-top:
+            5px;
 
           font-size:
-            17px;
-
-          font-weight:
-            950;
+            22px;
 
           letter-spacing:
             -.03em;
         }
 
-        .connectCard {
-          margin-top:
-            16px;
+        .stat.spotifyStat strong {
+          color:
+            var(--lime);
 
-          padding:
+          font-size:
             14px;
 
-          border:
-            1px solid
-            rgba(
-              106,
-              240,
-              142,
-              .09
-            );
-
-          border-radius:
-            15px;
-
-          background:
-            rgba(
-              106,
-              240,
-              142,
-              .032
-            );
-        }
-
-        .connectCardTitle {
-          display:
-            flex;
-
-          align-items:
-            center;
-
-          gap:
-            7px;
-
-          color:
-            #c8f9d4;
-
-          font-size:
-            10px;
-
-          font-weight:
-            900;
-        }
-
-        .connectCardText {
-          margin-top:
-            7px;
-
-          color:
-            #6e7b72;
-
-          font-size:
-            9px;
-
           line-height:
-            1.55;
-        }
-
-        .clearBtn {
-          width:
-            100%;
-
-          margin-top:
-            12px;
-
-          padding:
-            9px 10px;
-
-          border:
-            1px solid
-            rgba(
-              255,
-              255,
-              255,
-              .05
-            );
-
-          border-radius:
-            11px;
-
-          background:
-            transparent;
-
-          color:
-            #5d6861;
-
-          font-size:
-            9px;
-
-          font-weight:
-            800;
-
-          cursor:
-            pointer;
-        }
-
-        .clearBtn:hover {
-          color:
-            #cbd4cd;
-
-          background:
-            rgba(
-              255,
-              255,
-              255,
-              .025
-            );
+            1.2;
         }
 
         .results {
-          margin-top:
-            18px;
-
           padding:
-            25px;
-
-          overflow:
-            hidden;
+            30px;
         }
 
         .playlistHero {
-          display:
-            grid;
+          display: grid;
 
           grid-template-columns:
-            150px
+            220px
             minmax(
               0,
               1fr
             );
 
-          gap:
-            22px;
+          gap: 28px;
 
           align-items:
             end;
-
-          padding-bottom:
-            22px;
-
-          border-bottom:
-            1px solid
-            rgba(
-              255,
-              255,
-              255,
-              .05
-            );
         }
 
-        .playlistCover {
-          width:
-            150px;
+        .coverCollage {
+          width: 100%;
 
           aspect-ratio:
             1;
 
-          border-radius:
-            22px;
+          display: grid;
 
-          object-fit:
-            cover;
+          grid-template-columns:
+            1fr 1fr;
+
+          overflow:
+            hidden;
+
+          border-radius:
+            18px;
 
           background:
             linear-gradient(
               145deg,
-              #16351f,
-              #08110b
+              #2a234c,
+              #17200e
             );
 
           border:
             1px solid
-            rgba(
-              255,
-              255,
-              255,
-              .07
-            );
+            #34343c;
+        }
+
+        .coverCollage.large {
+          width: 220px;
+
+          border-radius:
+            24px;
 
           box-shadow:
-            0 24px 60px
+            0 28px 70px
             rgba(
               0,
               0,
               0,
-              .35
+              .40
             );
         }
 
-        .playlistCoverFallback {
-          display:
-            grid;
+        .coverCollage img {
+          width: 100%;
+          height: 100%;
+
+          object-fit:
+            cover;
+
+          min-width: 0;
+          min-height: 0;
+        }
+
+        .coverFallback {
+          display: grid;
 
           place-items:
             center;
 
           color:
-            #72e994;
+            var(--lime);
+        }
+
+        .mixKicker {
+          color:
+            var(--lime);
+
+          font-size:
+            13px;
+
+          font-weight:
+            850;
         }
 
         .resultsTitle {
           margin:
-            7px 0 0;
+            8px 0 0;
 
           font-size:
             clamp(
-              34px,
-              5vw,
-              58px
+              42px,
+              6vw,
+              74px
             );
 
           line-height:
-            .94;
+            .92;
 
           letter-spacing:
-            -.058em;
-
-          font-weight:
-            950;
+            -.055em;
         }
 
         .mixMeta {
           margin-top:
-            10px;
+            13px;
 
           color:
-            #718077;
+            var(--muted);
 
           font-size:
-            10px;
+            14px;
 
           line-height:
             1.55;
@@ -4034,71 +3676,51 @@ export default function Home() {
           margin-top:
             12px;
 
-          display:
-            flex;
+          display: flex;
 
           flex-wrap:
             wrap;
 
-          gap:
-            6px;
+          gap: 7px;
         }
 
         .genreTag {
           padding:
-            6px 8px;
+            7px 10px;
 
           border:
             1px solid
-            rgba(
-              106,
-              240,
-              142,
-              .08
-            );
+            #303038;
 
           border-radius:
             999px;
 
           background:
-            rgba(
-              106,
-              240,
-              142,
-              .026
-            );
+            #17171c;
 
           color:
-            #76c98b;
+            #cbc7c0;
 
           font-size:
-            8px;
-
-          font-weight:
-            800;
-
-          text-transform:
-            capitalize;
+            12px;
         }
 
         .resultsActions {
-          margin-top:
-            16px;
-
-          display:
-            flex;
-
-          gap:
-            8px;
+          display: flex;
 
           flex-wrap:
             wrap;
+
+          gap: 8px;
+
+          margin-top:
+            19px;
         }
 
         .ghostBtn,
         .saveBtn {
           min-height:
-            40px;
+            44px;
 
           padding:
             0 14px;
@@ -4112,105 +3734,97 @@ export default function Home() {
           justify-content:
             center;
 
-          gap:
-            8px;
+          gap: 8px;
 
           border-radius:
             12px;
 
           font-size:
-            10px;
+            13px;
 
           font-weight:
-            900;
+            850;
 
           cursor:
             pointer;
-
-          transition:
-            .14s ease;
         }
 
         .ghostBtn {
           border:
             1px solid
-            rgba(
-              255,
-              255,
-              255,
-              .065
-            );
+            #303038;
 
           background:
-            rgba(
-              255,
-              255,
-              255,
-              .025
-            );
+            #17171c;
 
           color:
-            #e5ebe6;
-        }
-
-        .ghostBtn:hover:not(:disabled) {
-          background:
-            rgba(
-              255,
-              255,
-              255,
-              .05
-            );
-
-          transform:
-            translateY(
-              -1px
-            );
+            var(--text);
         }
 
         .saveBtn {
-          border:
-            0;
+          border: 0;
 
           background:
-            linear-gradient(
-              135deg,
-              #8ff8aa,
-              #3ddd73
+            var(--lime);
+
+          color:
+            #0b0d08;
+        }
+
+        .feedbackNotice {
+          margin-top:
+            20px;
+
+          padding:
+            13px 15px;
+
+          border:
+            1px solid
+            rgba(
+              139,
+              120,
+              255,
+              .22
+            );
+
+          border-radius:
+            13px;
+
+          background:
+            rgba(
+              139,
+              120,
+              255,
+              .07
             );
 
           color:
-            #061008;
-        }
+            #c8c1ff;
 
-        .saveBtn:hover:not(:disabled) {
-          transform:
-            translateY(
-              -1px
-            );
+          font-size:
+            13px;
+
+          line-height:
+            1.5;
         }
 
         .trackList {
           margin-top:
-            17px;
+            22px;
 
-          display:
-            grid;
+          display: grid;
 
-          gap:
-            7px;
+          gap: 8px;
         }
 
         .track {
-          padding:
-            8px 9px;
+          padding: 10px;
 
-          display:
-            grid;
+          display: grid;
 
           grid-template-columns:
-            28px
-            auto
+            34px
+            58px
             minmax(
               0,
               1fr
@@ -4220,127 +3834,77 @@ export default function Home() {
           align-items:
             center;
 
-          gap:
-            11px;
+          gap: 12px;
 
           border:
             1px solid
-            rgba(
-              255,
-              255,
-              255,
-              .043
-            );
+            #27272e;
 
           border-radius:
             15px;
 
           background:
-            rgba(
-              255,
-              255,
-              255,
-              .017
-            );
+            #111115;
 
           transition:
-            .15s ease;
+            .14s ease;
         }
 
         .track:hover {
-          transform:
-            translateX(
-              3px
-            );
-
           border-color:
-            rgba(
-              106,
-              240,
-              142,
-              .11
-            );
+            #3a3a44;
 
           background:
-            rgba(
-              106,
-              240,
-              142,
-              .024
-            );
+            #15151a;
         }
 
         .trackNumber {
           color:
-            #566159;
+            #66636d;
 
           font-size:
-            9px;
+            12px;
 
           text-align:
             center;
-
-          font-variant-numeric:
-            tabular-nums;
         }
 
         .cover {
-          width:
-            54px;
-
-          height:
-            54px;
+          width: 58px;
+          height: 58px;
 
           border-radius:
-            11px;
+            10px;
 
           object-fit:
             cover;
 
-          border:
-            1px solid
-            rgba(
-              255,
-              255,
-              255,
-              .055
-            );
-
           background:
-            #141a16;
+            #202027;
         }
 
-        .coverFallback {
-          display:
-            grid;
+        .coverFallbackSmall {
+          display: grid;
 
           place-items:
             center;
 
           color:
-            var(--green);
-
-          font-size:
-            9px;
-
-          font-weight:
-            950;
+            var(--lime);
         }
 
         .trackText {
-          min-width:
-            0;
+          min-width: 0;
         }
 
         .trackName {
-          margin:
-            0;
+          margin: 0;
 
           color:
-            #f4f8f5;
+            var(--text);
 
           font-size:
-            12px;
+            15px;
 
           font-weight:
             900;
@@ -4357,13 +3921,13 @@ export default function Home() {
 
         .trackArtist {
           margin:
-            4px 0 0;
+            5px 0 0;
 
           color:
-            #6b776f;
+            var(--muted);
 
           font-size:
-            10px;
+            13px;
 
           white-space:
             nowrap;
@@ -4380,21 +3944,33 @@ export default function Home() {
             inline-block;
 
           margin-top:
-            5px;
+            6px;
 
           color:
-            #5f986f;
+            #8f88c9;
 
           font-size:
-            8px;
+            11px;
 
           font-weight:
-            800;
+            750;
         }
 
+        .trackActions {
+          display: flex;
+
+          align-items:
+            center;
+
+          gap: 6px;
+        }
+
+        .feedbackBtn,
         .trackLink {
-          min-height:
-            33px;
+          min-width:
+            38px;
+
+          height: 38px;
 
           padding:
             0 10px;
@@ -4408,83 +3984,247 @@ export default function Home() {
           justify-content:
             center;
 
-          gap:
-            6px;
+          gap: 6px;
 
           border:
             1px solid
-            rgba(
-              106,
-              240,
-              142,
-              .09
-            );
+            #303038;
 
           border-radius:
             10px;
 
           background:
-            rgba(
-              106,
-              240,
-              142,
-              .028
-            );
+            #17171c;
 
           color:
-            #75e796;
+            #aaa7b0;
 
-          font-size:
-            9px;
-
-          font-weight:
-            850;
+          cursor:
+            pointer;
 
           text-decoration:
             none;
 
-          white-space:
-            nowrap;
+          transition:
+            .14s ease;
+        }
+
+        .feedbackBtn:hover,
+        .trackLink:hover {
+          color: #fff;
+
+          border-color:
+            #44444f;
+        }
+
+        .feedbackBtn.like.active {
+          color:
+            #101407;
+
+          border-color:
+            var(--lime);
+
+          background:
+            var(--lime);
+        }
+
+        .feedbackBtn.dislike.active {
+          color: #fff;
+
+          border-color:
+            var(--pink);
+
+          background:
+            #a94360;
+        }
+
+        .trackLink {
+          color:
+            var(--lime);
+
+          font-size:
+            12px;
+
+          font-weight:
+            850;
         }
 
         .playlistLink {
+          margin-top:
+            15px;
+
           display:
             inline-flex;
 
           align-items:
             center;
 
-          gap:
-            7px;
-
-          margin-top:
-            14px;
+          gap: 7px;
 
           color:
-            #7bed9c;
+            var(--lime);
 
           font-size:
-            10px;
+            14px;
 
           font-weight:
-            900;
+            850;
 
           text-decoration:
             none;
         }
 
+        .history {
+          padding:
+            26px 30px
+            30px;
+        }
+
+        .historyGrid {
+          margin-top:
+            18px;
+
+          display: grid;
+
+          grid-template-columns:
+            repeat(
+              3,
+              minmax(
+                0,
+                1fr
+              )
+            );
+
+          gap: 10px;
+        }
+
+        .historyCard {
+          padding: 12px;
+
+          display: grid;
+
+          grid-template-columns:
+            72px
+            minmax(
+              0,
+              1fr
+            );
+
+          gap: 12px;
+
+          align-items:
+            center;
+
+          border:
+            1px solid
+            #292930;
+
+          border-radius:
+            16px;
+
+          background:
+            #111115;
+
+          color:
+            var(--text);
+
+          text-align:
+            left;
+
+          cursor:
+            pointer;
+        }
+
+        .historyCard:hover {
+          border-color:
+            #3d3d47;
+
+          background:
+            #15151a;
+        }
+
+        .historyCard
+        .coverCollage {
+          width: 72px;
+
+          border-radius:
+            11px;
+        }
+
+        .historyName {
+          font-size:
+            14px;
+
+          font-weight:
+            900;
+
+          white-space:
+            nowrap;
+
+          overflow:
+            hidden;
+
+          text-overflow:
+            ellipsis;
+        }
+
+        .historyMeta {
+          margin-top:
+            5px;
+
+          color:
+            var(--muted);
+
+          font-size:
+            12px;
+        }
+
+        .clearBtn {
+          margin-top:
+            18px;
+
+          padding:
+            10px 12px;
+
+          border:
+            1px solid
+            #303038;
+
+          border-radius:
+            11px;
+
+          background:
+            transparent;
+
+          color:
+            #8b8790;
+
+          font-size:
+            12px;
+
+          cursor:
+            pointer;
+        }
+
+        .clearBtn:hover {
+          color: #fff;
+
+          background:
+            #17171c;
+        }
+
         .footer {
           padding:
-            34px 0 4px;
+            38px 0 8px;
 
           text-align:
             center;
 
           color:
-            #455048;
+            #68656e;
 
           font-size:
-            9px;
+            12px;
 
           line-height:
             1.7;
@@ -4492,43 +4232,57 @@ export default function Home() {
 
         .footer strong {
           color:
-            #74e494;
-
-          font-weight:
-            850;
+            #bdb8af;
         }
 
         button:disabled,
         input:disabled,
         select:disabled {
-          opacity:
-            .55;
+          opacity: .55;
 
-          cursor:
-            wait;
+          cursor: wait;
         }
 
         @media (
           max-width:
-            930px
+            960px
         ) {
-          .workspace {
+          .hero {
+            grid-template-columns:
+              1fr;
+
+            min-height:
+              auto;
+
+            padding-top:
+              80px;
+          }
+
+          .heroArt {
+            min-height:
+              320px;
+          }
+
+          .builderGrid {
             grid-template-columns:
               1fr;
           }
 
-          .sidePanel {
-            position:
-              relative;
-
-            top:
-              auto;
-          }
-
-          .stats {
+          .profileStrip {
             grid-template-columns:
               repeat(
-                3,
+                2,
+                minmax(
+                  0,
+                  1fr
+                )
+              );
+          }
+
+          .historyGrid {
+            grid-template-columns:
+              repeat(
+                2,
                 minmax(
                   0,
                   1fr
@@ -4539,13 +4293,13 @@ export default function Home() {
 
         @media (
           max-width:
-            740px
+            760px
         ) {
           .shell {
             width:
               min(
                 100% - 18px,
-                1180px
+                1220px
               );
 
             padding-top:
@@ -4553,59 +4307,74 @@ export default function Home() {
           }
 
           .nav {
-            top:
-              8px;
+            top: 8px;
 
             min-height:
               62px;
 
-            padding:
-              9px 10px
-              9px 13px;
-
             border-radius:
-              18px;
+              16px;
           }
 
-          .brand img {
-            width:
-              142px;
+          .brandLogo {
+            width: 38px;
+            height: 38px;
           }
 
-          .modePill {
-            display:
-              none;
+          .brandText span {
+            display: none;
+          }
+
+          .brandText strong {
+            font-size:
+              15px;
           }
 
           .connect {
             min-height:
-              38px;
+              40px;
 
             padding:
               0 12px;
-
-            font-size:
-              9px;
-          }
-
-          .userPill {
-            max-width:
-              170px;
           }
 
           .hero {
             padding:
-              72px 4px
-              42px;
+              65px 8px
+              46px;
+
+            gap: 30px;
           }
 
           .hero h1 {
             font-size:
               clamp(
-                49px,
+                52px,
                 15vw,
                 78px
               );
+          }
+
+          .heroCopy {
+            font-size:
+              16px;
+          }
+
+          .orbit {
+            width: 290px;
+            height: 290px;
+          }
+
+          .sectionHead {
+            padding:
+              22px 20px 0;
+          }
+
+          .builderGrid,
+          .results,
+          .history {
+            padding:
+              20px;
           }
 
           .formGrid {
@@ -4614,17 +4383,7 @@ export default function Home() {
           }
 
           .addBtn {
-            width:
-              100%;
-          }
-
-          .builder,
-          .results {
-            padding:
-              20px;
-
-            border-radius:
-              23px;
+            width: 100%;
           }
 
           .tasteGrid {
@@ -4632,94 +4391,106 @@ export default function Home() {
               1fr;
           }
 
-          .settingRow {
-            align-items:
-              flex-start;
-
-            flex-direction:
-              column;
-          }
-
-          .sliderWrap {
-            width:
-              100%;
-
-            min-width:
-              0;
-          }
-
-          .stats {
-            grid-template-columns:
-              1fr;
-          }
-
           .playlistHero {
             grid-template-columns:
-              105px
+              140px
               minmax(
                 0,
                 1fr
               );
 
-            gap:
-              15px;
+            gap: 18px;
 
             align-items:
               center;
           }
 
-          .playlistCover {
-            width:
-              105px;
+          .coverCollage.large {
+            width: 140px;
 
             border-radius:
-              17px;
+              18px;
+          }
+
+          .resultsTitle {
+            font-size:
+              clamp(
+                38px,
+                10vw,
+                58px
+              );
           }
 
           .track {
             grid-template-columns:
-              22px
-              auto
+              28px
+              52px
               minmax(
                 0,
                 1fr
               );
           }
 
-          .trackLink {
-            grid-column:
-              2 / -1;
+          .cover {
+            width: 52px;
+            height: 52px;
+          }
 
-            width:
-              100%;
+          .trackActions {
+            grid-column:
+              3 / -1;
+
+            justify-content:
+              flex-start;
+          }
+
+          .historyGrid {
+            grid-template-columns:
+              1fr;
           }
         }
 
         @media (
           max-width:
-            460px
+            520px
         ) {
-          .brand img {
-            width:
-              124px;
+          .brandText {
+            display: none;
           }
 
           .userText small {
-            display:
-              none;
+            display: none;
           }
 
           .userPill {
             max-width:
               135px;
-
-            padding-right:
-              9px;
           }
 
-          .connect span:last-child {
-            display:
-              none;
+          .connect span {
+            display: none;
+          }
+
+          .heroArt {
+            min-height:
+              280px;
+          }
+
+          .heroCard {
+            width: 250px;
+
+            padding:
+              20px;
+          }
+
+          .heroCardBig {
+            font-size:
+              44px;
+          }
+
+          .profileStrip {
+            grid-template-columns:
+              1fr 1fr;
           }
 
           .playlistHero {
@@ -4730,37 +4501,45 @@ export default function Home() {
               start;
           }
 
-          .playlistCover {
-            width:
-              118px;
+          .coverCollage.large {
+            width: 132px;
+          }
+
+          .resultsActions {
+            display: grid;
+
+            grid-template-columns:
+              1fr;
+          }
+
+          .ghostBtn,
+          .saveBtn {
+            width: 100%;
           }
         }
       `}</style>
-
-      <div className="ambient">
-        <div className="blob one" />
-
-        <div className="blob two" />
-
-        <div className="blob three" />
-      </div>
 
       <div className="shell">
         <nav className="nav">
           <div className="brand">
             <img
+              className="brandLogo"
               src="/tastemaker-logo.png"
               alt="TasteMaker"
             />
+
+            <div className="brandText">
+              <strong>
+                TasteMaker
+              </strong>
+
+              <span>
+                music discovery
+              </span>
+            </div>
           </div>
 
           <div className="navRight">
-            <div className="modePill">
-              <span className="liveDot" />
-
-              Smart discovery
-            </div>
-
             {spotifyUser ? (
               <a
                 className="userPill"
@@ -4773,8 +4552,6 @@ export default function Home() {
                 target="_blank"
 
                 rel="noopener noreferrer"
-
-                title="Open Spotify profile"
               >
                 {spotifyUser.image ? (
                   <img
@@ -4787,10 +4564,10 @@ export default function Home() {
                     alt=""
                   />
                 ) : (
-                  <span className="userAvatar userAvatarFallback">
+                  <span className="userAvatarFallback">
                     <Icon
                       name="spotify"
-                      size={16}
+                      size={17}
                     />
                   </span>
                 )}
@@ -4815,7 +4592,7 @@ export default function Home() {
               >
                 <Icon
                   name="spotify"
-                  size={16}
+                  size={17}
                 />
 
                 <span>
@@ -4827,578 +4604,556 @@ export default function Home() {
         </nav>
 
         <section className="hero">
-          <div className="eyebrow">
-            <Icon
-              name="sparkles"
-              size={14}
-            />
-
-            Your taste, pushed further
-          </div>
-
-          <h1>
-            Find music that feels
-
-            <br />
-
-            <span className="accent">
-              like you found it first.
-            </span>
-          </h1>
-
-          <p>
-            Add what you already love,
-            choose how adventurous you
-            want to be, and TasteMaker
-            builds a fresh mix from
-            artists, collaborators,
-            genres and your connected
-            Spotify taste.
-          </p>
-
-          <div className="heroChips">
-            <span className="heroChip">
-              <Icon
-                name="music"
-                size={13}
-              />
-
-              Live Spotify search
-            </span>
-
-            <span className="heroChip">
+          <div>
+            <div className="heroEyebrow">
               <Icon
                 name="sparkles"
-                size={13}
+                size={15}
               />
 
-              Dynamic discovery engine
-            </span>
+              Built around your actual taste
+            </div>
 
-            <span className="heroChip">
-              <Icon
-                name="refresh"
-                size={13}
-              />
+            <h1>
+              Your taste.
 
-              Regenerate anytime
-            </span>
+              <br />
+
+              <span className="stroke">
+                Less obvious.
+              </span>
+
+              <br />
+
+              <span className="lime">
+                More you.
+              </span>
+            </h1>
+
+            <p className="heroCopy">
+              Give TasteMaker a few artists and songs you love.
+              Tune how adventurous you feel, shape the next mix
+              with feedback, and save the result straight to Spotify.
+            </p>
+
+            <div className="heroActions">
+              <span className="heroBadge">
+                <Icon
+                  name="music"
+                  size={15}
+                />
+
+                Live Spotify search
+              </span>
+
+              <span className="heroBadge">
+                <Icon
+                  name="up"
+                  size={15}
+                />
+
+                Learns from feedback
+              </span>
+
+              <span className="heroBadge">
+                <Icon
+                  name="history"
+                  size={15}
+                />
+
+                Recent mixes saved
+              </span>
+            </div>
+          </div>
+
+          <div
+            className="heroArt"
+            aria-hidden="true"
+          >
+            <div className="orbit" />
+
+            <div className="heroCard">
+              <div className="heroCardTop">
+                <span className="heroCardLabel">
+                  DISCOVERY LEVEL
+                </span>
+
+                <span className="heroDot" />
+              </div>
+
+              <div className="heroCardBig">
+                {discovery}%
+              </div>
+
+              <div className="heroCardSmall">
+                {discoveryLabel} mode
+
+                <br />
+
+                {discoveryHint}
+              </div>
+
+              <div className="heroBars">
+                <div className="heroBar">
+                  <span
+                    style={{
+                      width:
+                        `${Math.max(
+                          26,
+                          discovery
+                        )}%`,
+                    }}
+                  />
+                </div>
+
+                <div className="heroBar">
+                  <span
+                    style={{
+                      width:
+                        `${Math.max(
+                          18,
+                          100 -
+                            discovery /
+                              2
+                        )}%`,
+                    }}
+                  />
+                </div>
+
+                <div className="heroBar">
+                  <span
+                    style={{
+                      width:
+                        `${Math.max(
+                          34,
+                          discovery *
+                            .72
+                        )}%`,
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
-        <div className="workspace">
-          <section className="glass builder">
-            <div className="sectionLabel">
-              <span className="liveDot" />
+        <section className="section">
+          <div className="sectionHead">
+            <div>
+              <div className="kicker">
+                01 · BUILD YOUR TASTE
+              </div>
 
-              Taste builder
+              <h2 className="sectionTitle">
+                Start with music you already love.
+              </h2>
+
+              <p className="sectionCopy">
+                Add artists and optional favorite songs.
+                Your taste profile stays saved on this device,
+                because retyping everything after a refresh is barbaric.
+              </p>
             </div>
+          </div>
 
-            <h2 className="sectionTitle">
-              Start with what you love.
-            </h2>
+          <div className="builderGrid">
+            <div className="panel seedPanel">
+              <h3 className="panelTitle">
+                Your seeds
+              </h3>
 
-            <p className="sectionCopy">
-              Add artists and optional
-              favorite songs. Your profile
-              is saved on this device, so
-              refreshing the page no longer
-              wipes everything out.
-            </p>
+              <p className="panelCopy">
+                These are the starting points for every mix.
+              </p>
 
-            <form
-              className="formGrid"
-
-              onSubmit={
-                addArtist
-              }
-            >
-              <div className="field">
-                <label htmlFor="artist-search">
-                  Favorite artist
-                </label>
-
-                <input
-                  id="artist-search"
-
-                  className="input"
-
-                  aria-label="Favorite artist"
-
-                  placeholder="Search an artist..."
-
-                  value={
-                    input
-                  }
-
-                  onChange={(
-                    event
-                  ) => {
-                    setInput(
-                      event.target.value
-                    );
-
-                    setSelectedArtist(
-                      null
-                    );
-                  }}
-
-                  disabled={
-                    busy
-                  }
-
-                  autoComplete="off"
-                />
-
-                {searchingArtists && (
-                  <div className="dropdown">
-                    <div className="searching">
-                      Searching artists...
-                    </div>
-                  </div>
-                )}
-
-                {!searchingArtists &&
-                  artistResults.length >
-                    0 && (
-                    <div className="dropdown">
-                      {artistResults.map(
-                        (
-                          artist
-                        ) => (
-                          <button
-                            type="button"
-
-                            className="searchResult"
-
-                            key={
-                              artist.id
-                            }
-
-                            onClick={() => {
-                              setInput(
-                                artist.name
-                              );
-
-                              setSelectedArtist(
-                                artist
-                              );
-
-                              setArtistResults(
-                                []
-                              );
-                            }}
-                          >
-                            {artist.image ? (
-                              <img
-                                className="resultArt artist"
-
-                                src={
-                                  artist.image
-                                }
-
-                                alt=""
-                              />
-                            ) : (
-                              <div className="resultArt artist resultFallback">
-                                <Icon
-                                  name="music"
-
-                                  size={17}
-                                />
-                              </div>
-                            )}
-
-                            <div className="resultText">
-                              <div className="resultName">
-                                {
-                                  artist.name
-                                }
-                              </div>
-
-                              <div className="resultMeta">
-                                Artist
-                              </div>
-                            </div>
-                          </button>
-                        )
-                      )}
-                    </div>
-                  )}
-              </div>
-
-              <div className="field">
-                <label htmlFor="song-search">
-                  Favorite song · optional
-                </label>
-
-                <input
-                  id="song-search"
-
-                  className="input"
-
-                  aria-label="Favorite song"
-
-                  placeholder="Search a song..."
-
-                  value={
-                    songInput
-                  }
-
-                  onChange={(
-                    event
-                  ) => {
-                    setSongInput(
-                      event.target.value
-                    );
-
-                    setSelectedSong(
-                      null
-                    );
-                  }}
-
-                  disabled={
-                    busy
-                  }
-
-                  autoComplete="off"
-                />
-
-                {searchingSongs && (
-                  <div className="dropdown">
-                    <div className="searching">
-                      Searching songs...
-                    </div>
-                  </div>
-                )}
-
-                {!searchingSongs &&
-                  songResults.length >
-                    0 && (
-                    <div className="dropdown">
-                      {songResults.map(
-                        (
-                          song
-                        ) => (
-                          <button
-                            type="button"
-
-                            className="searchResult"
-
-                            key={
-                              song.id
-                            }
-
-                            onClick={() => {
-                              setSongInput(
-                                song.name
-                              );
-
-                              setSelectedSong(
-                                song
-                              );
-
-                              setSongResults(
-                                []
-                              );
-                            }}
-                          >
-                            {song.image ? (
-                              <img
-                                className="resultArt song"
-
-                                src={
-                                  song.image
-                                }
-
-                                alt=""
-                              />
-                            ) : (
-                              <div className="resultArt song resultFallback">
-                                <Icon
-                                  name="music"
-
-                                  size={17}
-                                />
-                              </div>
-                            )}
-
-                            <div className="resultText">
-                              <div className="resultName">
-                                {
-                                  song.name
-                                }
-                              </div>
-
-                              <div className="resultMeta">
-                                {
-                                  song.artist
-                                }
-                              </div>
-                            </div>
-                          </button>
-                        )
-                      )}
-                    </div>
-                  )}
-              </div>
-
-              <button
-                type="submit"
-
-                className="addBtn"
-
-                disabled={
-                  busy
-                }
+              <form
+                className="formGrid"
+                onSubmit={addArtist}
               >
-                <Icon
-                  name="plus"
-                  size={16}
-                />
-
-                Add taste
-              </button>
-            </form>
-
-            {favorites.length >
-              0 && (
-              <div className="tasteGrid">
-                {favorites.map(
-                  (
-                    artist
-                  ) => {
-                    const songs =
-                      favoriteSongs[
-                        normalize(
-                          artist
-                        )
-                      ] || [];
-
-                    const artistData =
-                      favoriteArtistData[
-                        normalize(
-                          artist
-                        )
-                      ];
-
-                    return (
-                      <div
-                        className="tasteCard"
-
-                        key={
-                          artist
-                        }
-                      >
-                        {artistData?.image ? (
-                          <img
-                            className="tasteAvatar"
-
-                            src={
-                              artistData.image
-                            }
-
-                            alt=""
-                          />
-                        ) : (
-                          <div className="tasteAvatar tasteFallback">
-                            <Icon
-                              name="music"
-
-                              size={16}
-                            />
-                          </div>
-                        )}
-
-                        <div className="tasteText">
-                          <div className="tasteArtist">
-                            {
-                              artist
-                            }
-                          </div>
-
-                          <div className="seedText">
-                            {songs.length
-                              ? `${songs.length} song seed${songs.length > 1 ? "s" : ""}`
-                              : "Artist seed"}
-                          </div>
-                        </div>
-
-                        <button
-                          type="button"
-
-                          className="removeBtn"
-
-                          disabled={
-                            busy
-                          }
-
-                          onClick={() =>
-                            removeArtist(
-                              artist
-                            )
-                          }
-
-                          title="Remove artist"
-
-                          aria-label={`Remove ${artist}`}
-                        >
-                          <Icon
-                            name="trash"
-
-                            size={14}
-                          />
-                        </button>
-
-                        {songs.length >
-                          0 && (
-                          <div className="songSeeds">
-                            {songs.map(
-                              (
-                                song
-                              ) => (
-                                <button
-                                  type="button"
-
-                                  className="songSeed"
-
-                                  key={
-                                    song
-                                  }
-
-                                  onClick={() =>
-                                    removeSong(
-                                      artist,
-                                      song
-                                    )
-                                  }
-
-                                  title="Remove song seed"
-                                >
-                                  {song} ×
-                                </button>
-                              )
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  }
-                )}
-              </div>
-            )}
-
-            <div className="settings">
-              <div className="settingRow">
-                <div>
-                  <div className="controlLabel">
-                    Playlist length
-                  </div>
-
-                  <div className="controlHint">
-                    How many tracks should
-                    TasteMaker build?
-                  </div>
-                </div>
-
-                <select
-                  className="select"
-
-                  value={
-                    trackCount
-                  }
-
-                  disabled={
-                    busy
-                  }
-
-                  onChange={(
-                    event
-                  ) => {
-                    setTrackCount(
-                      Number(
-                        event.target.value
-                      )
-                    );
-
-                    clearResults();
-                  }}
-                >
-                  {[
-                    10,
-                    15,
-                    20,
-                    25,
-                    30,
-                  ].map(
-                    (
-                      count
-                    ) => (
-                      <option
-                        key={
-                          count
-                        }
-
-                        value={
-                          count
-                        }
-                      >
-                        {count} songs
-                      </option>
-                    )
-                  )}
-                </select>
-              </div>
-
-              <div className="settingRow">
-                <div>
-                  <div className="controlLabel">
-                    Discovery level
-                  </div>
-
-                  <div className="controlHint">
-                    {
-                      discoveryHint
-                    }
-                  </div>
-                </div>
-
-                <div className="sliderWrap">
-                  <div className="sliderTop">
-                    <span>
-                      {discovery}%
-                    </span>
-
-                    <strong>
-                      {
-                        discoveryLabel
-                      }
-                    </strong>
-                  </div>
+                <div className="field">
+                  <label htmlFor="artist-search">
+                    Favorite artist
+                  </label>
 
                   <input
-                    className="range"
+                    id="artist-search"
 
-                    type="range"
+                    className="input"
 
-                    min="0"
+                    placeholder="Search an artist..."
 
-                    max="100"
+                    value={input}
 
-                    step="5"
+                    onChange={(
+                      event
+                    ) => {
+                      setInput(
+                        event.target.value
+                      );
+
+                      setSelectedArtist(
+                        null
+                      );
+                    }}
+
+                    disabled={busy}
+
+                    autoComplete="off"
+                  />
+
+                  {searchingArtists && (
+                    <div className="dropdown">
+                      <div className="searching">
+                        Searching artists...
+                      </div>
+                    </div>
+                  )}
+
+                  {!searchingArtists &&
+                    artistResults.length >
+                      0 && (
+                      <div className="dropdown">
+                        {artistResults.map(
+                          (
+                            artist
+                          ) => (
+                            <button
+                              type="button"
+
+                              className="searchResult"
+
+                              key={
+                                artist.id
+                              }
+
+                              onClick={() => {
+                                setInput(
+                                  artist.name
+                                );
+
+                                setSelectedArtist(
+                                  artist
+                                );
+
+                                setArtistResults(
+                                  []
+                                );
+                              }}
+                            >
+                              {artist.image ? (
+                                <img
+                                  className="resultArt artist"
+
+                                  src={
+                                    artist.image
+                                  }
+
+                                  alt=""
+                                />
+                              ) : (
+                                <div className="resultArt artist resultFallback">
+                                  <Icon
+                                    name="music"
+
+                                    size={17}
+                                  />
+                                </div>
+                              )}
+
+                              <div className="resultText">
+                                <div className="resultName">
+                                  {
+                                    artist.name
+                                  }
+                                </div>
+
+                                <div className="resultMeta">
+                                  Artist
+                                </div>
+                              </div>
+                            </button>
+                          )
+                        )}
+                      </div>
+                    )}
+                </div>
+
+                <div className="field">
+                  <label htmlFor="song-search">
+                    Favorite song · optional
+                  </label>
+
+                  <input
+                    id="song-search"
+
+                    className="input"
+
+                    placeholder="Search a song..."
 
                     value={
-                      discovery
-                    }
-
-                    disabled={
-                      busy
+                      songInput
                     }
 
                     onChange={(
                       event
                     ) => {
-                      setDiscovery(
+                      setSongInput(
+                        event.target.value
+                      );
+
+                      setSelectedSong(
+                        null
+                      );
+                    }}
+
+                    disabled={busy}
+
+                    autoComplete="off"
+                  />
+
+                  {searchingSongs && (
+                    <div className="dropdown">
+                      <div className="searching">
+                        Searching songs...
+                      </div>
+                    </div>
+                  )}
+
+                  {!searchingSongs &&
+                    songResults.length >
+                      0 && (
+                      <div className="dropdown">
+                        {songResults.map(
+                          (
+                            song
+                          ) => (
+                            <button
+                              type="button"
+
+                              className="searchResult"
+
+                              key={
+                                song.id
+                              }
+
+                              onClick={() => {
+                                setSongInput(
+                                  song.name
+                                );
+
+                                setSelectedSong(
+                                  song
+                                );
+
+                                setSongResults(
+                                  []
+                                );
+                              }}
+                            >
+                              {song.image ? (
+                                <img
+                                  className="resultArt song"
+
+                                  src={
+                                    song.image
+                                  }
+
+                                  alt=""
+                                />
+                              ) : (
+                                <div className="resultArt song resultFallback">
+                                  <Icon
+                                    name="music"
+
+                                    size={17}
+                                  />
+                                </div>
+                              )}
+
+                              <div className="resultText">
+                                <div className="resultName">
+                                  {
+                                    song.name
+                                  }
+                                </div>
+
+                                <div className="resultMeta">
+                                  {
+                                    song.artist
+                                  }
+                                </div>
+                              </div>
+                            </button>
+                          )
+                        )}
+                      </div>
+                    )}
+                </div>
+
+                <button
+                  type="submit"
+
+                  className="addBtn"
+
+                  disabled={busy}
+                >
+                  <Icon
+                    name="plus"
+                    size={16}
+                  />
+
+                  Add
+                </button>
+              </form>
+
+              {favorites.length >
+                0 && (
+                <div className="tasteGrid">
+                  {favorites.map(
+                    (
+                      artist
+                    ) => {
+                      const songs =
+                        favoriteSongs[
+                          normalize(
+                            artist
+                          )
+                        ] || [];
+
+                      const artistData =
+                        favoriteArtistData[
+                          normalize(
+                            artist
+                          )
+                        ];
+
+                      return (
+                        <div
+                          className="tasteCard"
+
+                          key={
+                            artist
+                          }
+                        >
+                          {artistData?.image ? (
+                            <img
+                              className="tasteAvatar"
+
+                              src={
+                                artistData.image
+                              }
+
+                              alt=""
+                            />
+                          ) : (
+                            <div className="tasteAvatar tasteFallback">
+                              <Icon
+                                name="music"
+
+                                size={16}
+                              />
+                            </div>
+                          )}
+
+                          <div className="tasteText">
+                            <div className="tasteArtist">
+                              {
+                                artist
+                              }
+                            </div>
+
+                            <div className="seedText">
+                              {songs.length
+                                ? `${songs.length} favorite song${songs.length > 1 ? "s" : ""}`
+                                : "Artist seed"}
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+
+                            className="removeBtn"
+
+                            onClick={() =>
+                              removeArtist(
+                                artist
+                              )
+                            }
+
+                            title="Remove artist"
+                          >
+                            <Icon
+                              name="trash"
+
+                              size={14}
+                            />
+                          </button>
+
+                          {songs.length >
+                            0 && (
+                            <div className="songSeeds">
+                              {songs.map(
+                                (
+                                  song
+                                ) => (
+                                  <button
+                                    type="button"
+
+                                    className="songSeed"
+
+                                    key={
+                                      song
+                                    }
+
+                                    onClick={() =>
+                                      removeSong(
+                                        artist,
+                                        song
+                                      )
+                                    }
+                                  >
+                                    {song} ×
+                                  </button>
+                                )
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+                  )}
+                </div>
+              )}
+            </div>
+
+            <aside className="panel controlPanel">
+              <h3 className="panelTitle">
+                Tune the mix
+              </h3>
+
+              <p className="panelCopy">
+                Decide how far TasteMaker should wander.
+              </p>
+
+              <div className="controlBlock">
+                <div className="controlTop">
+                  <div className="controlName">
+                    Playlist length
+                  </div>
+
+                  <select
+                    className="select"
+
+                    value={
+                      trackCount
+                    }
+
+                    disabled={busy}
+
+                    onChange={(
+                      event
+                    ) => {
+                      setTrackCount(
                         Number(
                           event.target.value
                         )
@@ -5406,146 +5161,283 @@ export default function Home() {
 
                       clearResults();
                     }}
-                  />
+                  >
+                    {[
+                      10,
+                      15,
+                      20,
+                      25,
+                      30,
+                    ].map(
+                      (
+                        count
+                      ) => (
+                        <option
+                          key={
+                            count
+                          }
 
-                  <div className="rangeLabels">
-                    <span>
-                      Safe
-                    </span>
-
-                    <span>
-                      Adventurous
-                    </span>
-                  </div>
+                          value={
+                            count
+                          }
+                        >
+                          {count} songs
+                        </option>
+                      )
+                    )}
+                  </select>
                 </div>
               </div>
-            </div>
 
-            <button
-              type="button"
+              <div className="controlBlock">
+                <div className="controlTop">
+                  <div className="controlName">
+                    Discovery level
+                  </div>
 
-              className="generate"
+                  <strong>
+                    {discovery}% ·{" "}
+                    {
+                      discoveryLabel
+                    }
+                  </strong>
+                </div>
 
-              disabled={
-                busy
-              }
-
-              onClick={() =>
-                findSongs(
-                  false
-                )
-              }
-            >
-              {loading ? (
-                <>
+                <div className="controlHint">
                   {
-                    loadingStage
+                    discoveryHint
                   }
-                </>
-              ) : (
-                <>
-                  Generate{" "}
-                  {discoveryLabel.toLowerCase()}{" "}
-                  mix
+                </div>
 
-                  <Icon
-                    name="arrow"
-                    size={17}
-                  />
-                </>
-              )}
-            </button>
+                <input
+                  className="range"
 
-            <p
-              className="status"
+                  type="range"
 
-              role="status"
+                  min="0"
 
-              aria-live="polite"
-            >
-              {message}
-            </p>
-          </section>
+                  max="100"
 
-          <aside className="glass sidePanel">
-            <div className="sectionLabel">
-              Taste profile
-            </div>
+                  step="5"
 
-            <h3>
-              Your mix at a glance.
-            </h3>
-
-            <p>
-              TasteMaker now pulls from
-              your seed artists,
-              collaborators, genre signals
-              and, when connected, your
-              Spotify listening taste.
-            </p>
-
-            <div className="stats">
-              <div className="stat">
-                <span>
-                  Artists
-                </span>
-
-                <strong>
-                  {
-                    favorites.length
-                  }
-                </strong>
-              </div>
-
-              <div className="stat">
-                <span>
-                  Song seeds
-                </span>
-
-                <strong>
-                  {
-                    favoriteSongCount
-                  }
-                </strong>
-              </div>
-
-              <div className="stat">
-                <span>
-                  Discovery
-                </span>
-
-                <strong>
-                  {discovery}%
-                </strong>
-              </div>
-            </div>
-
-            <div className="connectCard">
-              <div className="connectCardTitle">
-                <Icon
-                  name={
-                    spotifyUser
-                      ? "check"
-                      : "spotify"
+                  value={
+                    discovery
                   }
 
-                  size={14}
+                  disabled={busy}
+
+                  onChange={(
+                    event
+                  ) => {
+                    setDiscovery(
+                      Number(
+                        event.target.value
+                      )
+                    );
+
+                    clearResults();
+                  }}
                 />
 
-                {spotifyUser
-                  ? "Spotify connected"
-                  : "Spotify optional"}
+                <div className="rangeLabels">
+                  <span>
+                    Safe
+                  </span>
+
+                  <span>
+                    Adventurous
+                  </span>
+                </div>
               </div>
 
-              <div className="connectCardText">
-                {spotifyUser
-                  ? `Connected as ${spotifyUser.displayName}. Higher discovery levels can also use your Spotify top artists.`
-                  : "You can generate mixes without signing in. Connect Spotify to save playlists and add another taste signal."}
+              <div className="controlBlock">
+                <div className="controlName">
+                  Never recommend
+                </div>
+
+                <div className="controlHint">
+                  Add artists you want completely removed from generated mixes.
+                </div>
+
+                <div className="excludeRow">
+                  <input
+                    className="input"
+
+                    placeholder="Artist name..."
+
+                    value={
+                      excludedInput
+                    }
+
+                    onChange={(
+                      event
+                    ) =>
+                      setExcludedInput(
+                        event.target.value
+                      )
+                    }
+
+                    onKeyDown={(
+                      event
+                    ) => {
+                      if (
+                        event.key ===
+                        "Enter"
+                      ) {
+                        event.preventDefault();
+
+                        addExcludedArtist();
+                      }
+                    }}
+                  />
+
+                  <button
+                    type="button"
+
+                    className="miniBtn"
+
+                    onClick={
+                      addExcludedArtist
+                    }
+
+                    title="Exclude artist"
+                  >
+                    <Icon
+                      name="ban"
+
+                      size={17}
+                    />
+                  </button>
+                </div>
+
+                {excludedArtists.length >
+                  0 && (
+                  <div className="excludeChips">
+                    {excludedArtists.map(
+                      (
+                        artist
+                      ) => (
+                        <button
+                          type="button"
+
+                          className="excludeChip"
+
+                          key={
+                            artist
+                          }
+
+                          onClick={() =>
+                            removeExcludedArtist(
+                              artist
+                            )
+                          }
+                        >
+                          {artist} ×
+                        </button>
+                      )
+                    )}
+                  </div>
+                )}
               </div>
+
+              <button
+                type="button"
+
+                className="generate"
+
+                disabled={busy}
+
+                onClick={() =>
+                  findSongs(
+                    false
+                  )
+                }
+              >
+                {loading ? (
+                  loadingStage
+                ) : (
+                  <>
+                    <Icon
+                      name="sparkles"
+
+                      size={18}
+                    />
+
+                    Build my mix
+                  </>
+                )}
+              </button>
+
+              <p
+                className="status"
+
+                role="status"
+
+                aria-live="polite"
+              >
+                {message}
+              </p>
+            </aside>
+          </div>
+
+          <div className="profileStrip">
+            <div className="stat">
+              <span>
+                Artists
+              </span>
+
+              <strong>
+                {
+                  favorites.length
+                }
+              </strong>
             </div>
 
-            {favorites.length >
-              0 && (
+            <div className="stat">
+              <span>
+                Song seeds
+              </span>
+
+              <strong>
+                {
+                  favoriteSongCount
+                }
+              </strong>
+            </div>
+
+            <div className="stat">
+              <span>
+                Blocked artists
+              </span>
+
+              <strong>
+                {
+                  excludedArtists.length
+                }
+              </strong>
+            </div>
+
+            <div className="stat spotifyStat">
+              <span>
+                Spotify
+              </span>
+
+              <strong>
+                {spotifyUser
+                  ? `Connected as ${spotifyUser.displayName}`
+                  : "Optional"}
+              </strong>
+            </div>
+          </div>
+
+          {favorites.length >
+            0 && (
+            <div
+              style={{
+                padding:
+                  "0 30px 28px",
+              }}
+            >
               <button
                 type="button"
 
@@ -5557,41 +5449,26 @@ export default function Home() {
               >
                 Clear saved taste profile
               </button>
-            )}
-          </aside>
-        </div>
+            </div>
+          )}
+        </section>
 
         {tracks.length >
           0 && (
-          <section className="glass results">
+          <section className="section results">
             <div className="playlistHero">
-              {heroCover ? (
-                <img
-                  className="playlistCover"
-
-                  src={
-                    heroCover
-                  }
-
-                  alt="Album artwork from the mix"
-                />
-              ) : (
-                <div className="playlistCover playlistCoverFallback">
-                  <Icon
-                    name="music"
-
-                    size={34}
-                  />
-                </div>
-              )}
+              <CoverCollage
+                tracks={tracks}
+                large
+              />
 
               <div>
-                <div className="sectionLabel">
-                  TasteMaker mix
+                <div className="mixKicker">
+                  02 · YOUR MIX
                 </div>
 
                 <h2 className="resultsTitle">
-                  {discoveryLabel} Mix
+                  {mixName}
                 </h2>
 
                 <div className="mixMeta">
@@ -5599,7 +5476,11 @@ export default function Home() {
                   {discovery}% discovery
 
                   {mixMeta?.connectedTasteUsed
-                    ? " · personalized with your Spotify taste"
+                    ? " · shaped with your Spotify taste"
+                    : ""}
+
+                  {mixMeta?.feedbackUsed
+                    ? " · adjusted using your feedback"
                     : ""}
                 </div>
 
@@ -5632,9 +5513,7 @@ export default function Home() {
 
                     className="ghostBtn"
 
-                    disabled={
-                      busy
-                    }
+                    disabled={busy}
 
                     onClick={() =>
                       findSongs(
@@ -5644,7 +5523,8 @@ export default function Home() {
                   >
                     <Icon
                       name="refresh"
-                      size={14}
+
+                      size={15}
                     />
 
                     Make another mix
@@ -5655,9 +5535,7 @@ export default function Home() {
 
                     className="ghostBtn"
 
-                    disabled={
-                      busy
-                    }
+                    disabled={busy}
 
                     onClick={
                       copyTracks
@@ -5665,7 +5543,8 @@ export default function Home() {
                   >
                     <Icon
                       name="copy"
-                      size={14}
+
+                      size={15}
                     />
 
                     Copy songs
@@ -5676,9 +5555,7 @@ export default function Home() {
 
                     className="saveBtn"
 
-                    disabled={
-                      busy
-                    }
+                    disabled={busy}
 
                     onClick={
                       savePlaylist
@@ -5686,7 +5563,8 @@ export default function Home() {
                   >
                     <Icon
                       name="spotify"
-                      size={14}
+
+                      size={15}
                     />
 
                     {saving
@@ -5697,87 +5575,167 @@ export default function Home() {
               </div>
             </div>
 
+            <div className="feedbackNotice">
+              Use{" "}
+              <strong>
+                More like this
+              </strong>{" "}
+              and{" "}
+              <strong>
+                Less like this
+              </strong>
+              , then hit{" "}
+              <strong>
+                Make another mix
+              </strong>
+              . Your likes become extra artist signals and disliked tracks are kept out of the next result.
+            </div>
+
             <div className="trackList">
               {tracks.map(
                 (
                   track,
                   index
-                ) => (
-                  <div
-                    className="track"
-
-                    key={
+                ) => {
+                  const liked =
+                    likedTrackIds.includes(
                       track.id
-                    }
-                  >
-                    <div className="trackNumber">
-                      {String(
-                        index + 1
-                      ).padStart(
-                        2,
-                        "0"
-                      )}
-                    </div>
+                    );
 
-                    {track.image ? (
-                      <img
-                        className="cover"
+                  const disliked =
+                    dislikedTrackIds.includes(
+                      track.id
+                    );
 
-                        src={
-                          track.image
-                        }
+                  return (
+                    <div
+                      className="track"
 
-                        alt={`${track.title} album cover`}
-                      />
-                    ) : (
-                      <div className="cover coverFallback">
-                        {index + 1}
-                      </div>
-                    )}
-
-                    <div className="trackText">
-                      <p className="trackName">
-                        {
-                          track.title
-                        }
-                      </p>
-
-                      <p className="trackArtist">
-                        {
-                          track.artist
-                        }
-                      </p>
-
-                      <span className="sourceBadge">
-                        {sourceLabel(
-                          track.source
+                      key={
+                        track.id
+                      }
+                    >
+                      <div className="trackNumber">
+                        {String(
+                          index + 1
+                        ).padStart(
+                          2,
+                          "0"
                         )}
-                      </span>
-                    </div>
+                      </div>
 
-                    {track.url && (
-                      <a
-                        className="trackLink"
+                      {track.image ? (
+                        <img
+                          className="cover"
 
-                        href={
-                          track.url
-                        }
+                          src={
+                            track.image
+                          }
 
-                        target="_blank"
-
-                        rel="noopener noreferrer"
-                      >
-                        Spotify
-
-                        <Icon
-                          name="arrow"
-
-                          size={11}
+                          alt={`${track.title} album cover`}
                         />
-                      </a>
-                    )}
-                  </div>
-                )
+                      ) : (
+                        <div className="cover coverFallbackSmall">
+                          <Icon
+                            name="music"
+
+                            size={18}
+                          />
+                        </div>
+                      )}
+
+                      <div className="trackText">
+                        <p className="trackName">
+                          {
+                            track.title
+                          }
+                        </p>
+
+                        <p className="trackArtist">
+                          {
+                            track.artist
+                          }
+                        </p>
+
+                        <span className="sourceBadge">
+                          {sourceLabel(
+                            track.source
+                          )}
+                        </span>
+                      </div>
+
+                      <div className="trackActions">
+                        <button
+                          type="button"
+
+                          className={`feedbackBtn like ${
+                            liked
+                              ? "active"
+                              : ""
+                          }`}
+
+                          onClick={() =>
+                            toggleLike(
+                              track.id
+                            )
+                          }
+
+                          title="More like this"
+
+                          aria-label={`More like ${track.title}`}
+                        >
+                          <Icon
+                            name="up"
+
+                            size={15}
+                          />
+                        </button>
+
+                        <button
+                          type="button"
+
+                          className={`feedbackBtn dislike ${
+                            disliked
+                              ? "active"
+                              : ""
+                          }`}
+
+                          onClick={() =>
+                            toggleDislike(
+                              track.id
+                            )
+                          }
+
+                          title="Less like this"
+
+                          aria-label={`Less like ${track.title}`}
+                        >
+                          <Icon
+                            name="down"
+
+                            size={15}
+                          />
+                        </button>
+
+                        {track.url && (
+                          <a
+                            className="trackLink"
+
+                            href={
+                              track.url
+                            }
+
+                            target="_blank"
+
+                            rel="noopener noreferrer"
+                          >
+                            Spotify
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  );
+                }
               )}
             </div>
 
@@ -5793,22 +5751,87 @@ export default function Home() {
 
                 rel="noopener noreferrer"
               >
-                Open saved playlist in
-                Spotify
+                Open saved playlist in Spotify
 
                 <Icon
                   name="arrow"
-                  size={13}
+
+                  size={14}
                 />
               </a>
             )}
           </section>
         )}
 
+        {mixHistory.length >
+          0 && (
+          <section className="section history">
+            <div className="kicker">
+              03 · RECENT MIXES
+            </div>
+
+            <h2 className="sectionTitle">
+              Go back to something good.
+            </h2>
+
+            <p className="sectionCopy">
+              Your latest mixes are saved in this browser.
+            </p>
+
+            <div className="historyGrid">
+              {mixHistory.map(
+                (
+                  item
+                ) => (
+                  <button
+                    type="button"
+
+                    className="historyCard"
+
+                    key={
+                      item.id
+                    }
+
+                    onClick={() =>
+                      loadHistoryMix(
+                        item
+                      )
+                    }
+                  >
+                    <CoverCollage
+                      tracks={
+                        item.tracks ||
+                        []
+                      }
+                    />
+
+                    <div>
+                      <div className="historyName">
+                        {
+                          item.name
+                        }
+                      </div>
+
+                      <div className="historyMeta">
+                        {item.tracks?.length ||
+                          0}{" "}
+                        tracks ·{" "}
+                        {
+                          item.discovery
+                        }
+                        % discovery
+                      </div>
+                    </div>
+                  </button>
+                )
+              )}
+            </div>
+          </section>
+        )}
+
         <footer className="footer">
           <div>
-            TasteMaker · Discovery built
-            around what you already love
+            TasteMaker · Music discovery without the same five recommendations forever.
           </div>
 
           <div>
@@ -5818,7 +5841,7 @@ export default function Home() {
               Dominik Sakalik
             </strong>
 
-            {" "}✦ 2026
+            {" "}· 2026
           </div>
         </footer>
       </div>

@@ -7,10 +7,12 @@ async function refreshAccessToken(
   refreshToken
 ) {
   const clientId =
-    process.env.SPOTIFY_CLIENT_ID;
+    process.env
+      .SPOTIFY_CLIENT_ID;
 
   const clientSecret =
-    process.env.SPOTIFY_CLIENT_SECRET;
+    process.env
+      .SPOTIFY_CLIENT_SECRET;
 
   if (
     !clientId ||
@@ -24,7 +26,8 @@ async function refreshAccessToken(
     await fetch(
       "https://accounts.spotify.com/api/token",
       {
-        method: "POST",
+        method:
+          "POST",
 
         headers: {
           Authorization:
@@ -48,7 +51,8 @@ async function refreshAccessToken(
               refreshToken,
           }),
 
-        cache: "no-store",
+        cache:
+          "no-store",
       }
     );
 
@@ -70,7 +74,8 @@ async function getProfile(
           `Bearer ${token}`,
       },
 
-      cache: "no-store",
+      cache:
+        "no-store",
     }
   );
 }
@@ -88,7 +93,8 @@ export async function GET(
       "spotify_refresh_token"
     )?.value;
 
-  let refreshed = null;
+  let refreshed =
+    null;
 
   if (
     !accessToken &&
@@ -107,7 +113,8 @@ export async function GET(
   if (!accessToken) {
     return NextResponse.json(
       {
-        connected: false,
+        connected:
+          false,
       },
       {
         headers: {
@@ -145,10 +152,13 @@ export async function GET(
     }
   }
 
-  if (!profileResponse.ok) {
+  if (
+    !profileResponse.ok
+  ) {
     return NextResponse.json(
       {
-        connected: false,
+        connected:
+          false,
       },
       {
         headers: {
@@ -165,12 +175,13 @@ export async function GET(
   const response =
     NextResponse.json(
       {
-        connected: true,
+        connected:
+          true,
 
         user: {
           id:
-            profile.account_id ||
             profile.id ||
+            profile.account_id ||
             null,
 
           displayName:
@@ -179,7 +190,8 @@ export async function GET(
 
           image:
             profile.images?.[0]
-              ?.url || null,
+              ?.url ||
+            null,
 
           url:
             profile
@@ -188,7 +200,6 @@ export async function GET(
             null,
         },
       },
-
       {
         headers: {
           "Cache-Control":
@@ -213,16 +224,24 @@ export async function GET(
       "spotify_access_token",
       refreshed.access_token,
       {
-        httpOnly: true,
-        secure,
-        sameSite: "lax",
-        path: "/",
+        httpOnly:
+          true,
 
-        maxAge: Math.max(
-          60,
-          (refreshed.expires_in ||
-            3600) - 60
-        ),
+        secure,
+
+        sameSite:
+          "lax",
+
+        path:
+          "/",
+
+        maxAge:
+          Math.max(
+            60,
+            (refreshed.expires_in ||
+              3600) -
+              60
+          ),
       }
     );
   }
@@ -234,10 +253,16 @@ export async function GET(
       "spotify_refresh_token",
       refreshed.refresh_token,
       {
-        httpOnly: true,
+        httpOnly:
+          true,
+
         secure,
-        sameSite: "lax",
-        path: "/",
+
+        sameSite:
+          "lax",
+
+        path:
+          "/",
 
         maxAge:
           60 *

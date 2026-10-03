@@ -24,10 +24,12 @@ async function refreshAccessToken(
   refreshToken
 ) {
   const clientId =
-    process.env.SPOTIFY_CLIENT_ID;
+    process.env
+      .SPOTIFY_CLIENT_ID;
 
   const clientSecret =
-    process.env.SPOTIFY_CLIENT_SECRET;
+    process.env
+      .SPOTIFY_CLIENT_SECRET;
 
   if (
     !clientId ||
@@ -65,7 +67,8 @@ async function refreshAccessToken(
               refreshToken,
           }),
 
-        cache: "no-store",
+        cache:
+          "no-store",
       }
     );
 
@@ -151,16 +154,19 @@ async function createPlaylist(
           "application/json",
       },
 
-      body: JSON.stringify({
-        name,
+      body:
+        JSON.stringify({
+          name,
 
-        public: false,
+          public:
+            false,
 
-        description:
-          "Created with TasteMaker.",
-      }),
+          description:
+            "Created with TasteMaker.",
+        }),
 
-      cache: "no-store",
+      cache:
+        "no-store",
     }
   );
 }
@@ -194,7 +200,8 @@ export async function POST(
 
   if (
     !origin ||
-    origin !== allowedOrigin
+    origin !==
+      allowedOrigin
   ) {
     return reply(
       {
@@ -224,8 +231,10 @@ export async function POST(
     !Array.isArray(
       body.uris
     ) ||
-    body.uris.length === 0 ||
-    body.uris.length > 100 ||
+    body.uris.length ===
+      0 ||
+    body.uris.length >
+      100 ||
     body.uris.some(
       (uri) =>
         typeof uri !==
@@ -294,14 +303,18 @@ export async function POST(
         error:
           "Connect Spotify before saving.",
 
-        needsLogin: true,
+        needsLogin:
+          true,
       },
       401
     );
   }
 
-  let playlistUrl = null;
-  let created = false;
+  let playlistUrl =
+    null;
+
+  let created =
+    false;
 
   try {
     let createResponse =
@@ -376,7 +389,8 @@ export async function POST(
       await fetch(
         `https://api.spotify.com/v1/playlists/${playlist.id}/items`,
         {
-          method: "POST",
+          method:
+            "POST",
 
           headers: {
             Authorization:
@@ -403,7 +417,7 @@ export async function POST(
         reply(
           {
             error:
-              `Playlist created, but adding songs failed (${addResponse.status}). Check Spotify before trying again.`,
+              `Playlist created, but adding songs failed (${addResponse.status}). Check it in Spotify before trying again.`,
 
             playlistUrl,
           },
@@ -420,12 +434,16 @@ export async function POST(
 
     const response =
       reply({
-        success: true,
+        success:
+          true,
 
         added:
           uris.length,
 
         playlistUrl,
+
+        playlistId:
+          playlist.id,
       });
 
     setRefreshedCookies(
@@ -443,9 +461,10 @@ export async function POST(
     const response =
       reply(
         {
-          error: created
-            ? "Playlist creation succeeded, but saving songs could not be confirmed. Check Spotify before trying again."
-            : "Could not confirm playlist creation. Check Spotify before trying again.",
+          error:
+            created
+              ? "Playlist creation succeeded, but saving songs could not be confirmed. Check Spotify before trying again."
+              : "Could not confirm playlist creation. Check Spotify before trying again.",
 
           playlistUrl,
         },

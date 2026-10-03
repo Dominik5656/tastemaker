@@ -1,127 +1,205 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
-function normalize(text = "") {
-  return text
+const VIBES = [
+  {
+    id: "story",
+    label: "Story-rich",
+  },
+  {
+    id: "horror",
+    label: "Horror",
+  },
+  {
+    id: "relaxing",
+    label: "Relaxing",
+  },
+  {
+    id: "open-world",
+    label: "Open world",
+  },
+  {
+    id: "multiplayer",
+    label: "Multiplayer",
+  },
+  {
+    id: "competitive",
+    label: "Competitive",
+  },
+  {
+    id: "indie",
+    label: "Indie",
+  },
+  {
+    id: "weird",
+    label: "Weird",
+  },
+];
+
+const PLATFORMS = [
+  {
+    id: "all",
+    label: "Any platform",
+  },
+  {
+    id: "pc",
+    label: "PC",
+  },
+  {
+    id: "playstation",
+    label: "PlayStation",
+  },
+  {
+    id: "xbox",
+    label: "Xbox",
+  },
+  {
+    id: "switch",
+    label: "Nintendo Switch",
+  },
+];
+
+function normalize(
+  value = ""
+) {
+  return String(value)
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9\s]/g, "")
-    .replace(/\s+/g, " ")
+    .replace(
+      /[\u0300-\u036f]/g,
+      ""
+    )
+    .replace(
+      /[^a-z0-9\s]/g,
+      " "
+    )
+    .replace(
+      /\s+/g,
+      " "
+    )
     .trim();
 }
 
-function distance(a, b) {
-  const matrix = Array.from({ length: b.length + 1 }, () =>
-    Array(a.length + 1).fill(0)
-  );
-
-  for (let i = 0; i <= a.length; i++) matrix[0][i] = i;
-  for (let j = 0; j <= b.length; j++) matrix[j][0] = j;
-
-  for (let j = 1; j <= b.length; j++) {
-    for (let i = 1; i <= a.length; i++) {
-      if (a[i - 1] === b[j - 1]) {
-        matrix[j][i] = matrix[j - 1][i - 1];
-      } else {
-        matrix[j][i] = Math.min(
-          matrix[j - 1][i] + 1,
-          matrix[j][i - 1] + 1,
-          matrix[j - 1][i - 1] + 1
-        );
-      }
-    }
-  }
-
-  return matrix[b.length][a.length];
-}
-
-function Icon({ name, size = 18 }) {
+function Icon({
+  name,
+  size = 18,
+}) {
   const common = {
     width: size,
     height: size,
-    viewBox: "0 0 24 24",
+    viewBox:
+      "0 0 24 24",
     fill: "none",
-    stroke: "currentColor",
+    stroke:
+      "currentColor",
     strokeWidth: 1.9,
-    strokeLinecap: "round",
-    strokeLinejoin: "round",
+    strokeLinecap:
+      "round",
+    strokeLinejoin:
+      "round",
     "aria-hidden": true,
   };
 
   const icons = {
+    game: (
+      <>
+        <path d="M8 8h8a5 5 0 0 1 4.8 3.6l1 3.5a3 3 0 0 1-5.1 2.9l-1.8-2H9.1l-1.8 2a3 3 0 0 1-5.1-2.9l1-3.5A5 5 0 0 1 8 8Z" />
+        <path d="M7 11v4M5 13h4" />
+        <circle
+          cx="17"
+          cy="12"
+          r=".7"
+          fill="currentColor"
+        />
+        <circle
+          cx="19"
+          cy="14"
+          r=".7"
+          fill="currentColor"
+        />
+      </>
+    ),
+
     sparkles: (
       <>
-        <path d="M12 3l1.15 3.3L16.5 7.5l-3.35 1.2L12 12l-1.15-3.3L7.5 7.5l3.35-1.2L12 3Z" />
-        <path d="M18.5 13.5l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7.7-2Z" />
+        <path d="M12 3l1.2 3.3 3.3 1.2-3.3 1.2L12 12l-1.2-3.3-3.3-1.2 3.3-1.2L12 3Z" />
+        <path d="m18.5 14 .7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7.7-2Z" />
       </>
     ),
-    music: (
+
+    plus: (
+      <path d="M12 5v14M5 12h14" />
+    ),
+
+    trash: (
       <>
-        <path d="M9 18V5l11-2v13" />
-        <circle cx="6" cy="18" r="3" />
-        <circle cx="17" cy="16" r="3" />
+        <path d="M4 7h16" />
+        <path d="m6 7 1 13h10l1-13" />
+        <path d="M9 7V4h6v3" />
       </>
     ),
-    spotify: (
+
+    refresh: (
       <>
-        <circle cx="12" cy="12" r="9" />
-        <path d="M7.3 9.8c3.3-1 6.8-.8 9.8.7" />
-        <path d="M7.9 12.7c2.7-.75 5.7-.55 8.2.65" />
-        <path d="M8.5 15.4c2.15-.55 4.4-.4 6.4.5" />
+        <path d="M20 7v5h-5" />
+        <path d="M4 17v-5h5" />
+        <path d="M6 9a7 7 0 0 1 12-1l2 4" />
+        <path d="M18 15a7 7 0 0 1-12 1l-2-4" />
       </>
     ),
-    plus: <path d="M12 5v14M5 12h14" />,
+
+    up: (
+      <>
+        <path d="M7 10v11" />
+        <path d="M3 10h4v11H3z" />
+        <path d="M7 19h9a2 2 0 0 0 2-1.5l2-7A2 2 0 0 0 18 8h-4l.7-3a2.4 2.4 0 0 0-4.5-2L7 10Z" />
+      </>
+    ),
+
+    down: (
+      <>
+        <path d="M7 14V3" />
+        <path d="M3 3h4v11H3z" />
+        <path d="M7 5h9a2 2 0 0 1 2 1.5l2 7A2 2 0 0 1 18 16h-4l.7 3a2.4 2.4 0 0 1-4.5 2L7 14Z" />
+      </>
+    ),
+
+    ban: (
+      <>
+        <circle
+          cx="12"
+          cy="12"
+          r="9"
+        />
+        <path d="m5.6 5.6 12.8 12.8" />
+      </>
+    ),
+
+    copy: (
+      <>
+        <rect
+          x="8"
+          y="8"
+          width="11"
+          height="11"
+          rx="2"
+        />
+        <path d="M5 16H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v1" />
+      </>
+    ),
+
     arrow: (
       <>
         <path d="M5 12h14" />
         <path d="m14 7 5 5-5 5" />
       </>
     ),
-    copy: (
-      <>
-        <rect x="8" y="8" width="11" height="11" rx="2" />
-        <path d="M5 16H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v1" />
-      </>
-    ),
-    trash: (
-      <>
-        <path d="M4 7h16" />
-        <path d="M10 11v6M14 11v6" />
-        <path d="m6 7 1 13h10l1-13" />
-        <path d="M9 7V4h6v3" />
-      </>
-    ),
-    refresh: (
-      <>
-        <path d="M20 7v5h-5" />
-        <path d="M4 17v-5h5" />
-        <path d="M6.1 9A7 7 0 0 1 18.7 7.7L20 12" />
-        <path d="M17.9 15A7 7 0 0 1 5.3 16.3L4 12" />
-      </>
-    ),
-    check: <path d="m5 12 4 4L19 6" />,
-    up: (
-      <>
-        <path d="M7 10v11" />
-        <path d="M3 10h4v11H3z" />
-        <path d="M7 19h9.4a2 2 0 0 0 1.9-1.4l2.1-7A2 2 0 0 0 18.5 8H14l.7-3.1A2.4 2.4 0 0 0 10.2 3L7 10Z" />
-      </>
-    ),
-    down: (
-      <>
-        <path d="M7 14V3" />
-        <path d="M3 3h4v11H3z" />
-        <path d="M7 5h9.4a2 2 0 0 1 1.9 1.4l2.1 7a2 2 0 0 1-1.9 2.6H14l.7 3.1a2.4 2.4 0 0 1-4.5 1.9L7 14Z" />
-      </>
-    ),
-    ban: (
-      <>
-        <circle cx="12" cy="12" r="9" />
-        <path d="m5.6 5.6 12.8 12.8" />
-      </>
-    ),
+
     history: (
       <>
         <path d="M3 12a9 9 0 1 0 3-6.7L3 8" />
@@ -131,135 +209,134 @@ function Icon({ name, size = 18 }) {
     ),
   };
 
-  return <svg {...common}>{icons[name] || null}</svg>;
+  return (
+    <svg {...common}>
+      {icons[name] ||
+        icons.game}
+    </svg>
+  );
 }
 
-function sourceLabel(source) {
-  if (source === "close") return "Close match";
-  if (source === "collaborator") return "Connected artist";
-  if (source === "genre") return "Genre discovery";
-  if (source === "spotify-taste") return "Your Spotify taste";
-  if (source === "feedback") return "More like your picks";
-  return "Discovery";
-}
-
-function buildMixName(discovery, meta, tracks) {
-  const soft = [
-    "Velvet",
-    "Quiet",
-    "Soft",
+function buildMixName(
+  discovery,
+  games
+) {
+  const safe = [
+    "Comfort",
+    "Familiar",
     "Golden",
-    "Sunday",
-    "Afterglow",
+    "Classic",
+    "Home Base",
   ];
 
-  const balanced = [
+  const middle = [
     "Neon",
-    "Midnight",
     "Parallel",
-    "Electric",
-    "Satellite",
-    "Side B",
+    "Next Level",
+    "Side Quest",
+    "After Hours",
   ];
 
   const wild = [
-    "Static",
     "Uncharted",
+    "Wild Card",
     "Off Grid",
-    "Wild Signal",
-    "After Hours",
-    "Deep Cut",
+    "Hidden Gem",
+    "Unknown Signal",
   ];
 
-  const nouns = [
-    "Signal",
-    "Drift",
-    "Frequency",
-    "Room",
-    "Radio",
-    "Current",
-    "Archive",
-    "Pulse",
+  const endings = [
+    "Quest",
+    "Run",
+    "Arcade",
+    "Save File",
+    "Session",
+    "World",
   ];
 
-  const firstPool =
+  const first =
     discovery <= 30
-      ? soft
+      ? safe
       : discovery <= 70
-      ? balanced
+      ? middle
       : wild;
 
   const seed =
-    (tracks?.[0]?.id || "tastemaker") +
-    (meta?.usedGenres?.join("") || "") +
-    String(Date.now());
+    games?.[0]?.id ||
+    Date.now();
 
-  let total = 0;
-
-  for (let i = 0; i < seed.length; i++) {
-    total += seed.charCodeAt(i);
-  }
-
-  return `${firstPool[total % firstPool.length]} ${
-    nouns[(total * 7) % nouns.length]
+  return `${
+    first[
+      Number(seed) %
+        first.length
+    ]
+  } ${
+    endings[
+      Number(seed) %
+        endings.length
+    ]
   }`;
 }
 
-function CoverCollage({
-  tracks,
-  large = false,
+function GameCover({
+  game,
+  small = false,
 }) {
-  const images = tracks
-    .filter((track) => track.image)
-    .slice(0, 4);
-
-  if (!images.length) {
+  if (
+    !game?.cover
+  ) {
     return (
       <div
-        className={`coverCollage coverFallback ${
-          large ? "large" : ""
-        }`}
+        className={
+          small
+            ? "coverSmall coverFallback"
+            : "cover coverFallback"
+        }
       >
         <Icon
-          name="music"
-          size={large ? 42 : 26}
+          name="game"
+          size={
+            small
+              ? 21
+              : 34
+          }
         />
       </div>
     );
   }
 
   return (
-    <div
-      className={`coverCollage ${
-        large ? "large" : ""
-      }`}
-    >
-      {Array.from({
-        length: 4,
-      }).map((_, index) => {
-        const item =
-          images[index % images.length];
+    <img
+      className={
+        small
+          ? "coverSmall"
+          : "cover"
+      }
 
-        return (
-          <img
-            key={`${item.id}-${index}`}
-            src={item.image}
-            alt=""
-          />
-        );
-      })}
-    </div>
+      src={
+        game.cover
+      }
+
+      alt={`${game.name} cover`}
+    />
   );
 }
 
 export default function Home() {
-  const [input, setInput] =
-    useState("");
+  const [
+    query,
+    setQuery,
+  ] = useState("");
 
   const [
-    songInput,
-    setSongInput,
-  ] = useState("");
+    searchResults,
+    setSearchResults,
+  ] = useState([]);
+
+  const [
+    searching,
+    setSearching,
+  ] = useState(false);
 
   const [
     favorites,
@@ -267,54 +344,29 @@ export default function Home() {
   ] = useState([]);
 
   const [
-    favoriteSongs,
-    setFavoriteSongs,
-  ] = useState({});
+    blockedQuery,
+    setBlockedQuery,
+  ] = useState("");
 
   const [
-    favoriteArtistData,
-    setFavoriteArtistData,
-  ] = useState({});
-
-  const [
-    artistResults,
-    setArtistResults,
+    blockedResults,
+    setBlockedResults,
   ] = useState([]);
 
   const [
-    searchingArtists,
-    setSearchingArtists,
+    searchingBlocked,
+    setSearchingBlocked,
   ] = useState(false);
 
   const [
-    selectedArtist,
-    setSelectedArtist,
-  ] = useState(null);
-
-  const [
-    songResults,
-    setSongResults,
+    blockedGames,
+    setBlockedGames,
   ] = useState([]);
 
   const [
-    searchingSongs,
-    setSearchingSongs,
-  ] = useState(false);
-
-  const [
-    selectedSong,
-    setSelectedSong,
-  ] = useState(null);
-
-  const [
-    tracks,
-    setTracks,
+    recommendations,
+    setRecommendations,
   ] = useState([]);
-
-  const [
-    trackCount,
-    setTrackCount,
-  ] = useState(15);
 
   const [
     discovery,
@@ -322,15 +374,40 @@ export default function Home() {
   ] = useState(55);
 
   const [
-    mixMeta,
-    setMixMeta,
-  ] = useState(null);
+    count,
+    setCount,
+  ] = useState(12);
+
+  const [
+    platform,
+    setPlatform,
+  ] = useState("all");
+
+  const [
+    vibes,
+    setVibes,
+  ] = useState([]);
+
+  const [
+    likedIds,
+    setLikedIds,
+  ] = useState([]);
+
+  const [
+    dislikedIds,
+    setDislikedIds,
+  ] = useState([]);
+
+  const [
+    history,
+    setHistory,
+  ] = useState([]);
 
   const [
     mixName,
     setMixName,
   ] = useState(
-    "TasteMaker Mix"
+    "TasteMaker Games"
   );
 
   const [
@@ -339,14 +416,9 @@ export default function Home() {
   ] = useState(false);
 
   const [
-    loadingStage,
-    setLoadingStage,
+    loadingText,
+    setLoadingText,
   ] = useState("");
-
-  const [
-    saving,
-    setSaving,
-  ] = useState(false);
 
   const [
     message,
@@ -354,95 +426,27 @@ export default function Home() {
   ] = useState("");
 
   const [
-    playlistUrl,
-    setPlaylistUrl,
-  ] = useState("");
-
-  const [
-    spotifyUser,
-    setSpotifyUser,
-  ] = useState(null);
-
-  const [
-    profileLoaded,
-    setProfileLoaded,
+    ready,
+    setReady,
   ] = useState(false);
-
-  const [
-    excludedInput,
-    setExcludedInput,
-  ] = useState("");
-
-  const [
-    excludedResults,
-    setExcludedResults,
-  ] = useState([]);
-
-  const [
-    searchingExcluded,
-    setSearchingExcluded,
-  ] = useState(false);
-
-  const [
-    selectedExcludedArtist,
-    setSelectedExcludedArtist,
-  ] = useState(null);
-
-  const [
-    excludedArtists,
-    setExcludedArtists,
-  ] = useState([]);
-
-  const [
-    likedTrackIds,
-    setLikedTrackIds,
-  ] = useState([]);
-
-  const [
-    dislikedTrackIds,
-    setDislikedTrackIds,
-  ] = useState([]);
-
-  const [
-    mixHistory,
-    setMixHistory,
-  ] = useState([]);
-
-  const busy =
-    loading || saving;
-
-  const favoriteSongCount =
-    useMemo(
-      () =>
-        Object.values(
-          favoriteSongs
-        ).reduce(
-          (
-            total,
-            songs
-          ) =>
-            total +
-            (Array.isArray(
-              songs
-            )
-              ? songs.length
-              : 0),
-          0
-        ),
-      [favoriteSongs]
-    );
 
   const discoveryLabel =
     useMemo(() => {
-      if (discovery <= 25) {
+      if (
+        discovery <= 25
+      ) {
         return "Familiar";
       }
 
-      if (discovery <= 55) {
+      if (
+        discovery <= 55
+      ) {
         return "Balanced";
       }
 
-      if (discovery <= 80) {
+      if (
+        discovery <= 80
+      ) {
         return "Explorer";
       }
 
@@ -451,34 +455,39 @@ export default function Home() {
 
   const discoveryHint =
     useMemo(() => {
-      if (discovery <= 25) {
-        return "Stay close to the artists you already know.";
+      if (
+        discovery <= 25
+      ) {
+        return "Stay close to games you already love.";
       }
 
-      if (discovery <= 55) {
-        return "Mix familiar artists with fresh connections.";
+      if (
+        discovery <= 55
+      ) {
+        return "Mix obvious matches with fresh discoveries.";
       }
 
-      if (discovery <= 80) {
-        return "Reach further into collaborators and genres.";
+      if (
+        discovery <= 80
+      ) {
+        return "Reach further into connected genres and themes.";
       }
 
-      return "Go hunting for the least obvious picks.";
+      return "Push into games you probably would not find yourself.";
     }, [discovery]);
 
   useEffect(() => {
     try {
-      const saved =
+      const profile =
         localStorage.getItem(
-          "tastemaker-profile-v4"
-        ) ||
-        localStorage.getItem(
-          "tastemaker-profile-v3"
+          "tastemaker-games-profile-v1"
         );
 
-      if (saved) {
+      if (profile) {
         const parsed =
-          JSON.parse(saved);
+          JSON.parse(
+            profile
+          );
 
         if (
           Array.isArray(
@@ -491,32 +500,22 @@ export default function Home() {
         }
 
         if (
-          parsed.favoriteSongs &&
-          typeof parsed.favoriteSongs ===
-            "object"
-        ) {
-          setFavoriteSongs(
-            parsed.favoriteSongs
-          );
-        }
-
-        if (
-          parsed.favoriteArtistData &&
-          typeof parsed.favoriteArtistData ===
-            "object"
-        ) {
-          setFavoriteArtistData(
-            parsed.favoriteArtistData
-          );
-        }
-
-        if (
-          Number.isFinite(
-            parsed.trackCount
+          Array.isArray(
+            parsed.blockedGames
           )
         ) {
-          setTrackCount(
-            parsed.trackCount
+          setBlockedGames(
+            parsed.blockedGames
+          );
+        }
+
+        if (
+          Array.isArray(
+            parsed.vibes
+          )
+        ) {
+          setVibes(
+            parsed.vibes
           );
         }
 
@@ -531,197 +530,118 @@ export default function Home() {
         }
 
         if (
-          Array.isArray(
-            parsed.excludedArtists
+          Number.isFinite(
+            parsed.count
           )
         ) {
-          setExcludedArtists(
-            parsed.excludedArtists
+          setCount(
+            parsed.count
+          );
+        }
+
+        if (
+          typeof parsed.platform ===
+          "string"
+        ) {
+          setPlatform(
+            parsed.platform
           );
         }
       }
 
-      const history =
+      const savedHistory =
         localStorage.getItem(
-          "tastemaker-history-v1"
+          "tastemaker-games-history-v1"
         );
 
-      if (history) {
-        const parsedHistory =
-          JSON.parse(history);
+      if (
+        savedHistory
+      ) {
+        const parsed =
+          JSON.parse(
+            savedHistory
+          );
 
         if (
           Array.isArray(
-            parsedHistory
+            parsed
           )
         ) {
-          setMixHistory(
-            parsedHistory.slice(
+          setHistory(
+            parsed.slice(
               0,
               6
             )
           );
         }
       }
-    } catch (error) {
+    } catch (
+      error
+    ) {
       console.warn(
-        "Could not restore TasteMaker data:",
+        "Could not restore game profile:",
         error
       );
     } finally {
-      setProfileLoaded(true);
+      setReady(true);
     }
   }, []);
 
   useEffect(() => {
-    if (!profileLoaded) {
+    if (!ready) {
       return;
     }
 
     localStorage.setItem(
-      "tastemaker-profile-v4",
+      "tastemaker-games-profile-v1",
+
       JSON.stringify({
         favorites,
-        favoriteSongs,
-        favoriteArtistData,
-        trackCount,
+        blockedGames,
+        vibes,
         discovery,
-        excludedArtists,
+        count,
+        platform,
       })
     );
   }, [
-    profileLoaded,
+    ready,
     favorites,
-    favoriteSongs,
-    favoriteArtistData,
-    trackCount,
+    blockedGames,
+    vibes,
     discovery,
-    excludedArtists,
+    count,
+    platform,
   ]);
 
   useEffect(() => {
-    if (!profileLoaded) {
+    if (!ready) {
       return;
     }
 
     localStorage.setItem(
-      "tastemaker-history-v1",
+      "tastemaker-games-history-v1",
       JSON.stringify(
-        mixHistory
+        history
       )
     );
   }, [
-    profileLoaded,
-    mixHistory,
+    ready,
+    history,
   ]);
 
   useEffect(() => {
-    let cancelled = false;
-
-    async function loadSpotifyUser() {
-      try {
-        const response =
-          await fetch(
-            "/api/spotify/me",
-            {
-              cache:
-                "no-store",
-            }
-          );
-
-        const data =
-          await response.json();
-
-        if (!cancelled) {
-          setSpotifyUser(
-            data.connected
-              ? data.user
-              : null
-          );
-        }
-      } catch {
-        if (!cancelled) {
-          setSpotifyUser(null);
-        }
-      }
-    }
-
-    const params =
-      new URLSearchParams(
-        window.location.search
-      );
-
-    const spotifyStatus =
-      params.get("spotify");
+    const value =
+      query.trim();
 
     if (
-      spotifyStatus ===
-      "connected"
+      value.length < 2
     ) {
-      setMessage(
-        "Spotify connected. Your listening taste can now help shape mixes."
-      );
-    } else if (
-      spotifyStatus ===
-      "verification_failed"
-    ) {
-      setMessage(
-        "Spotify login verification failed. Try connecting again from this site."
-      );
-    } else if (
-      spotifyStatus ===
-      "token_error"
-    ) {
-      setMessage(
-        "Spotify could not finish the login. Try connecting again."
-      );
-    } else if (
-      spotifyStatus ===
-      "denied"
-    ) {
-      setMessage(
-        "Spotify connection was cancelled."
-      );
-    }
-
-    if (spotifyStatus) {
-      window.history.replaceState(
-        {},
-        "",
-        window.location.pathname
-      );
-    }
-
-    loadSpotifyUser();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    const query =
-      input.trim();
-
-    if (
-      query.length < 2
-    ) {
-      setArtistResults([]);
-      setSearchingArtists(
-        false
+      setSearchResults(
+        []
       );
 
-      return;
-    }
-
-    if (
-      selectedArtist &&
-      normalize(
-        selectedArtist.name
-      ) === normalize(query)
-    ) {
-      setArtistResults([]);
-      setSearchingArtists(
+      setSearching(
         false
       );
 
@@ -735,14 +655,14 @@ export default function Home() {
       setTimeout(
         async () => {
           try {
-            setSearchingArtists(
+            setSearching(
               true
             );
 
             const response =
               await fetch(
-                `/api/search-artists?q=${encodeURIComponent(
-                  query
+                `/api/games/search?q=${encodeURIComponent(
+                  value
                 )}`,
                 {
                   signal:
@@ -753,15 +673,17 @@ export default function Home() {
             const data =
               await response.json();
 
-            if (!response.ok) {
+            if (
+              !response.ok
+            ) {
               throw new Error(
                 data.error ||
-                  "Artist search failed."
+                  "Game search failed."
               );
             }
 
-            setArtistResults(
-              data.artists ||
+            setSearchResults(
+              data.games ||
                 []
             );
           } catch (
@@ -775,7 +697,7 @@ export default function Home() {
                 error
               );
 
-              setArtistResults(
+              setSearchResults(
                 []
               );
             }
@@ -785,13 +707,13 @@ export default function Home() {
                 .signal
                 .aborted
             ) {
-              setSearchingArtists(
+              setSearching(
                 false
               );
             }
           }
         },
-        280
+        300
       );
 
     return () => {
@@ -801,35 +723,20 @@ export default function Home() {
 
       controller.abort();
     };
-  }, [
-    input,
-    selectedArtist,
-  ]);
+  }, [query]);
 
   useEffect(() => {
-    const query =
-      songInput.trim();
+    const value =
+      blockedQuery.trim();
 
     if (
-      query.length < 2
+      value.length < 2
     ) {
-      setSongResults([]);
-      setSearchingSongs(
-        false
+      setBlockedResults(
+        []
       );
 
-      return;
-    }
-
-    if (
-      selectedSong &&
-      normalize(
-        selectedSong.name
-      ) ===
-        normalize(query)
-    ) {
-      setSongResults([]);
-      setSearchingSongs(
+      setSearchingBlocked(
         false
       );
 
@@ -843,139 +750,14 @@ export default function Home() {
       setTimeout(
         async () => {
           try {
-            setSearchingSongs(
-              true
-            );
-
-            const artistName =
-              selectedArtist
-                ?.name ||
-              input.trim();
-
-            const params =
-              new URLSearchParams({
-                q: query,
-              });
-
-            if (artistName) {
-              params.set(
-                "artist",
-                artistName
-              );
-            }
-
-            const response =
-              await fetch(
-                `/api/search-songs?${params.toString()}`,
-                {
-                  signal:
-                    controller.signal,
-                }
-              );
-
-            const data =
-              await response.json();
-
-            if (!response.ok) {
-              throw new Error(
-                data.error ||
-                  "Song search failed."
-              );
-            }
-
-            setSongResults(
-              data.songs ||
-                []
-            );
-          } catch (
-            error
-          ) {
-            if (
-              error.name !==
-              "AbortError"
-            ) {
-              console.error(
-                error
-              );
-
-              setSongResults(
-                []
-              );
-            }
-          } finally {
-            if (
-              !controller
-                .signal
-                .aborted
-            ) {
-              setSearchingSongs(
-                false
-              );
-            }
-          }
-        },
-        280
-      );
-
-    return () => {
-      clearTimeout(
-        timer
-      );
-
-      controller.abort();
-    };
-  }, [
-    songInput,
-    selectedArtist,
-    input,
-    selectedSong,
-  ]);
-
-  useEffect(() => {
-    const query =
-      excludedInput.trim();
-
-    if (
-      query.length < 2
-    ) {
-      setExcludedResults([]);
-      setSearchingExcluded(
-        false
-      );
-
-      return;
-    }
-
-    if (
-      selectedExcludedArtist &&
-      normalize(
-        selectedExcludedArtist.name
-      ) ===
-        normalize(query)
-    ) {
-      setExcludedResults([]);
-      setSearchingExcluded(
-        false
-      );
-
-      return;
-    }
-
-    const controller =
-      new AbortController();
-
-    const timer =
-      setTimeout(
-        async () => {
-          try {
-            setSearchingExcluded(
+            setSearchingBlocked(
               true
             );
 
             const response =
               await fetch(
-                `/api/search-artists?q=${encodeURIComponent(
-                  query
+                `/api/games/search?q=${encodeURIComponent(
+                  value
                 )}`,
                 {
                   signal:
@@ -986,43 +768,29 @@ export default function Home() {
             const data =
               await response.json();
 
-            if (!response.ok) {
-              throw new Error(
-                data.error ||
-                  "Artist search failed."
-              );
-            }
-
-            const filtered =
+            setBlockedResults(
               (
-                data.artists ||
+                data.games ||
                 []
               ).filter(
-                (artist) =>
-                  !excludedArtists.some(
-                    (blocked) =>
-                      normalize(
-                        blocked
-                      ) ===
-                      normalize(
-                        artist.name
-                      )
+                (game) =>
+                  !blockedGames.some(
+                    (
+                      blocked
+                    ) =>
+                      blocked.id ===
+                      game.id
                   )
-              );
-
-            setExcludedResults(
-              filtered
+              )
             );
-          } catch (error) {
+          } catch (
+            error
+          ) {
             if (
               error.name !==
               "AbortError"
             ) {
-              console.error(
-                error
-              );
-
-              setExcludedResults(
+              setBlockedResults(
                 []
               );
             }
@@ -1032,13 +800,13 @@ export default function Home() {
                 .signal
                 .aborted
             ) {
-              setSearchingExcluded(
+              setSearchingBlocked(
                 false
               );
             }
           }
         },
-        280
+        300
       );
 
     return () => {
@@ -1049,571 +817,304 @@ export default function Home() {
       controller.abort();
     };
   }, [
-    excludedInput,
-    selectedExcludedArtist,
-    excludedArtists,
+    blockedQuery,
+    blockedGames,
   ]);
 
   useEffect(() => {
     if (!loading) {
-      setLoadingStage("");
+      setLoadingText("");
       return;
     }
 
     const stages = [
-      "Reading your taste...",
-      "Following artist connections...",
-      "Filtering the obvious stuff...",
-      "Building your mix...",
+      "Reading your game taste...",
+      "Exploring connected genres...",
+      "Avoiding the obvious picks...",
+      "Checking hidden gems...",
+      "Building your recommendations...",
     ];
 
-    let index = 0;
+    let stage = 0;
 
-    setLoadingStage(
+    setLoadingText(
       stages[0]
     );
 
     const timer =
       setInterval(() => {
-        index = Math.min(
-          index + 1,
-          stages.length - 1
-        );
+        stage =
+          Math.min(
+            stage + 1,
+            stages.length - 1
+          );
 
-        setLoadingStage(
-          stages[index]
+        setLoadingText(
+          stages[stage]
         );
-      }, 900);
+      }, 850);
 
     return () =>
-      clearInterval(timer);
+      clearInterval(
+        timer
+      );
   }, [loading]);
 
-  function clearResults({
-    keepFeedback = false,
-  } = {}) {
-    setTracks([]);
-    setMixMeta(null);
-    setPlaylistUrl("");
+  function resetResults() {
+    setRecommendations(
+      []
+    );
 
-    if (!keepFeedback) {
-      setLikedTrackIds([]);
-      setDislikedTrackIds(
-        []
-      );
-    }
+    setLikedIds([]);
+    setDislikedIds([]);
   }
 
-  function saveArtistAndSong(
-    artistName,
-    songTitle,
-    artistData = null
+  function addFavorite(
+    game
+  ) {
+    if (
+      favorites.some(
+        (item) =>
+          item.id ===
+          game.id
+      )
+    ) {
+      setMessage(
+        `${game.name} is already in your taste profile.`
+      );
+
+      setQuery("");
+      setSearchResults([]);
+
+      return;
+    }
+
+    setFavorites(
+      (previous) =>
+        [
+          ...previous,
+          game,
+        ].slice(
+          0,
+          8
+        )
+    );
+
+    setBlockedGames(
+      (previous) =>
+        previous.filter(
+          (item) =>
+            item.id !==
+            game.id
+        )
+    );
+
+    setQuery("");
+    setSearchResults([]);
+
+    resetResults();
+
+    setMessage(
+      `Added ${game.name}.`
+    );
+  }
+
+  function removeFavorite(
+    id
   ) {
     setFavorites(
+      (previous) =>
+        previous.filter(
+          (game) =>
+            game.id !== id
+        )
+    );
+
+    resetResults();
+  }
+
+  function addBlockedGame(
+    game
+  ) {
+    setBlockedGames(
       (previous) => {
-        const exists =
+        if (
           previous.some(
-            (artist) =>
-              normalize(
-                artist
-              ) ===
-              normalize(
-                artistName
-              )
-          );
-
-        return exists
-          ? previous
-          : [
-              ...previous,
-              artistName,
-            ];
-      }
-    );
-
-    if (artistData) {
-      setFavoriteArtistData(
-        (previous) => ({
-          ...previous,
-
-          [normalize(
-            artistName
-          )]: artistData,
-        })
-      );
-    }
-
-    if (songTitle) {
-      setFavoriteSongs(
-        (previous) => {
-          const key =
-            normalize(
-              artistName
-            );
-
-          const existing =
-            Array.isArray(
-              previous[key]
-            )
-              ? previous[key]
-              : [];
-
-          const exists =
-            existing.some(
-              (song) =>
-                normalize(
-                  song
-                ) ===
-                normalize(
-                  songTitle
-                )
-            );
-
-          if (exists) {
-            return previous;
-          }
-
-          return {
-            ...previous,
-
-            [key]: [
-              ...existing,
-              songTitle,
-            ],
-          };
-        }
-      );
-    }
-
-    setInput("");
-    setSongInput("");
-
-    setSelectedArtist(
-      null
-    );
-
-    setSelectedSong(null);
-    setArtistResults([]);
-    setSongResults([]);
-    setMessage("");
-
-    clearResults();
-  }
-
-  async function addArtist(
-    event
-  ) {
-    event.preventDefault();
-
-    if (busy) {
-      return;
-    }
-
-    const typedArtist =
-      input.trim();
-
-    const typedSong =
-      songInput.trim();
-
-    const songTitle =
-      selectedSong &&
-      normalize(
-        selectedSong.name
-      ) ===
-        normalize(
-          typedSong
-        )
-        ? selectedSong.name
-        : typedSong;
-
-    if (!typedArtist) {
-      setMessage(
-        "Enter an artist name first."
-      );
-
-      return;
-    }
-
-    if (
-      selectedArtist &&
-      normalize(
-        selectedArtist.name
-      ) ===
-        normalize(
-          typedArtist
-        )
-    ) {
-      saveArtistAndSong(
-        selectedArtist.name,
-        songTitle,
-        selectedArtist
-      );
-
-      return;
-    }
-
-    try {
-      const response =
-        await fetch(
-          `/api/search-artists?q=${encodeURIComponent(
-            typedArtist
-          )}`
-        );
-
-      if (!response.ok) {
-        saveArtistAndSong(
-          typedArtist,
-          songTitle
-        );
-
-        return;
-      }
-
-      const data =
-        await response.json();
-
-      const spotifyArtists =
-        data.artists || [];
-
-      if (
-        !spotifyArtists.length
-      ) {
-        saveArtistAndSong(
-          typedArtist,
-          songTitle
-        );
-
-        return;
-      }
-
-      const normalizedInput =
-        normalize(
-          typedArtist
-        );
-
-      const exactMatch =
-        spotifyArtists.find(
-          (artist) =>
-            normalize(
-              artist.name
-            ) ===
-            normalizedInput
-        );
-
-      if (exactMatch) {
-        saveArtistAndSong(
-          exactMatch.name,
-          songTitle,
-          exactMatch
-        );
-
-        return;
-      }
-
-      const ranked =
-        spotifyArtists
-          .map(
-            (artist) => {
-              const artistName =
-                normalize(
-                  artist.name
-                );
-
-              const editDistance =
-                distance(
-                  normalizedInput,
-                  artistName
-                );
-
-              const maxLength =
-                Math.max(
-                  normalizedInput.length,
-                  artistName.length,
-                  1
-                );
-
-              return {
-                ...artist,
-
-                similarity:
-                  1 -
-                  editDistance /
-                    maxLength,
-
-                editDistance,
-              };
-            }
+            (item) =>
+              item.id ===
+              game.id
           )
-          .sort(
-            (
-              a,
-              b
-            ) =>
-              b.similarity -
-                a.similarity ||
-              a.editDistance -
-                b.editDistance
-          );
-
-      const bestMatch =
-        ranked[0];
-
-      if (
-        bestMatch &&
-        bestMatch.similarity >=
-          0.55
-      ) {
-        const confirmed =
-          window.confirm(
-            `Did you mean "${bestMatch.name}"?`
-          );
-
-        if (confirmed) {
-          saveArtistAndSong(
-            bestMatch.name,
-            songTitle,
-            bestMatch
-          );
-
-          return;
+        ) {
+          return previous;
         }
+
+        return [
+          ...previous,
+          game,
+        ].slice(
+          0,
+          30
+        );
       }
+    );
 
-      saveArtistAndSong(
-        typedArtist,
-        songTitle
-      );
-    } catch (error) {
-      console.error(
-        "Artist search error:",
-        error
-      );
+    setFavorites(
+      (previous) =>
+        previous.filter(
+          (item) =>
+            item.id !==
+            game.id
+        )
+    );
 
-      saveArtistAndSong(
-        typedArtist,
-        songTitle
-      );
-    }
+    setRecommendations(
+      (previous) =>
+        previous.filter(
+          (item) =>
+            item.id !==
+            game.id
+        )
+    );
+
+    setBlockedQuery("");
+    setBlockedResults([]);
+
+    setMessage(
+      `${game.name} will not be recommended.`
+    );
   }
 
-  function removeSong(
-    artist,
-    title
+  function removeBlockedGame(
+    id
   ) {
-    setFavoriteSongs(
+    setBlockedGames(
+      (previous) =>
+        previous.filter(
+          (game) =>
+            game.id !== id
+        )
+    );
+  }
+
+  function toggleVibe(
+    id
+  ) {
+    setVibes(
       (previous) => {
-        const key =
-          normalize(artist);
-
-        const updated = {
-          ...previous,
-        };
-
-        updated[key] = (
-          updated[key] || []
-        ).filter(
-          (song) =>
-            normalize(
-              song
-            ) !==
-            normalize(
-              title
-            )
-        );
+        if (
+          previous.includes(
+            id
+          )
+        ) {
+          return previous.filter(
+            (item) =>
+              item !== id
+          );
+        }
 
         if (
-          !updated[key].length
+          previous.length >=
+          3
         ) {
-          delete updated[key];
+          return [
+            ...previous.slice(
+              1
+            ),
+            id,
+          ];
         }
 
-        return updated;
-      }
-    );
-
-    clearResults();
-  }
-
-  function removeArtist(
-    artist
-  ) {
-    setFavorites(
-      (previous) =>
-        previous.filter(
-          (name) =>
-            normalize(
-              name
-            ) !==
-            normalize(
-              artist
-            )
-        )
-    );
-
-    setFavoriteArtistData(
-      (previous) => {
-        const updated = {
+        return [
           ...previous,
-        };
-
-        delete updated[
-          normalize(
-            artist
-          )
+          id,
         ];
-
-        return updated;
       }
     );
 
-    setFavoriteSongs(
-      (previous) => {
-        const updated = {
-          ...previous,
-        };
-
-        delete updated[
-          normalize(
-            artist
-          )
-        ];
-
-        return updated;
-      }
-    );
-
-    clearResults();
-  }
-
-  function addExcludedArtist() {
-    const typedName =
-      excludedInput.trim();
-
-    const name =
-      selectedExcludedArtist &&
-      normalize(
-        selectedExcludedArtist.name
-      ) ===
-        normalize(
-          typedName
-        )
-        ? selectedExcludedArtist.name
-        : typedName;
-
-    if (!name) {
-      return;
-    }
-
-    setExcludedArtists(
-      (previous) => {
-        const exists =
-          previous.some(
-            (artist) =>
-              normalize(
-                artist
-              ) ===
-              normalize(
-                name
-              )
-          );
-
-        return exists
-          ? previous
-          : [
-              ...previous,
-              name,
-            ].slice(0, 30);
-      }
-    );
-
-    setExcludedInput("");
-
-    setSelectedExcludedArtist(
-      null
-    );
-
-    setExcludedResults([]);
-
-    clearResults();
-  }
-
-  function removeExcludedArtist(
-    name
-  ) {
-    setExcludedArtists(
-      (previous) =>
-        previous.filter(
-          (artist) =>
-            normalize(
-              artist
-            ) !==
-            normalize(name)
-        )
-    );
-
-    clearResults();
+    resetResults();
   }
 
   function toggleLike(
-    trackId
+    id
   ) {
-    setLikedTrackIds(
+    setLikedIds(
       (previous) =>
         previous.includes(
-          trackId
+          id
         )
           ? previous.filter(
-              (id) =>
-                id !==
-                trackId
+              (item) =>
+                item !== id
             )
           : [
               ...previous,
-              trackId,
+              id,
             ]
     );
 
-    setDislikedTrackIds(
+    setDislikedIds(
       (previous) =>
         previous.filter(
-          (id) =>
-            id !== trackId
+          (item) =>
+            item !== id
         )
     );
   }
 
   function toggleDislike(
-    trackId
+    id
   ) {
-    setDislikedTrackIds(
+    setDislikedIds(
       (previous) =>
         previous.includes(
-          trackId
+          id
         )
           ? previous.filter(
-              (id) =>
-                id !==
-                trackId
+              (item) =>
+                item !== id
             )
           : [
               ...previous,
-              trackId,
+              id,
             ]
     );
 
-    setLikedTrackIds(
+    setLikedIds(
       (previous) =>
         previous.filter(
-          (id) =>
-            id !== trackId
+          (item) =>
+            item !== id
         )
+    );
+  }
+
+  function removeRecommendation(
+    id
+  ) {
+    setRecommendations(
+      (previous) =>
+        previous.filter(
+          (game) =>
+            game.id !== id
+        )
+    );
+
+    setDislikedIds(
+      (previous) =>
+        previous.includes(
+          id
+        )
+          ? previous
+          : [
+              ...previous,
+              id,
+            ]
     );
   }
 
   function rememberMix(
     name,
-    newTracks,
-    meta
+    games
   ) {
     const entry = {
       id:
@@ -1623,36 +1124,41 @@ export default function Home() {
 
       name,
 
-      createdAt:
-        Date.now(),
-
       discovery,
 
-      tracks:
-        newTracks,
+      platform,
 
-      meta,
+      vibes,
+
+      games,
+
+      createdAt:
+        Date.now(),
     };
 
-    setMixHistory(
-      (previous) => [
-        entry,
-        ...previous,
-      ].slice(0, 6)
+    setHistory(
+      (previous) =>
+        [
+          entry,
+          ...previous,
+        ].slice(
+          0,
+          6
+        )
     );
   }
 
-  function loadHistoryMix(
+  function loadHistory(
     item
   ) {
-    setMixName(item.name);
-
-    setTracks(
-      item.tracks || []
+    setRecommendations(
+      item.games ||
+        []
     );
 
-    setMixMeta(
-      item.meta || null
+    setMixName(
+      item.name ||
+        "TasteMaker Games"
     );
 
     setDiscovery(
@@ -1660,12 +1166,21 @@ export default function Home() {
         discovery
     );
 
-    setLikedTrackIds([]);
-    setDislikedTrackIds([]);
-    setPlaylistUrl("");
+    setPlatform(
+      item.platform ||
+        "all"
+    );
+
+    setVibes(
+      item.vibes ||
+        []
+    );
+
+    setLikedIds([]);
+    setDislikedIds([]);
 
     setMessage(
-      `Loaded ${item.name} from your recent mixes.`
+      `Loaded ${item.name}.`
     );
 
     window.scrollTo({
@@ -1678,38 +1193,14 @@ export default function Home() {
     });
   }
 
-  function clearTasteProfile() {
-    if (
-      !window.confirm(
-        "Clear your saved TasteMaker profile?"
-      )
-    ) {
-      return;
-    }
-
-    setFavorites([]);
-    setFavoriteSongs({});
-    setFavoriteArtistData(
-      {}
-    );
-
-    setExcludedArtists([]);
-
-    clearResults();
-
-    setMessage(
-      "Taste profile cleared."
-    );
-  }
-
-  async function findSongs(
+  async function generate(
     regenerate = false
   ) {
     if (
       !favorites.length
     ) {
       setMessage(
-        "Add at least one artist first."
+        "Add at least one favorite game first."
       );
 
       return;
@@ -1717,33 +1208,11 @@ export default function Home() {
 
     setLoading(true);
     setMessage("");
-    setPlaylistUrl("");
-
-    const likedTracks =
-      tracks
-        .filter(
-          (track) =>
-            likedTrackIds.includes(
-              track.id
-            )
-        )
-        .map(
-          (track) => ({
-            id:
-              track.id,
-
-            artist:
-              track.artist,
-
-            artists:
-              track.artists,
-          })
-        );
 
     try {
       const response =
         await fetch(
-          "/api/spotify",
+          "/api/games/recommend",
           {
             method:
               "POST",
@@ -1755,34 +1224,42 @@ export default function Home() {
 
             body:
               JSON.stringify({
-                artists:
-                  favorites,
+                seedIds:
+                  favorites.map(
+                    (game) =>
+                      game.id
+                  ),
 
-                favoriteSongs,
+                likedIds,
 
-                count:
-                  trackCount,
+                dislikedIds,
 
-                discovery,
-
-                nonce:
-                  `${Date.now()}-${Math.random()}`,
+                blockedIds:
+                  blockedGames.map(
+                    (game) =>
+                      game.id
+                  ),
 
                 excludeIds:
                   regenerate
-                    ? tracks.map(
+                    ? recommendations.map(
                         (
-                          track
+                          game
                         ) =>
-                          track.id
+                          game.id
                       )
                     : [],
 
-                likedTracks,
+                count,
 
-                dislikedTrackIds,
+                discovery,
 
-                excludedArtists,
+                platform,
+
+                vibes,
+
+                nonce:
+                  `${Date.now()}-${Math.random()}`,
               }),
           }
         );
@@ -1790,178 +1267,120 @@ export default function Home() {
       const data =
         await response.json();
 
-      if (!response.ok) {
+      if (
+        !response.ok
+      ) {
         throw new Error(
           data.error ||
-            "Recommendation search failed."
+            "Could not build recommendations."
         );
       }
 
-      const newTracks =
-        data.tracks || [];
+      const games =
+        data.games || [];
 
-      const newMeta =
-        data.meta || null;
-
-      const newName =
-        buildMixName(
-          discovery,
-          newMeta,
-          newTracks
-        );
-
-      setTracks(
-        newTracks
+      setRecommendations(
+        games
       );
 
-      setMixMeta(
-        newMeta
-      );
-
-      setMixName(
-        newName
-      );
-
-      setLikedTrackIds([]);
-      setDislikedTrackIds(
-        []
-      );
+      setLikedIds([]);
+      setDislikedIds([]);
 
       if (
-        !newTracks.length
+        !games.length
       ) {
         setMessage(
-          "No mix came back this time. Try another discovery level or fewer exclusions."
-        );
-      } else {
-        rememberMix(
-          newName,
-          newTracks,
-          newMeta
+          "No recommendations matched those settings. Try Any platform or fewer blocked games."
         );
 
-        setMessage(
-          regenerate
-            ? `Fresh mix generated: ${newName}.`
-            : `Built ${newName} with ${newTracks.length} tracks.`
-        );
+        return;
       }
-    } catch (error) {
-      console.error(error);
+
+      const name =
+        buildMixName(
+          discovery,
+          games
+        );
+
+      setMixName(
+        name
+      );
+
+      rememberMix(
+        name,
+        games
+      );
+
+      setMessage(
+        regenerate
+          ? `Built a fresh list with ${games.length} games.`
+          : `Found ${games.length} games for you.`
+      );
+    } catch (
+      error
+    ) {
+      console.error(
+        error
+      );
 
       setMessage(
         error.message ||
-          "Could not build your playlist."
+          "Could not generate recommendations."
       );
     } finally {
       setLoading(false);
     }
   }
 
-  async function copyTracks() {
+  async function copyGames() {
     try {
       await navigator
         .clipboard
         .writeText(
-          tracks
+          recommendations
             .map(
-              (track) =>
-                `${track.artist} — ${track.title}`
+              (
+                game,
+                index
+              ) =>
+                `${index + 1}. ${game.name}${
+                  game.year
+                    ? ` (${game.year})`
+                    : ""
+                }`
             )
             .join("\n")
         );
 
       setMessage(
-        "Track list copied."
+        "Game list copied."
       );
     } catch {
       setMessage(
-        "Copy failed. Please allow clipboard access."
+        "Could not copy the list."
       );
     }
   }
 
-  async function savePlaylist() {
+  function clearProfile() {
     if (
-      !tracks.length ||
-      busy
+      !window.confirm(
+        "Clear your saved game taste?"
+      )
     ) {
       return;
     }
 
-    setSaving(true);
-    setPlaylistUrl("");
+    setFavorites([]);
+    setBlockedGames([]);
+    setVibes([]);
+    setRecommendations([]);
+    setLikedIds([]);
+    setDislikedIds([]);
 
     setMessage(
-      "Saving to Spotify..."
+      "Game taste profile cleared."
     );
-
-    try {
-      const response =
-        await fetch(
-          "/api/spotify/save",
-          {
-            method:
-              "POST",
-
-            headers: {
-              "Content-Type":
-                "application/json",
-            },
-
-            body:
-              JSON.stringify({
-                name:
-                  mixName ||
-                  `TasteMaker ${discoveryLabel} Mix`,
-
-                uris:
-                  tracks.map(
-                    (track) =>
-                      track.uri
-                  ),
-              }),
-          }
-        );
-
-      const data =
-        await response.json();
-
-      if (
-        data.playlistUrl
-      ) {
-        setPlaylistUrl(
-          data.playlistUrl
-        );
-      }
-
-      if (!response.ok) {
-        if (
-          data.needsLogin
-        ) {
-          setSpotifyUser(
-            null
-          );
-        }
-
-        setMessage(
-          data.error ||
-            "Could not save the playlist."
-        );
-
-        return;
-      }
-
-      setMessage(
-        `Saved ${data.added} songs to Spotify.`
-      );
-    } catch {
-      setMessage(
-        "Saving could not be confirmed."
-      );
-    } finally {
-      setSaving(false);
-    }
   }
 
   return (
@@ -1975,11 +1394,7 @@ export default function Home() {
           box-sizing: border-box;
         }
 
-        html {
-          scroll-behavior: smooth;
-          background: #09090b;
-        }
-
+        html,
         body {
           margin: 0;
           background: #09090b;
@@ -1991,38 +1406,31 @@ export default function Home() {
           font: inherit;
         }
 
-        button,
-        a {
-          -webkit-tap-highlight-color: transparent;
-        }
-
         .tm {
           --bg: #09090b;
           --panel: #121216;
           --panel2: #18181e;
-          --soft: #202027;
-          --line: #292930;
+          --line: #2b2b32;
           --text: #f7f4eb;
           --muted: #aaa7a0;
-          --dim: #76736e;
+          --dim: #77747d;
           --lime: #b7ff5a;
           --purple: #8b78ff;
           --pink: #ff7f9f;
 
           min-height: 100vh;
-          overflow-x: hidden;
           color: var(--text);
 
           background:
             radial-gradient(
-              circle at 92% 8%,
-              rgba(139,120,255,.17),
+              circle at 90% 8%,
+              rgba(139,120,255,.18),
               transparent 28%
             ),
             radial-gradient(
-              circle at 5% 32%,
+              circle at 4% 32%,
               rgba(183,255,90,.10),
-              transparent 23%
+              transparent 24%
             ),
             #09090b;
 
@@ -2036,43 +1444,13 @@ export default function Home() {
             sans-serif;
         }
 
-        .tm::before {
-          content: "";
-          position: fixed;
-          inset: 0;
-          pointer-events: none;
-          opacity: .45;
-
-          background-image:
-            radial-gradient(
-              rgba(255,255,255,.06)
-              .7px,
-              transparent .7px
-            );
-
-          background-size:
-            18px 18px;
-
-          mask-image:
-            linear-gradient(
-              to bottom,
-              #000,
-              transparent 78%
-            );
-        }
-
         .shell {
-          position: relative;
-          z-index: 1;
+          width: min(
+            1220px,
+            calc(100% - 32px)
+          );
 
-          width:
-            min(
-              1220px,
-              calc(100% - 32px)
-            );
-
-          margin:
-            0 auto;
+          margin: 0 auto;
 
           padding:
             18px 0 64px;
@@ -2081,9 +1459,9 @@ export default function Home() {
         .nav {
           position: sticky;
           top: 12px;
-          z-index: 500;
+          z-index: 100;
 
-          min-height: 70px;
+          min-height: 68px;
 
           padding:
             10px 12px;
@@ -2093,7 +1471,7 @@ export default function Home() {
           justify-content:
             space-between;
 
-          gap: 18px;
+          gap: 16px;
 
           border:
             1px solid
@@ -2104,15 +1482,14 @@ export default function Home() {
               .08
             );
 
-          border-radius:
-            20px;
+          border-radius: 20px;
 
           background:
             rgba(
               11,
               11,
               14,
-              .86
+              .88
             );
 
           backdrop-filter:
@@ -2124,286 +1501,131 @@ export default function Home() {
               0,
               0,
               0,
-              .30
+              .28
             );
         }
 
         .brand {
           display: flex;
           align-items: center;
-
-          gap: 12px;
-
-          min-width: 0;
+          gap: 11px;
         }
 
         .brandLogo {
           width: 44px;
           height: 44px;
 
-          border-radius:
-            12px;
+          border-radius: 12px;
 
-          object-fit:
-            cover;
+          object-fit: cover;
 
-          background:
-            #050505;
-
-          box-shadow:
-            inset
-            0 0 0 1px
-            rgba(
-              255,
-              255,
-              255,
-              .08
-            );
+          background: #050505;
         }
 
-        .brandText {
+        .brandWords {
           display: flex;
-          flex-direction:
-            column;
-
-          line-height: 1;
+          flex-direction: column;
         }
 
-        .brandText strong {
-          font-size:
-            17px;
-
-          letter-spacing:
-            -.03em;
+        .brandWords strong {
+          font-size: 17px;
+          letter-spacing: -.03em;
         }
 
-        .brandText span {
-          margin-top:
-            5px;
+        .brandWords span {
+          margin-top: 4px;
 
-          color:
-            var(--dim);
+          color: var(--dim);
 
-          font-size:
-            11px;
+          font-size: 11px;
         }
 
-        .navRight {
-          display: flex;
-          align-items:
-            center;
-
-          gap: 10px;
-        }
-
-        .connect,
-        .userPill {
-          min-height:
-            44px;
+        .mode {
+          padding:
+            9px 12px;
 
           display:
             inline-flex;
 
-          align-items:
-            center;
+          align-items: center;
 
-          justify-content:
-            center;
-
-          gap: 9px;
-
-          border-radius:
-            14px;
-
-          text-decoration:
-            none;
-
-          transition:
-            .16s ease;
-        }
-
-        .connect {
-          padding:
-            0 16px;
-
-          color:
-            #090b07;
-
-          background:
-            var(--lime);
-
-          font-size:
-            14px;
-
-          font-weight:
-            900;
-        }
-
-        .connect:hover,
-        .userPill:hover {
-          transform:
-            translateY(-2px);
-        }
-
-        .userPill {
-          max-width:
-            230px;
-
-          justify-content:
-            flex-start;
-
-          padding:
-            5px 12px
-            5px 5px;
+          gap: 7px;
 
           border:
             1px solid
-            var(--line);
+            rgba(
+              183,
+              255,
+              90,
+              .20
+            );
+
+          border-radius: 999px;
 
           background:
-            var(--panel2);
+            rgba(
+              183,
+              255,
+              90,
+              .07
+            );
 
-          color:
-            var(--text);
-        }
+          color: var(--lime);
 
-        .userAvatar,
-        .userAvatarFallback {
-          width: 34px;
-          height: 34px;
-
-          flex:
-            0 0 auto;
-
-          border-radius:
-            10px;
-
-          object-fit:
-            cover;
-
-          background:
-            #0d0d10;
-        }
-
-        .userAvatarFallback {
-          display: grid;
-          place-items:
-            center;
-
-          color:
-            var(--lime);
-        }
-
-        .userText {
-          min-width: 0;
-
-          display: flex;
-          flex-direction:
-            column;
-        }
-
-        .userText strong {
-          overflow:
-            hidden;
-
-          text-overflow:
-            ellipsis;
-
-          white-space:
-            nowrap;
-
-          font-size:
-            13px;
-        }
-
-        .userText small {
-          margin-top:
-            3px;
-
-          color:
-            var(--lime);
-
-          font-size:
-            10px;
+          font-size: 12px;
+          font-weight: 850;
         }
 
         .hero {
-          min-height:
-            610px;
+          min-height: 600px;
 
           padding:
-            92px 26px
-            72px;
+            92px 28px
+            70px;
 
           display: grid;
 
           grid-template-columns:
-            minmax(
-              0,
-              1.25fr
-            )
-            minmax(
-              300px,
-              .75fr
-            );
+            minmax(0,1.2fr)
+            minmax(300px,.8fr);
 
-          gap: 62px;
+          align-items: center;
 
-          align-items:
-            center;
+          gap: 58px;
         }
 
-        .heroEyebrow {
-          display:
-            inline-flex;
-
-          align-items:
-            center;
-
+        .eyebrow {
+          display: inline-flex;
+          align-items: center;
           gap: 8px;
 
-          margin-bottom:
-            24px;
+          color: var(--lime);
 
-          color:
-            var(--lime);
-
-          font-size:
-            13px;
-
-          font-weight:
-            850;
+          font-size: 13px;
+          font-weight: 850;
         }
 
         .hero h1 {
-          margin: 0;
-
-          max-width:
-            820px;
+          margin:
+            23px 0 0;
 
           font-size:
             clamp(
               58px,
-              8.2vw,
-              110px
+              8vw,
+              108px
             );
 
-          line-height:
-            .91;
+          line-height: .91;
 
           letter-spacing:
             -.068em;
 
-          font-weight:
-            950;
-
-          text-wrap:
-            balance;
+          font-weight: 950;
         }
 
-        .hero h1 .stroke {
-          color:
-            transparent;
+        .stroke {
+          color: transparent;
 
           -webkit-text-stroke:
             1px
@@ -2415,57 +1637,47 @@ export default function Home() {
             );
         }
 
-        .hero h1 .lime {
-          color:
-            var(--lime);
+        .lime {
+          color: var(--lime);
         }
 
         .heroCopy {
-          max-width:
-            690px;
+          max-width: 680px;
 
           margin:
             28px 0 0;
 
-          color:
-            #b7b3ac;
+          color: #b7b3ac;
 
-          font-size:
-            18px;
-
-          line-height:
-            1.7;
+          font-size: 18px;
+          line-height: 1.7;
         }
 
-        .heroActions {
+        .heroBadges {
+          margin-top: 28px;
+
           display: flex;
-          flex-wrap:
-            wrap;
+          flex-wrap: wrap;
 
-          gap: 10px;
-
-          margin-top:
-            30px;
+          gap: 8px;
         }
 
-        .heroBadge {
+        .badge {
           padding:
-            10px 13px;
+            9px 12px;
 
           display:
             inline-flex;
 
-          align-items:
-            center;
+          align-items: center;
 
-          gap: 8px;
+          gap: 7px;
 
           border:
             1px solid
             var(--line);
 
-          border-radius:
-            12px;
+          border-radius: 11px;
 
           background:
             rgba(
@@ -2475,38 +1687,26 @@ export default function Home() {
               .025
             );
 
-          color:
-            #c9c6bf;
+          color: #c9c6bf;
 
-          font-size:
-            13px;
-
-          font-weight:
-            700;
+          font-size: 12px;
+          font-weight: 750;
         }
 
         .heroArt {
-          position:
-            relative;
+          position: relative;
 
-          min-height:
-            370px;
+          min-height: 370px;
 
           display: grid;
-
-          place-items:
-            center;
+          place-items: center;
         }
 
         .orbit {
-          position:
-            absolute;
+          position: absolute;
 
-          width:
-            340px;
-
-          height:
-            340px;
+          width: 340px;
+          height: 340px;
 
           border:
             1px solid
@@ -2514,22 +1714,17 @@ export default function Home() {
               255,
               255,
               255,
-              .09
+              .08
             );
 
-          border-radius:
-            50%;
+          border-radius: 50%;
         }
 
         .orbit::before,
         .orbit::after {
           content: "";
 
-          position:
-            absolute;
-
-          border-radius:
-            50%;
+          position: absolute;
 
           border:
             1px solid
@@ -2537,30 +1732,26 @@ export default function Home() {
               255,
               255,
               255,
-              .07
+              .065
             );
+
+          border-radius: 50%;
         }
 
         .orbit::before {
-          inset: 36px;
+          inset: 38px;
         }
 
         .orbit::after {
-          inset: 76px;
+          inset: 78px;
         }
 
         .heroCard {
-          position:
-            relative;
+          position: relative;
 
-          width:
-            min(
-              310px,
-              100%
-            );
+          width: 300px;
 
-          padding:
-            24px;
+          padding: 24px;
 
           border:
             1px solid
@@ -2571,29 +1762,23 @@ export default function Home() {
               .10
             );
 
-          border-radius:
-            26px;
+          border-radius: 26px;
 
           background:
             linear-gradient(
-              160deg,
+              150deg,
               rgba(
                 139,
                 120,
                 255,
-                .20
+                .24
               ),
-              rgba(
-                18,
-                18,
-                22,
-                .96
-              ) 48%,
+              #141419 50%,
               rgba(
                 183,
                 255,
                 90,
-                .08
+                .10
               )
             );
 
@@ -2603,113 +1788,55 @@ export default function Home() {
               0,
               0,
               0,
-              .42
+              .45
             );
 
           transform:
             rotate(4deg);
         }
 
-        .heroCardTop {
-          display: flex;
-
-          align-items:
-            center;
-
-          justify-content:
-            space-between;
-
-          gap: 12px;
-        }
-
         .heroCardLabel {
-          color:
-            #d8d4cc;
+          color: #d7d3cc;
 
-          font-size:
-            13px;
-
-          font-weight:
-            800;
+          font-size: 12px;
+          font-weight: 850;
         }
 
-        .heroDot {
-          width: 10px;
-          height: 10px;
+        .heroCardNumber {
+          margin-top: 36px;
 
-          border-radius:
-            50%;
+          font-size: 56px;
+          font-weight: 950;
 
-          background:
-            var(--lime);
-
-          box-shadow:
-            0 0 20px
-            rgba(
-              183,
-              255,
-              90,
-              .8
-            );
+          letter-spacing: -.06em;
         }
 
-        .heroCardBig {
-          margin-top:
-            42px;
+        .heroCardMode {
+          color: var(--muted);
 
-          font-size:
-            52px;
+          line-height: 1.55;
 
-          font-weight:
-            950;
-
-          letter-spacing:
-            -.06em;
+          font-size: 13px;
         }
 
-        .heroCardSmall {
-          margin-top:
-            6px;
+        .bar {
+          height: 9px;
 
-          color:
-            #aaa7a0;
+          margin-top: 22px;
 
-          font-size:
-            14px;
+          border-radius: 99px;
 
-          line-height:
-            1.55;
+          overflow: hidden;
+
+          background: #25252c;
         }
 
-        .heroBars {
-          display: grid;
-
-          gap: 8px;
-
-          margin-top:
-            28px;
-        }
-
-        .heroBar {
-          height: 10px;
-
-          border-radius:
-            999px;
-
-          background:
-            #24242b;
-
-          overflow:
-            hidden;
-        }
-
-        .heroBar span {
+        .bar span {
           display: block;
 
           height: 100%;
 
-          border-radius:
-            inherit;
+          border-radius: inherit;
 
           background:
             linear-gradient(
@@ -2720,47 +1847,28 @@ export default function Home() {
         }
 
         .section {
-          margin-top:
-            20px;
+          margin-top: 20px;
 
           border:
             1px solid
             var(--line);
 
-          border-radius:
-            26px;
+          border-radius: 26px;
 
           background:
             var(--panel);
-
-          overflow:
-            visible;
         }
 
         .sectionHead {
           padding:
             28px 30px 0;
-
-          display: flex;
-
-          align-items:
-            flex-start;
-
-          justify-content:
-            space-between;
-
-          gap: 20px;
         }
 
         .kicker {
-          color:
-            var(--lime);
+          color: var(--lime);
 
-          font-size:
-            13px;
-
-          font-weight:
-            850;
+          font-size: 12px;
+          font-weight: 850;
         }
 
         .sectionTitle {
@@ -2776,138 +1884,64 @@ export default function Home() {
 
           line-height: 1;
 
-          letter-spacing:
-            -.045em;
+          letter-spacing: -.045em;
         }
 
         .sectionCopy {
-          max-width:
-            650px;
+          max-width: 650px;
 
           margin:
             12px 0 0;
 
-          color:
-            var(--muted);
+          color: var(--muted);
 
-          font-size:
-            16px;
-
-          line-height:
-            1.65;
+          line-height: 1.6;
         }
 
-        .builderGrid {
-          padding:
-            28px 30px
-            30px;
+        .builder {
+          padding: 28px 30px 30px;
 
           display: grid;
 
           grid-template-columns:
-            minmax(
-              0,
-              1.35fr
-            )
-            minmax(
-              320px,
-              .65fr
-            );
+            minmax(0,1.35fr)
+            minmax(320px,.65fr);
 
           gap: 18px;
         }
 
         .panel {
+          padding: 22px;
+
           border:
             1px solid
             var(--line);
 
-          border-radius:
-            20px;
+          border-radius: 20px;
 
-          background:
-            #0d0d10;
+          background: #0e0e11;
         }
 
-        .seedPanel {
-          padding:
-            22px;
-        }
-
-        .controlPanel {
-          padding:
-            22px;
-        }
-
-        .panelTitle {
+        .panel h3 {
           margin: 0;
 
-          font-size:
-            20px;
-
-          letter-spacing:
-            -.025em;
+          font-size: 20px;
         }
 
         .panelCopy {
           margin:
             7px 0 0;
 
-          color:
-            var(--muted);
+          color: var(--muted);
 
-          font-size:
-            14px;
-
-          line-height:
-            1.55;
+          font-size: 13px;
+          line-height: 1.55;
         }
 
-        .formGrid {
-          margin-top:
-            22px;
+        .searchWrap {
+          position: relative;
 
-          display: grid;
-
-          grid-template-columns:
-            minmax(
-              0,
-              1fr
-            )
-            minmax(
-              0,
-              1fr
-            )
-            auto;
-
-          gap: 10px;
-
-          align-items:
-            end;
-        }
-
-        .field {
-          position:
-            relative;
-
-          min-width: 0;
-        }
-
-        .field label {
-          display: block;
-
-          margin:
-            0 0 8px
-            2px;
-
-          color:
-            #c9c6bf;
-
-          font-size:
-            13px;
-
-          font-weight:
-            750;
+          margin-top: 20px;
         }
 
         .input {
@@ -2921,30 +1955,16 @@ export default function Home() {
             1px solid
             #303038;
 
-          border-radius:
-            13px;
+          border-radius: 13px;
 
           outline: none;
 
-          background:
-            #15151a;
+          background: #17171c;
 
-          color:
-            var(--text);
+          color: var(--text);
 
-          font-size:
-            15px;
-
-          font-weight:
-            650;
-
-          transition:
-            .15s ease;
-        }
-
-        .input::placeholder {
-          color:
-            #68656f;
+          font-size: 15px;
+          font-weight: 650;
         }
 
         .input:focus {
@@ -2961,84 +1981,33 @@ export default function Home() {
             );
         }
 
-        .addBtn {
-          height: 54px;
-
-          padding:
-            0 18px;
-
-          display:
-            inline-flex;
-
-          align-items:
-            center;
-
-          justify-content:
-            center;
-
-          gap: 8px;
-
-          border: 0;
-
-          border-radius:
-            13px;
-
-          background:
-            var(--text);
-
-          color:
-            #0c0c0f;
-
-          font-size:
-            14px;
-
-          font-weight:
-            900;
-
-          cursor:
-            pointer;
-
-          white-space:
-            nowrap;
-
-          transition:
-            .15s ease;
-        }
-
-        .addBtn:hover:not(:disabled) {
-          transform:
-            translateY(-2px);
+        .input::placeholder {
+          color: #68656f;
         }
 
         .dropdown {
-          position:
-            absolute;
+          position: absolute;
 
           left: 0;
           right: 0;
-
           top:
             calc(
               100% + 8px
             );
 
-          z-index: 700;
+          z-index: 40;
 
-          max-height:
-            360px;
+          max-height: 400px;
 
-          overflow-y:
-            auto;
+          overflow-y: auto;
 
           border:
             1px solid
-            #34343c;
+            #35353e;
 
-          border-radius:
-            15px;
+          border-radius: 15px;
 
-          background:
-            #111116;
+          background: #111116;
 
           box-shadow:
             0 24px 70px
@@ -3046,30 +2015,31 @@ export default function Home() {
               0,
               0,
               0,
-              .52
+              .55
             );
         }
 
-        .searching {
-          padding:
-            15px;
+        .searchStatus {
+          padding: 15px;
 
-          color:
-            var(--muted);
+          color: var(--muted);
 
-          font-size:
-            14px;
+          font-size: 13px;
         }
 
         .searchResult {
           width: 100%;
 
-          padding: 11px;
+          padding: 10px;
 
-          display: flex;
+          display: grid;
 
-          align-items:
-            center;
+          grid-template-columns:
+            54px
+            minmax(0,1fr)
+            auto;
+
+          align-items: center;
 
           gap: 12px;
 
@@ -3082,460 +2052,293 @@ export default function Home() {
           background:
             transparent;
 
-          color:
-            var(--text);
+          color: var(--text);
 
-          text-align:
-            left;
+          text-align: left;
 
-          cursor:
-            pointer;
+          cursor: pointer;
         }
 
         .searchResult:hover {
-          background:
-            #19191f;
+          background: #19191f;
         }
 
         .searchResult:last-child {
           border-bottom: 0;
         }
 
-        .resultArt {
-          width: 48px;
-          height: 48px;
+        .coverSmall {
+          width: 54px;
+          height: 72px;
 
-          flex:
-            0 0 auto;
+          border-radius: 8px;
 
-          object-fit:
-            cover;
+          object-fit: cover;
 
-          background:
-            #202027;
+          background: #202027;
         }
 
-        .resultArt.artist {
-          border-radius:
-            50%;
-        }
-
-        .resultArt.song {
-          border-radius:
-            10px;
-        }
-
-        .resultFallback {
+        .coverFallback {
           display: grid;
+          place-items: center;
 
-          place-items:
-            center;
-
-          color:
-            var(--lime);
+          color: var(--lime);
         }
 
-        .resultText {
-          min-width: 0;
+        .searchName {
+          font-size: 14px;
+          font-weight: 900;
         }
 
-        .resultName {
-          font-size:
-            14px;
+        .searchMeta {
+          margin-top: 5px;
 
-          font-weight:
-            850;
+          color: var(--muted);
 
-          white-space:
-            nowrap;
-
-          overflow:
-            hidden;
-
-          text-overflow:
-            ellipsis;
+          font-size: 11px;
+          line-height: 1.45;
         }
 
-        .resultMeta {
-          margin-top:
-            4px;
+        .addWord {
+          color: var(--lime);
 
-          color:
-            var(--muted);
-
-          font-size:
-            12px;
-
-          white-space:
-            nowrap;
-
-          overflow:
-            hidden;
-
-          text-overflow:
-            ellipsis;
+          font-size: 11px;
+          font-weight: 850;
         }
 
-        .tasteGrid {
-          margin-top:
-            18px;
+        .favorites {
+          margin-top: 18px;
 
           display: grid;
 
           grid-template-columns:
             repeat(
               2,
-              minmax(
-                0,
-                1fr
-              )
+              minmax(0,1fr)
             );
 
           gap: 9px;
         }
 
-        .tasteCard {
+        .favorite {
           min-width: 0;
 
-          padding: 12px;
+          padding: 10px;
 
           display: grid;
 
           grid-template-columns:
-            auto
-            minmax(
-              0,
-              1fr
-            )
+            46px
+            minmax(0,1fr)
             auto;
 
-          align-items:
-            center;
+          align-items: center;
 
-          gap: 11px;
+          gap: 10px;
 
           border:
             1px solid
             #292930;
 
-          border-radius:
-            15px;
+          border-radius: 14px;
 
-          background:
-            #15151a;
+          background: #16161b;
         }
 
-        .tasteAvatar {
+        .favorite .coverSmall {
           width: 46px;
-          height: 46px;
-
-          border-radius:
-            12px;
-
-          object-fit:
-            cover;
-
-          background:
-            #202027;
+          height: 62px;
         }
 
-        .tasteFallback {
-          display: grid;
-
-          place-items:
-            center;
-
-          color:
-            var(--lime);
-        }
-
-        .tasteText {
-          min-width: 0;
-        }
-
-        .tasteArtist {
-          font-size:
-            14px;
-
-          font-weight:
-            900;
-
-          white-space:
-            nowrap;
-
-          overflow:
-            hidden;
+        .favoriteName {
+          overflow: hidden;
 
           text-overflow:
             ellipsis;
+
+          white-space: nowrap;
+
+          font-size: 13px;
+          font-weight: 900;
         }
 
-        .seedText {
-          margin-top:
-            4px;
+        .favoriteMeta {
+          margin-top: 4px;
 
-          color:
-            var(--muted);
+          color: var(--muted);
 
-          font-size:
-            12px;
+          font-size: 10px;
         }
 
-        .removeBtn {
+        .iconBtn {
           width: 34px;
           height: 34px;
 
           display: grid;
-
-          place-items:
-            center;
+          place-items: center;
 
           border:
             1px solid
             transparent;
 
-          border-radius:
-            10px;
+          border-radius: 9px;
 
           background:
             transparent;
 
-          color:
-            #7c7981;
+          color: #77747d;
 
-          cursor:
-            pointer;
+          cursor: pointer;
         }
 
-        .removeBtn:hover {
-          color: #fff;
-
+        .iconBtn:hover {
           border-color:
-            #323239;
+            #383840;
 
           background:
-            #202027;
+            #222228;
+
+          color: #fff;
         }
 
-        .songSeeds {
-          grid-column:
-            2 / 4;
+        .control +
+        .control {
+          margin-top: 22px;
 
-          display: flex;
-
-          flex-wrap:
-            wrap;
-
-          gap: 6px;
-        }
-
-        .songSeed {
-          padding:
-            6px 9px;
-
-          border:
-            1px solid
-            #2d2d34;
-
-          border-radius:
-            999px;
-
-          background:
-            #1b1b20;
-
-          color:
-            #bbb8b1;
-
-          font-size:
-            11px;
-
-          cursor:
-            pointer;
-        }
-
-        .controlBlock +
-        .controlBlock {
-          margin-top:
-            24px;
-
-          padding-top:
-            24px;
+          padding-top: 22px;
 
           border-top:
             1px solid
-            #26262c;
+            #27272e;
         }
 
         .controlTop {
           display: flex;
 
-          align-items:
-            center;
-
+          align-items: center;
           justify-content:
             space-between;
 
           gap: 12px;
         }
 
-        .controlName {
-          font-size:
-            15px;
+        .controlTitle {
+          font-size: 14px;
+          font-weight: 850;
+        }
 
-          font-weight:
-            850;
+        .controlValue {
+          color: #d9d5cd;
+
+          font-size: 12px;
+          font-weight: 800;
         }
 
         .controlHint {
-          margin-top:
-            6px;
+          margin-top: 6px;
 
-          color:
-            var(--muted);
+          color: var(--muted);
 
-          font-size:
-            13px;
-
-          line-height:
-            1.5;
+          font-size: 12px;
+          line-height: 1.5;
         }
 
         .select {
-          height: 42px;
+          height: 40px;
 
           padding:
-            0 32px
-            0 12px;
+            0 10px;
 
           border:
             1px solid
             #303038;
 
-          border-radius:
-            11px;
+          border-radius: 10px;
 
-          background:
-            #15151a;
+          background: #17171c;
 
-          color:
-            var(--text);
+          color: var(--text);
 
-          font-size:
-            14px;
-
-          font-weight:
-            800;
+          font-size: 12px;
+          font-weight: 800;
         }
 
         .range {
           width: 100%;
 
-          margin-top:
-            14px;
+          margin-top: 13px;
 
           accent-color:
             var(--lime);
-
-          cursor:
-            pointer;
         }
 
         .rangeLabels {
-          margin-top:
-            7px;
+          margin-top: 5px;
 
           display: flex;
-
           justify-content:
             space-between;
 
-          color:
-            var(--dim);
+          color: var(--dim);
 
-          font-size:
-            11px;
+          font-size: 10px;
         }
 
-        .excludeRow {
-          margin-top:
-            13px;
+        .vibes {
+          margin-top: 12px;
 
           display: flex;
-
-          gap: 8px;
-
-          align-items:
-            flex-start;
-        }
-
-        .excludeSearchWrap {
-          position: relative;
-
-          flex: 1;
-
-          min-width: 0;
-        }
-
-        .excludeSearchWrap .dropdown {
-          top:
-            calc(100% + 8px);
-        }
-
-        .excludeRow .input {
-          height: 44px;
-
-          font-size:
-            14px;
-        }
-
-        .miniBtn {
-          min-width:
-            44px;
-
-          height: 44px;
-
-          display: grid;
-
-          place-items:
-            center;
-
-          border: 0;
-
-          border-radius:
-            11px;
-
-          background:
-            var(--purple);
-
-          color: #fff;
-
-          cursor:
-            pointer;
-        }
-
-        .excludeChips {
-          display: flex;
-
-          flex-wrap:
-            wrap;
+          flex-wrap: wrap;
 
           gap: 7px;
-
-          margin-top:
-            10px;
         }
 
-        .excludeChip {
+        .vibe {
           padding:
-            7px 9px;
+            8px 10px;
 
-          display:
-            inline-flex;
+          border:
+            1px solid
+            #303038;
 
-          align-items:
-            center;
+          border-radius: 999px;
+
+          background: #17171c;
+
+          color: #aaa7b0;
+
+          font-size: 11px;
+          font-weight: 800;
+
+          cursor: pointer;
+        }
+
+        .vibe.active {
+          border-color:
+            var(--lime);
+
+          background:
+            var(--lime);
+
+          color: #0b0d08;
+        }
+
+        .blockedSearch {
+          margin-top: 12px;
+        }
+
+        .blockedChips {
+          margin-top: 9px;
+
+          display: flex;
+          flex-wrap: wrap;
 
           gap: 6px;
+        }
+
+        .blockedChip {
+          padding:
+            6px 8px;
 
           border:
             1px solid
@@ -3543,11 +2346,10 @@ export default function Home() {
               255,
               127,
               159,
-              .24
+              .26
             );
 
-          border-radius:
-            999px;
+          border-radius: 999px;
 
           background:
             rgba(
@@ -3557,56 +2359,39 @@ export default function Home() {
               .08
             );
 
-          color:
-            #ffb0c3;
+          color: #ffb0c3;
 
-          font-size:
-            12px;
+          font-size: 10px;
 
-          cursor:
-            pointer;
+          cursor: pointer;
         }
 
         .generate {
           width: 100%;
+          height: 58px;
 
-          height: 60px;
-
-          margin-top:
-            22px;
+          margin-top: 22px;
 
           display: flex;
 
-          align-items:
-            center;
+          align-items: center;
+          justify-content: center;
 
-          justify-content:
-            center;
-
-          gap: 10px;
+          gap: 9px;
 
           border: 0;
 
-          border-radius:
-            15px;
+          border-radius: 14px;
 
           background:
             var(--lime);
 
-          color:
-            #0b0d08;
+          color: #0b0d08;
 
-          font-size:
-            16px;
+          font-size: 15px;
+          font-weight: 950;
 
-          font-weight:
-            950;
-
-          cursor:
-            pointer;
-
-          transition:
-            .16s ease;
+          cursor: pointer;
         }
 
         .generate:hover:not(:disabled) {
@@ -3623,334 +2408,323 @@ export default function Home() {
             );
         }
 
-        .status {
-          min-height:
-            22px;
-
-          margin:
-            14px 0 0;
-
-          color:
-            var(--muted);
-
-          text-align:
-            center;
-
-          font-size:
-            13px;
-
-          line-height:
-            1.5;
+        button:disabled,
+        input:disabled,
+        select:disabled {
+          opacity: .55;
+          cursor: wait;
         }
 
-        .profileStrip {
-          margin-top:
-            18px;
+        .status {
+          min-height: 20px;
 
+          margin:
+            12px 0 0;
+
+          color: var(--muted);
+
+          text-align: center;
+
+          font-size: 12px;
+          line-height: 1.5;
+        }
+
+        .stats {
           padding:
-            16px 18px;
+            0 30px 28px;
 
           display: grid;
 
           grid-template-columns:
             repeat(
               4,
-              minmax(
-                0,
-                1fr
-              )
+              minmax(0,1fr)
             );
 
           gap: 8px;
+        }
+
+        .stat {
+          padding: 14px;
 
           border:
             1px solid
             var(--line);
 
-          border-radius:
-            18px;
+          border-radius: 13px;
 
-          background:
-            #0d0d10;
-        }
-
-        .stat {
-          padding: 12px;
-
-          border-radius:
-            12px;
-
-          background:
-            #15151a;
+          background: #0e0e11;
         }
 
         .stat span {
-          color:
-            var(--muted);
+          color: var(--muted);
 
-          font-size:
-            12px;
+          font-size: 11px;
         }
 
         .stat strong {
           display: block;
 
-          margin-top:
-            5px;
+          margin-top: 4px;
 
-          font-size:
-            22px;
-
-          letter-spacing:
-            -.03em;
-        }
-
-        .stat.spotifyStat strong {
-          color:
-            var(--lime);
-
-          font-size:
-            14px;
-
-          line-height:
-            1.2;
+          font-size: 20px;
         }
 
         .results {
-          padding:
-            30px;
+          padding: 30px;
         }
 
-        .playlistHero {
-          display: grid;
+        .resultsTop {
+          display: flex;
 
-          grid-template-columns:
-            220px
-            minmax(
-              0,
-              1fr
-            );
-
-          gap: 28px;
+          justify-content:
+            space-between;
 
           align-items:
-            end;
-        }
+            flex-end;
 
-        .coverCollage {
-          width: 100%;
+          gap: 20px;
 
-          aspect-ratio:
-            1;
-
-          display: grid;
-
-          grid-template-columns:
-            1fr 1fr;
-
-          overflow:
-            hidden;
-
-          border-radius:
-            18px;
-
-          background:
-            linear-gradient(
-              145deg,
-              #2a234c,
-              #17200e
-            );
-
-          border:
-            1px solid
-            #34343c;
-        }
-
-        .coverCollage.large {
-          width: 220px;
-
-          border-radius:
-            24px;
-
-          box-shadow:
-            0 28px 70px
-            rgba(
-              0,
-              0,
-              0,
-              .40
-            );
-        }
-
-        .coverCollage img {
-          width: 100%;
-          height: 100%;
-
-          object-fit:
-            cover;
-
-          min-width: 0;
-          min-height: 0;
-        }
-
-        .coverFallback {
-          display: grid;
-
-          place-items:
-            center;
-
-          color:
-            var(--lime);
-        }
-
-        .mixKicker {
-          color:
-            var(--lime);
-
-          font-size:
-            13px;
-
-          font-weight:
-            850;
+          flex-wrap: wrap;
         }
 
         .resultsTitle {
           margin:
-            8px 0 0;
+            7px 0 0;
 
           font-size:
             clamp(
-              42px,
+              40px,
               6vw,
-              74px
+              70px
             );
-
-          line-height:
-            .92;
 
           letter-spacing:
             -.055em;
+
+          line-height: .95;
         }
 
-        .mixMeta {
-          margin-top:
-            13px;
+        .resultsMeta {
+          margin-top: 11px;
 
-          color:
-            var(--muted);
+          color: var(--muted);
 
-          font-size:
-            14px;
-
-          line-height:
-            1.55;
+          font-size: 13px;
         }
 
-        .genreTags {
-          margin-top:
-            12px;
-
+        .actions {
           display: flex;
-
-          flex-wrap:
-            wrap;
+          flex-wrap: wrap;
 
           gap: 7px;
         }
 
-        .genreTag {
-          padding:
-            7px 10px;
-
-          border:
-            1px solid
-            #303038;
-
-          border-radius:
-            999px;
-
-          background:
-            #17171c;
-
-          color:
-            #cbc7c0;
-
-          font-size:
-            12px;
-        }
-
-        .resultsActions {
-          display: flex;
-
-          flex-wrap:
-            wrap;
-
-          gap: 8px;
-
-          margin-top:
-            19px;
-        }
-
-        .ghostBtn,
-        .saveBtn {
-          min-height:
-            44px;
+        .action {
+          min-height: 42px;
 
           padding:
-            0 14px;
+            0 13px;
 
           display:
             inline-flex;
 
-          align-items:
-            center;
+          align-items: center;
+          justify-content: center;
 
-          justify-content:
-            center;
+          gap: 7px;
 
-          gap: 8px;
-
-          border-radius:
-            12px;
-
-          font-size:
-            13px;
-
-          font-weight:
-            850;
-
-          cursor:
-            pointer;
-        }
-
-        .ghostBtn {
           border:
             1px solid
             #303038;
 
-          background:
-            #17171c;
+          border-radius: 11px;
 
-          color:
-            var(--text);
+          background: #17171c;
+
+          color: var(--text);
+
+          font-size: 12px;
+          font-weight: 850;
+
+          cursor: pointer;
         }
 
-        .saveBtn {
-          border: 0;
+        .gameGrid {
+          margin-top: 22px;
+
+          display: grid;
+
+          grid-template-columns:
+            repeat(
+              4,
+              minmax(0,1fr)
+            );
+
+          gap: 12px;
+        }
+
+        .gameCard {
+          min-width: 0;
+
+          overflow: hidden;
+
+          border:
+            1px solid
+            #292930;
+
+          border-radius: 17px;
+
+          background: #111115;
+        }
+
+        .cover {
+          width: 100%;
+          aspect-ratio: 264 / 374;
+
+          object-fit: cover;
+
+          background: #202027;
+        }
+
+        .gameBody {
+          padding: 13px;
+        }
+
+        .reason {
+          color: var(--lime);
+
+          font-size: 10px;
+          font-weight: 850;
+
+          text-transform:
+            uppercase;
+
+          letter-spacing: .05em;
+        }
+
+        .gameName {
+          margin:
+            7px 0 0;
+
+          font-size: 17px;
+          font-weight: 900;
+
+          line-height: 1.15;
+        }
+
+        .gameMeta {
+          margin-top: 7px;
+
+          color: var(--muted);
+
+          font-size: 11px;
+          line-height: 1.5;
+        }
+
+        .gameSummary {
+          margin-top: 9px;
+
+          color: #9b9892;
+
+          font-size: 11px;
+          line-height: 1.55;
+
+          display:
+            -webkit-box;
+
+          -webkit-line-clamp: 3;
+          -webkit-box-orient:
+            vertical;
+
+          overflow: hidden;
+        }
+
+        .rating {
+          margin-top: 9px;
+
+          color: #d9d5cd;
+
+          font-size: 11px;
+          font-weight: 800;
+        }
+
+        .gameActions {
+          margin-top: 12px;
+
+          display: flex;
+          flex-wrap: wrap;
+
+          gap: 5px;
+        }
+
+        .mini {
+          min-height: 34px;
+
+          padding:
+            0 9px;
+
+          display:
+            inline-flex;
+
+          align-items: center;
+          justify-content: center;
+
+          gap: 5px;
+
+          border:
+            1px solid
+            #303038;
+
+          border-radius: 9px;
+
+          background: #18181d;
+
+          color: #aaa7b0;
+
+          font-size: 10px;
+          font-weight: 800;
+
+          cursor: pointer;
+
+          text-decoration: none;
+        }
+
+        .mini:hover {
+          color: #fff;
+
+          border-color:
+            #484851;
+        }
+
+        .mini.like.active {
+          border-color:
+            var(--lime);
 
           background:
             var(--lime);
 
-          color:
-            #0b0d08;
+          color: #0b0d08;
         }
 
-        .feedbackNotice {
-          margin-top:
-            20px;
+        .mini.dislike.active {
+          border-color:
+            var(--pink);
 
-          padding:
-            13px 15px;
+          background:
+            #9c405a;
+
+          color: #fff;
+        }
+
+        .openLink {
+          color: var(--lime);
+        }
+
+        .feedbackBox {
+          margin-top: 18px;
+
+          padding: 12px 14px;
 
           border:
             1px solid
@@ -3961,8 +2735,7 @@ export default function Home() {
               .22
             );
 
-          border-radius:
-            13px;
+          border-radius: 12px;
 
           background:
             rgba(
@@ -3972,550 +2745,151 @@ export default function Home() {
               .07
             );
 
-          color:
-            #c8c1ff;
+          color: #c9c3ff;
 
-          font-size:
-            13px;
-
-          line-height:
-            1.5;
-        }
-
-        .trackList {
-          margin-top:
-            22px;
-
-          display: grid;
-
-          gap: 8px;
-        }
-
-        .track {
-          padding: 10px;
-
-          display: grid;
-
-          grid-template-columns:
-            34px
-                        58px
-            minmax(
-              0,
-              1fr
-            )
-            auto;
-
-          align-items:
-            center;
-
-          gap: 12px;
-
-          border:
-            1px solid
-            #27272e;
-
-          border-radius:
-            15px;
-
-          background:
-            #111115;
-
-          transition:
-            .14s ease;
-        }
-
-        .track:hover {
-          border-color:
-            #3a3a44;
-
-          background:
-            #15151a;
-        }
-
-        .trackNumber {
-          color:
-            #66636d;
-
-          font-size:
-            12px;
-
-          text-align:
-            center;
-        }
-
-        .cover {
-          width: 58px;
-          height: 58px;
-
-          border-radius:
-            10px;
-
-          object-fit:
-            cover;
-
-          background:
-            #202027;
-        }
-
-        .coverFallbackSmall {
-          display: grid;
-
-          place-items:
-            center;
-
-          color:
-            var(--lime);
-        }
-
-        .trackText {
-          min-width: 0;
-        }
-
-        .trackName {
-          margin: 0;
-
-          color:
-            var(--text);
-
-          font-size:
-            15px;
-
-          font-weight:
-            900;
-
-          white-space:
-            nowrap;
-
-          overflow:
-            hidden;
-
-          text-overflow:
-            ellipsis;
-        }
-
-        .trackArtist {
-          margin:
-            5px 0 0;
-
-          color:
-            var(--muted);
-
-          font-size:
-            13px;
-
-          white-space:
-            nowrap;
-
-          overflow:
-            hidden;
-
-          text-overflow:
-            ellipsis;
-        }
-
-        .sourceBadge {
-          display:
-            inline-block;
-
-          margin-top:
-            6px;
-
-          color:
-            #8f88c9;
-
-          font-size:
-            11px;
-
-          font-weight:
-            750;
-        }
-
-        .trackActions {
-          display: flex;
-
-          align-items:
-            center;
-
-          gap: 6px;
-        }
-
-        .feedbackBtn,
-        .trackLink {
-          min-width:
-            38px;
-
-          height: 38px;
-
-          padding:
-            0 10px;
-
-          display:
-            inline-flex;
-
-          align-items:
-            center;
-
-          justify-content:
-            center;
-
-          gap: 6px;
-
-          border:
-            1px solid
-            #303038;
-
-          border-radius:
-            10px;
-
-          background:
-            #17171c;
-
-          color:
-            #aaa7b0;
-
-          cursor:
-            pointer;
-
-          text-decoration:
-            none;
-
-          transition:
-            .14s ease;
-        }
-
-        .feedbackBtn:hover,
-        .trackLink:hover {
-          color: #fff;
-
-          border-color:
-            #44444f;
-        }
-
-        .feedbackBtn.like.active {
-          color:
-            #101407;
-
-          border-color:
-            var(--lime);
-
-          background:
-            var(--lime);
-        }
-
-        .feedbackBtn.dislike.active {
-          color: #fff;
-
-          border-color:
-            var(--pink);
-
-          background:
-            #a94360;
-        }
-
-        .trackLink {
-          color:
-            var(--lime);
-
-          font-size:
-            12px;
-
-          font-weight:
-            850;
-        }
-
-        .playlistLink {
-          margin-top:
-            15px;
-
-          display:
-            inline-flex;
-
-          align-items:
-            center;
-
-          gap: 7px;
-
-          color:
-            var(--lime);
-
-          font-size:
-            14px;
-
-          font-weight:
-            850;
-
-          text-decoration:
-            none;
+          font-size: 12px;
+          line-height: 1.5;
         }
 
         .history {
-          padding:
-            26px 30px
-            30px;
+          padding: 28px 30px 30px;
         }
 
         .historyGrid {
-          margin-top:
-            18px;
+          margin-top: 17px;
 
           display: grid;
 
           grid-template-columns:
             repeat(
               3,
-              minmax(
-                0,
-                1fr
-              )
+              minmax(0,1fr)
             );
 
-          gap: 10px;
+          gap: 9px;
         }
 
         .historyCard {
           padding: 12px;
 
-          display: grid;
-
-          grid-template-columns:
-            72px
-            minmax(
-              0,
-              1fr
-            );
-
-          gap: 12px;
-
-          align-items:
-            center;
-
           border:
             1px solid
             #292930;
 
-          border-radius:
-            16px;
+          border-radius: 14px;
 
-          background:
-            #111115;
+          background: #111115;
 
-          color:
-            var(--text);
+          color: var(--text);
 
-          text-align:
-            left;
+          text-align: left;
 
-          cursor:
-            pointer;
-        }
-
-        .historyCard:hover {
-          border-color:
-            #3d3d47;
-
-          background:
-            #15151a;
-        }
-
-        .historyCard
-        .coverCollage {
-          width: 72px;
-
-          border-radius:
-            11px;
+          cursor: pointer;
         }
 
         .historyName {
-          font-size:
-            14px;
-
-          font-weight:
-            900;
-
-          white-space:
-            nowrap;
-
-          overflow:
-            hidden;
-
-          text-overflow:
-            ellipsis;
+          font-size: 14px;
+          font-weight: 900;
         }
 
         .historyMeta {
-          margin-top:
-            5px;
+          margin-top: 5px;
 
-          color:
-            var(--muted);
+          color: var(--muted);
 
-          font-size:
-            12px;
+          font-size: 11px;
         }
 
-        .clearBtn {
-          margin-top:
-            18px;
+        .clear {
+          margin-top: 16px;
 
           padding:
-            10px 12px;
+            9px 11px;
 
           border:
             1px solid
             #303038;
 
-          border-radius:
-            11px;
+          border-radius: 10px;
 
           background:
             transparent;
 
-          color:
-            #8b8790;
+          color: #85818a;
 
-          font-size:
-            12px;
+          font-size: 11px;
 
-          cursor:
-            pointer;
-        }
-
-        .clearBtn:hover {
-          color: #fff;
-
-          background:
-            #17171c;
+          cursor: pointer;
         }
 
         .footer {
           padding:
             38px 0 8px;
 
-          text-align:
-            center;
+          color: #68656e;
 
-          color:
-            #68656e;
+          text-align: center;
 
-          font-size:
-            12px;
+          font-size: 11px;
 
-          line-height:
-            1.7;
+          line-height: 1.7;
         }
 
         .footer strong {
-          color:
-            #bdb8af;
-        }
-
-        button:disabled,
-        input:disabled,
-        select:disabled {
-          opacity: .55;
-
-          cursor: wait;
+          color: #bdb8af;
         }
 
         @media (
-          max-width:
-            960px
+          max-width: 1000px
         ) {
           .hero {
             grid-template-columns:
               1fr;
-
-            min-height:
-              auto;
-
-            padding-top:
-              80px;
           }
 
-          .heroArt {
-            min-height:
-              320px;
-          }
-
-          .builderGrid {
+          .builder {
             grid-template-columns:
               1fr;
           }
 
-          .profileStrip {
+          .gameGrid {
             grid-template-columns:
               repeat(
-                2,
-                minmax(
-                  0,
-                  1fr
-                )
-              );
-          }
-
-          .historyGrid {
-            grid-template-columns:
-              repeat(
-                2,
-                minmax(
-                  0,
-                  1fr
-                )
+                3,
+                minmax(0,1fr)
               );
           }
         }
 
         @media (
-          max-width:
-            760px
+          max-width: 760px
         ) {
           .shell {
             width:
               min(
-                100% - 18px,
+                calc(
+                  100% - 18px
+                ),
                 1220px
               );
 
-            padding-top:
-              9px;
+            padding-top: 9px;
           }
 
           .nav {
             top: 8px;
-
-            min-height:
-              62px;
-
-            border-radius:
-              16px;
           }
 
-          .brandLogo {
-            width: 38px;
-            height: 38px;
-          }
-
-          .brandText span {
+          .mode span {
             display: none;
           }
 
-          .brandText strong {
-            font-size:
-              15px;
-          }
-
-          .connect {
-            min-height:
-              40px;
-
-            padding:
-              0 12px;
-          }
-
           .hero {
+            min-height: auto;
+
             padding:
-              65px 8px
-              46px;
+              68px 8px
+              45px;
 
             gap: 30px;
           }
@@ -4530,13 +2904,7 @@ export default function Home() {
           }
 
           .heroCopy {
-            font-size:
-              16px;
-          }
-
-          .orbit {
-            width: 290px;
-            height: 290px;
+            font-size: 16px;
           }
 
           .sectionHead {
@@ -4544,78 +2912,31 @@ export default function Home() {
               22px 20px 0;
           }
 
-          .builderGrid,
+          .builder,
           .results,
           .history {
+            padding: 20px;
+          }
+
+          .stats {
             padding:
-              20px;
+              0 20px 20px;
+
+            grid-template-columns:
+              1fr 1fr;
           }
 
-          .formGrid {
+          .favorites {
             grid-template-columns:
               1fr;
           }
 
-          .addBtn {
-            width: 100%;
-          }
-
-          .tasteGrid {
+          .gameGrid {
             grid-template-columns:
-              1fr;
-          }
-
-          .playlistHero {
-            grid-template-columns:
-              140px
-              minmax(
-                0,
-                1fr
+              repeat(
+                2,
+                minmax(0,1fr)
               );
-
-            gap: 18px;
-
-            align-items:
-              center;
-          }
-
-          .coverCollage.large {
-            width: 140px;
-
-            border-radius:
-              18px;
-          }
-
-          .resultsTitle {
-            font-size:
-              clamp(
-                38px,
-                10vw,
-                58px
-              );
-          }
-
-          .track {
-            grid-template-columns:
-              28px
-              52px
-              minmax(
-                0,
-                1fr
-              );
-          }
-
-          .cover {
-            width: 52px;
-            height: 52px;
-          }
-
-          .trackActions {
-            grid-column:
-              3 / -1;
-
-            justify-content:
-              flex-start;
           }
 
           .historyGrid {
@@ -4625,70 +2946,38 @@ export default function Home() {
         }
 
         @media (
-          max-width:
-            520px
+          max-width: 480px
         ) {
-          .brandText {
-            display: none;
-          }
-
-          .userText small {
-            display: none;
-          }
-
-          .userPill {
-            max-width:
-              135px;
-          }
-
-          .connect span {
+          .brandWords span {
             display: none;
           }
 
           .heroArt {
-            min-height:
-              280px;
+            min-height: 290px;
+          }
+
+          .orbit {
+            width: 280px;
+            height: 280px;
           }
 
           .heroCard {
-            width: 250px;
-
-            padding:
-              20px;
+            width: 245px;
           }
 
-          .heroCardBig {
-            font-size:
-              44px;
-          }
-
-          .profileStrip {
+          .gameGrid {
             grid-template-columns:
               1fr 1fr;
+
+            gap: 8px;
           }
 
-          .playlistHero {
-            grid-template-columns:
-              1fr;
-
-            align-items:
-              start;
+          .gameName {
+            font-size: 14px;
           }
 
-          .coverCollage.large {
-            width: 132px;
-          }
-
-          .resultsActions {
-            display: grid;
-
-            grid-template-columns:
-              1fr;
-          }
-
-          .ghostBtn,
-          .saveBtn {
-            width: 100%;
+          .gameSummary {
+            display: none;
           }
         }
       `}</style>
@@ -4697,99 +2986,47 @@ export default function Home() {
         <nav className="nav">
           <div className="brand">
             <img
-              className="brandLogo"
               src="/tastemaker-logo.png"
               alt="TasteMaker"
+              className="brandLogo"
             />
 
-            <div className="brandText">
+            <div className="brandWords">
               <strong>
                 TasteMaker
               </strong>
 
               <span>
-                music discovery
+                game discovery
               </span>
             </div>
           </div>
 
-          <div className="navRight">
-            {spotifyUser ? (
-              <a
-                className="userPill"
+          <div className="mode">
+            <Icon
+              name="game"
+              size={16}
+            />
 
-                href={
-                  spotifyUser.url ||
-                  "https://open.spotify.com"
-                }
-
-                target="_blank"
-
-                rel="noopener noreferrer"
-              >
-                {spotifyUser.image ? (
-                  <img
-                    className="userAvatar"
-
-                    src={
-                      spotifyUser.image
-                    }
-
-                    alt=""
-                  />
-                ) : (
-                  <span className="userAvatarFallback">
-                    <Icon
-                      name="spotify"
-                      size={17}
-                    />
-                  </span>
-                )}
-
-                <span className="userText">
-                  <strong>
-                    {
-                      spotifyUser.displayName
-                    }
-                  </strong>
-
-                  <small>
-                    Spotify connected
-                  </small>
-                </span>
-              </a>
-            ) : (
-              <a
-                href="/api/spotify/login"
-
-                className="connect"
-              >
-                <Icon
-                  name="spotify"
-                  size={17}
-                />
-
-                <span>
-                  Connect Spotify
-                </span>
-              </a>
-            )}
+            <span>
+              Games Mode
+            </span>
           </div>
         </nav>
 
         <section className="hero">
           <div>
-            <div className="heroEyebrow">
+            <div className="eyebrow">
               <Icon
                 name="sparkles"
                 size={15}
               />
 
-              Built around your actual taste
+              Find what to play next
             </div>
 
             <h1>
-              Your taste.
+              Your games.
 
               <br />
 
@@ -4805,107 +3042,71 @@ export default function Home() {
             </h1>
 
             <p className="heroCopy">
-              Give TasteMaker a few artists and songs you love.
-              Tune how adventurous you feel, shape the next mix
-              with feedback, and save the result straight to Spotify.
+              Add games you already love and TasteMaker will
+              explore their genres, themes and connections to find
+              games worth playing next.
             </p>
 
-            <div className="heroActions">
-              <span className="heroBadge">
+            <div className="heroBadges">
+              <div className="badge">
                 <Icon
-                  name="music"
-                  size={15}
+                  name="game"
+                  size={14}
                 />
 
-                Live Spotify search
-              </span>
+                Real game data
+              </div>
 
-              <span className="heroBadge">
+              <div className="badge">
                 <Icon
                   name="up"
-                  size={15}
+                  size={14}
                 />
 
                 Learns from feedback
-              </span>
+              </div>
 
-              <span className="heroBadge">
+              <div className="badge">
                 <Icon
                   name="history"
-                  size={15}
+                  size={14}
                 />
 
-                Recent mixes saved
-              </span>
+                Saves recent picks
+              </div>
             </div>
           </div>
 
-          <div
-            className="heroArt"
-            aria-hidden="true"
-          >
+          <div className="heroArt">
             <div className="orbit" />
 
             <div className="heroCard">
-              <div className="heroCardTop">
-                <span className="heroCardLabel">
-                  DISCOVERY LEVEL
-                </span>
-
-                <span className="heroDot" />
+              <div className="heroCardLabel">
+                DISCOVERY LEVEL
               </div>
 
-              <div className="heroCardBig">
+              <div className="heroCardNumber">
                 {discovery}%
               </div>
 
-              <div className="heroCardSmall">
-                {discoveryLabel} mode
+              <div className="heroCardMode">
+                {discoveryLabel}
 
                 <br />
 
                 {discoveryHint}
               </div>
 
-              <div className="heroBars">
-                <div className="heroBar">
-                  <span
-                    style={{
-                      width:
-                        `${Math.max(
-                          26,
-                          discovery
-                        )}%`,
-                    }}
-                  />
-                </div>
-
-                <div className="heroBar">
-                  <span
-                    style={{
-                      width:
-                        `${Math.max(
-                          18,
-                          100 -
-                            discovery /
-                              2
-                        )}%`,
-                    }}
-                  />
-                </div>
-
-                <div className="heroBar">
-                  <span
-                    style={{
-                      width:
-                        `${Math.max(
-                          34,
-                          discovery *
-                            .72
-                        )}%`,
-                    }}
-                  />
-                </div>
+              <div className="bar">
+                <span
+                  style={{
+                    width:
+                      `${Math.max(
+                        discovery,
+                        5
+                      )}%`,
+                  }}
+                />
               </div>
             </div>
           </div>
@@ -4913,449 +3114,255 @@ export default function Home() {
 
         <section className="section">
           <div className="sectionHead">
-            <div>
-              <div className="kicker">
-                01 · BUILD YOUR TASTE
-              </div>
-
-              <h2 className="sectionTitle">
-                Start with music you already love.
-              </h2>
-
-              <p className="sectionCopy">
-                Add artists and optional favorite songs.
-                Your taste profile stays saved on this device,
-                because retyping everything after a refresh is barbaric.
-              </p>
+            <div className="kicker">
+              01 · BUILD YOUR TASTE
             </div>
+
+            <h2 className="sectionTitle">
+              Start with games you love.
+            </h2>
+
+            <p className="sectionCopy">
+              Search for up to eight favorites. These become
+              the DNA of your recommendations.
+            </p>
           </div>
 
-          <div className="builderGrid">
-            <div className="panel seedPanel">
-              <h3 className="panelTitle">
-                Your seeds
+          <div className="builder">
+            <div className="panel">
+              <h3>
+                Your games
               </h3>
 
               <p className="panelCopy">
-                These are the starting points for every mix.
+                Add a mix of favorites for better recommendations.
               </p>
 
-              <form
-                className="formGrid"
-                onSubmit={addArtist}
-              >
-                <div className="field">
-                  <label htmlFor="artist-search">
-                    Favorite artist
-                  </label>
+              <div className="searchWrap">
+                <input
+                  className="input"
 
-                  <input
-                    id="artist-search"
+                  value={query}
 
-                    className="input"
+                  onChange={(
+                    event
+                  ) =>
+                    setQuery(
+                      event.target
+                        .value
+                    )
+                  }
 
-                    placeholder="Search an artist..."
+                  placeholder="Search for a game..."
 
-                    value={input}
+                  autoComplete="off"
 
-                    onChange={(
-                      event
-                    ) => {
-                      setInput(
-                        event.target.value
-                      );
+                  disabled={
+                    loading
+                  }
+                />
 
-                      setSelectedArtist(
-                        null
-                      );
-                    }}
-
-                    disabled={busy}
-
-                    autoComplete="off"
-                  />
-
-                  {searchingArtists && (
-                    <div className="dropdown">
-                      <div className="searching">
-                        Searching artists...
-                      </div>
-                    </div>
-                  )}
-
-                  {!searchingArtists &&
-                    artistResults.length >
-                      0 && (
-                      <div className="dropdown">
-                        {artistResults.map(
-                          (
-                            artist
-                          ) => (
-                            <button
-                              type="button"
-
-                              className="searchResult"
-
-                              key={
-                                artist.id
-                              }
-
-                              onClick={() => {
-                                setInput(
-                                  artist.name
-                                );
-
-                                setSelectedArtist(
-                                  artist
-                                );
-
-                                setArtistResults(
-                                  []
-                                );
-                              }}
-                            >
-                              {artist.image ? (
-                                <img
-                                  className="resultArt artist"
-
-                                  src={
-                                    artist.image
-                                  }
-
-                                  alt=""
-                                />
-                              ) : (
-                                <div className="resultArt artist resultFallback">
-                                  <Icon
-                                    name="music"
-
-                                    size={17}
-                                  />
-                                </div>
-                              )}
-
-                              <div className="resultText">
-                                <div className="resultName">
-                                  {
-                                    artist.name
-                                  }
-                                </div>
-
-                                <div className="resultMeta">
-                                  Artist
-                                </div>
-                              </div>
-                            </button>
-                          )
-                        )}
+                {(
+                  searching ||
+                  searchResults.length >
+                    0
+                ) && (
+                  <div className="dropdown">
+                    {searching && (
+                      <div className="searchStatus">
+                        Searching games...
                       </div>
                     )}
-                </div>
 
-                <div className="field">
-                  <label htmlFor="song-search">
-                    Favorite song · optional
-                  </label>
-
-                  <input
-                    id="song-search"
-
-                    className="input"
-
-                    placeholder="Search a song..."
-
-                    value={
-                      songInput
-                    }
-
-                    onChange={(
-                      event
-                    ) => {
-                      setSongInput(
-                        event.target.value
-                      );
-
-                      setSelectedSong(
-                        null
-                      );
-                    }}
-
-                    disabled={busy}
-
-                    autoComplete="off"
-                  />
-
-                  {searchingSongs && (
-                    <div className="dropdown">
-                      <div className="searching">
-                        Searching songs...
-                      </div>
-                    </div>
-                  )}
-
-                  {!searchingSongs &&
-                    songResults.length >
-                      0 && (
-                      <div className="dropdown">
-                        {songResults.map(
-                          (
-                            song
-                          ) => (
-                            <button
-                              type="button"
-
-                              className="searchResult"
-
-                              key={
-                                song.id
-                              }
-
-                              onClick={() => {
-                                setSongInput(
-                                  song.name
-                                );
-
-                                setSelectedSong(
-                                  song
-                                );
-
-                                setSongResults(
-                                  []
-                                );
-                              }}
-                            >
-                              {song.image ? (
-                                <img
-                                  className="resultArt song"
-
-                                  src={
-                                    song.image
-                                  }
-
-                                  alt=""
-                                />
-                              ) : (
-                                <div className="resultArt song resultFallback">
-                                  <Icon
-                                    name="music"
-
-                                    size={17}
-                                  />
-                                </div>
-                              )}
-
-                              <div className="resultText">
-                                <div className="resultName">
-                                  {
-                                    song.name
-                                  }
-                                </div>
-
-                                <div className="resultMeta">
-                                  {
-                                    song.artist
-                                  }
-                                </div>
-                              </div>
-                            </button>
-                          )
-                        )}
-                      </div>
-                    )}
-                </div>
-
-                <button
-                  type="submit"
-
-                  className="addBtn"
-
-                  disabled={busy}
-                >
-                  <Icon
-                    name="plus"
-                    size={16}
-                  />
-
-                  Add
-                </button>
-              </form>
-
-              {favorites.length >
-                0 && (
-                <div className="tasteGrid">
-                  {favorites.map(
-                    (
-                      artist
-                    ) => {
-                      const songs =
-                        favoriteSongs[
-                          normalize(
-                            artist
-                          )
-                        ] || [];
-
-                      const artistData =
-                        favoriteArtistData[
-                          normalize(
-                            artist
-                          )
-                        ];
-
-                      return (
-                        <div
-                          className="tasteCard"
-
-                          key={
-                            artist
-                          }
-                        >
-                          {artistData?.image ? (
-                            <img
-                              className="tasteAvatar"
-
-                              src={
-                                artistData.image
-                              }
-
-                              alt=""
-                            />
-                          ) : (
-                            <div className="tasteAvatar tasteFallback">
-                              <Icon
-                                name="music"
-
-                                size={16}
-                              />
-                            </div>
-                          )}
-
-                          <div className="tasteText">
-                            <div className="tasteArtist">
-                              {
-                                artist
-                              }
-                            </div>
-
-                            <div className="seedText">
-                              {songs.length
-                                ? `${songs.length} favorite song${songs.length > 1 ? "s" : ""}`
-                                : "Artist seed"}
-                            </div>
-                          </div>
-
+                    {!searching &&
+                      searchResults.map(
+                        (
+                          game
+                        ) => (
                           <button
                             type="button"
 
-                            className="removeBtn"
-
-                            onClick={() =>
-                              removeArtist(
-                                artist
-                              )
+                            key={
+                              game.id
                             }
 
-                            title="Remove artist"
+                            className="searchResult"
+
+                            onClick={() =>
+                              addFavorite(
+                                game
+                              )
+                            }
                           >
-                            <Icon
-                              name="trash"
+                            <GameCover
+                              game={
+                                game
+                              }
 
-                              size={14}
+                              small
                             />
-                          </button>
 
-                          {songs.length >
-                            0 && (
-                            <div className="songSeeds">
-                              {songs.map(
-                                (
-                                  song
-                                ) => (
-                                  <button
-                                    type="button"
+                            <div>
+                              <div className="searchName">
+                                {
+                                  game.name
+                                }
+                              </div>
 
-                                    className="songSeed"
+                              <div className="searchMeta">
+                                {game.year ||
+                                  "Unknown year"}
 
-                                    key={
-                                      song
-                                    }
-
-                                    onClick={() =>
-                                      removeSong(
-                                        artist,
-                                        song
+                                {game.genres
+                                  ?.length
+                                  ? ` · ${game.genres
+                                      .slice(
+                                        0,
+                                        2
                                       )
-                                    }
-                                  >
-                                    {song} ×
-                                  </button>
-                                )
-                              )}
+                                      .map(
+                                        (
+                                          genre
+                                        ) =>
+                                          genre.name
+                                      )
+                                      .join(
+                                        ", "
+                                      )}`
+                                  : ""}
+                              </div>
                             </div>
-                          )}
+
+                            <div className="addWord">
+                              + ADD
+                            </div>
+                          </button>
+                        )
+                      )}
+                  </div>
+                )}
+              </div>
+
+              {favorites.length >
+                0 && (
+                <div className="favorites">
+                  {favorites.map(
+                    (
+                      game
+                    ) => (
+                      <div
+                        className="favorite"
+
+                        key={
+                          game.id
+                        }
+                      >
+                        <GameCover
+                          game={
+                            game
+                          }
+
+                          small
+                        />
+
+                        <div>
+                          <div className="favoriteName">
+                            {
+                              game.name
+                            }
+                          </div>
+
+                          <div className="favoriteMeta">
+                            {game.year ||
+                              "Game"}
+
+                            {game.rating
+                              ? ` · ${game.rating}%`
+                              : ""}
+                          </div>
                         </div>
-                      );
-                    }
+
+                        <button
+                          type="button"
+
+                          className="iconBtn"
+
+                          title="Remove"
+
+                          onClick={() =>
+                            removeFavorite(
+                              game.id
+                            )
+                          }
+                        >
+                          <Icon
+                            name="trash"
+                            size={14}
+                          />
+                        </button>
+                      </div>
+                    )
                   )}
                 </div>
               )}
             </div>
 
-            <aside className="panel controlPanel">
-              <h3 className="panelTitle">
-                Tune the mix
+            <div className="panel">
+              <h3>
+                Tune the search
               </h3>
 
               <p className="panelCopy">
-                Decide how far TasteMaker should wander.
+                Decide how adventurous TasteMaker should be.
               </p>
 
-              <div className="controlBlock">
+              <div className="control">
                 <div className="controlTop">
-                  <div className="controlName">
-                    Playlist length
+                  <div className="controlTitle">
+                    Number of games
                   </div>
 
                   <select
                     className="select"
 
                     value={
-                      trackCount
+                      count
                     }
-
-                    disabled={busy}
 
                     onChange={(
                       event
                     ) => {
-                      setTrackCount(
+                      setCount(
                         Number(
-                          event.target.value
+                          event.target
+                            .value
                         )
                       );
 
-                      clearResults();
+                      resetResults();
                     }}
                   >
                     {[
-                      10,
-                      15,
+                      8,
+                      12,
+                      16,
                       20,
-                      25,
-                      30,
                     ].map(
                       (
-                        count
+                        value
                       ) => (
                         <option
                           key={
-                            count
+                            value
                           }
 
                           value={
-                            count
+                            value
                           }
                         >
-                          {count} songs
+                          {
+                            value
+                          }
                         </option>
                       )
                     )}
@@ -5363,18 +3370,18 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="controlBlock">
+              <div className="control">
                 <div className="controlTop">
-                  <div className="controlName">
-                    Discovery level
+                  <div className="controlTitle">
+                    Discovery
                   </div>
 
-                  <strong>
+                  <div className="controlValue">
                     {discovery}% ·{" "}
                     {
                       discoveryLabel
                     }
-                  </strong>
+                  </div>
                 </div>
 
                 <div className="controlHint">
@@ -5398,199 +3405,245 @@ export default function Home() {
                     discovery
                   }
 
-                  disabled={busy}
-
                   onChange={(
                     event
                   ) => {
                     setDiscovery(
                       Number(
-                        event.target.value
+                        event.target
+                          .value
                       )
                     );
 
-                    clearResults();
+                    resetResults();
                   }}
                 />
 
                 <div className="rangeLabels">
                   <span>
-                    Safe
+                    Familiar
                   </span>
 
                   <span>
-                    Adventurous
+                    Wild
                   </span>
                 </div>
               </div>
 
-              <div className="controlBlock">
-                <div className="controlName">
+              <div className="control">
+                <div className="controlTop">
+                  <div className="controlTitle">
+                    Platform
+                  </div>
+
+                  <select
+                    className="select"
+
+                    value={
+                      platform
+                    }
+
+                    onChange={(
+                      event
+                    ) => {
+                      setPlatform(
+                        event.target
+                          .value
+                      );
+
+                      resetResults();
+                    }}
+                  >
+                    {PLATFORMS.map(
+                      (
+                        option
+                      ) => (
+                        <option
+                          key={
+                            option.id
+                          }
+
+                          value={
+                            option.id
+                          }
+                        >
+                          {
+                            option.label
+                          }
+                        </option>
+                      )
+                    )}
+                  </select>
+                </div>
+              </div>
+
+              <div className="control">
+                <div className="controlTop">
+                  <div className="controlTitle">
+                    Game vibe
+                  </div>
+
+                  <div className="controlValue">
+                    {vibes.length}/3
+                  </div>
+                </div>
+
+                <div className="controlHint">
+                  Choose up to three.
+                </div>
+
+                <div className="vibes">
+                  {VIBES.map(
+                    (
+                      vibe
+                    ) => (
+                      <button
+                        type="button"
+
+                        key={
+                          vibe.id
+                        }
+
+                        className={`vibe ${
+                          vibes.includes(
+                            vibe.id
+                          )
+                            ? "active"
+                            : ""
+                        }`}
+
+                        onClick={() =>
+                          toggleVibe(
+                            vibe.id
+                          )
+                        }
+                      >
+                        {
+                          vibe.label
+                        }
+                      </button>
+                    )
+                  )}
+                </div>
+              </div>
+
+              <div className="control">
+                <div className="controlTitle">
                   Never recommend
                 </div>
 
                 <div className="controlHint">
-                  Add artists you want completely removed from generated mixes.
+                  Block games you already played or simply never want to see.
                 </div>
 
-                <div className="excludeRow">
-                  <div className="excludeSearchWrap">
-                    <input
-                      className="input"
+                <div className="searchWrap blockedSearch">
+                  <input
+                    className="input"
 
-                      placeholder="Search an artist..."
-
-                      value={
-                        excludedInput
-                      }
-
-                      autoComplete="off"
-
-                      onChange={(
-                        event
-                      ) => {
-                        setExcludedInput(
-                          event.target.value
-                        );
-
-                        setSelectedExcludedArtist(
-                          null
-                        );
-                      }}
-
-                      onKeyDown={(
-                        event
-                      ) => {
-                        if (
-                          event.key ===
-                          "Enter"
-                        ) {
-                          event.preventDefault();
-
-                          addExcludedArtist();
-                        }
-                      }}
-                    />
-
-                    {searchingExcluded && (
-                      <div className="dropdown">
-                        <div className="searching">
-                          Searching artists...
-                        </div>
-                      </div>
-                    )}
-
-                    {!searchingExcluded &&
-                      excludedResults.length >
-                        0 && (
-                        <div className="dropdown">
-                          {excludedResults.map(
-                            (
-                              artist
-                            ) => (
-                              <button
-                                type="button"
-
-                                className="searchResult"
-
-                                key={
-                                  artist.id
-                                }
-
-                                onClick={() => {
-                                  setExcludedInput(
-                                    artist.name
-                                  );
-
-                                  setSelectedExcludedArtist(
-                                    artist
-                                  );
-
-                                  setExcludedResults(
-                                    []
-                                  );
-                                }}
-                              >
-                                {artist.image ? (
-                                  <img
-                                    className="resultArt artist"
-
-                                    src={
-                                      artist.image
-                                    }
-
-                                    alt=""
-                                  />
-                                ) : (
-                                  <div className="resultArt artist resultFallback">
-                                    <Icon
-                                      name="music"
-
-                                      size={17}
-                                    />
-                                  </div>
-                                )}
-
-                                <div className="resultText">
-                                  <div className="resultName">
-                                    {
-                                      artist.name
-                                    }
-                                  </div>
-
-                                  <div className="resultMeta">
-                                    Never recommend this artist
-                                  </div>
-                                </div>
-                              </button>
-                            )
-                          )}
-                        </div>
-                      )}
-                  </div>
-
-                  <button
-                    type="button"
-
-                    className="miniBtn"
-
-                    onClick={
-                      addExcludedArtist
+                    value={
+                      blockedQuery
                     }
 
-                    title="Exclude artist"
-                  >
-                    <Icon
-                      name="ban"
+                    onChange={(
+                      event
+                    ) =>
+                      setBlockedQuery(
+                        event.target
+                          .value
+                      )
+                    }
 
-                      size={17}
-                    />
-                  </button>
+                    placeholder="Search a game to block..."
+
+                    autoComplete="off"
+                  />
+
+                  {(
+                    searchingBlocked ||
+                    blockedResults.length >
+                      0
+                  ) && (
+                    <div className="dropdown">
+                      {searchingBlocked && (
+                        <div className="searchStatus">
+                          Searching...
+                        </div>
+                      )}
+
+                      {!searchingBlocked &&
+                        blockedResults.map(
+                          (
+                            game
+                          ) => (
+                            <button
+                              type="button"
+
+                              className="searchResult"
+
+                              key={
+                                game.id
+                              }
+
+                              onClick={() =>
+                                addBlockedGame(
+                                  game
+                                )
+                              }
+                            >
+                              <GameCover
+                                game={
+                                  game
+                                }
+
+                                small
+                              />
+
+                              <div>
+                                <div className="searchName">
+                                  {
+                                    game.name
+                                  }
+                                </div>
+
+                                <div className="searchMeta">
+                                  Never recommend
+                                </div>
+                              </div>
+
+                              <Icon
+                                name="ban"
+                                size={15}
+                              />
+                            </button>
+                          )
+                        )}
+                    </div>
+                  )}
                 </div>
 
-                {excludedArtists.length >
+                {blockedGames.length >
                   0 && (
-                  <div className="excludeChips">
-                    {excludedArtists.map(
+                  <div className="blockedChips">
+                    {blockedGames.map(
                       (
-                        artist
+                        game
                       ) => (
                         <button
                           type="button"
 
-                          className="excludeChip"
+                          className="blockedChip"
 
                           key={
-                            artist
+                            game.id
                           }
 
                           onClick={() =>
-                            removeExcludedArtist(
-                              artist
+                            removeBlockedGame(
+                              game.id
                             )
                           }
                         >
-                          {artist} ×
+                          {game.name} ×
                         </button>
                       )
                     )}
@@ -5603,45 +3656,41 @@ export default function Home() {
 
                 className="generate"
 
-                disabled={busy}
+                disabled={
+                  loading ||
+                  !favorites.length
+                }
 
                 onClick={() =>
-                  findSongs(
+                  generate(
                     false
                   )
                 }
               >
-                {loading ? (
-                  loadingStage
-                ) : (
-                  <>
-                    <Icon
-                      name="sparkles"
+                <Icon
+                  name="sparkles"
+                  size={18}
+                />
 
-                      size={18}
-                    />
-
-                    Build my mix
-                  </>
-                )}
+                {loading
+                  ? loadingText
+                  : "Find my next games"}
               </button>
 
-              <p
+              <div
                 className="status"
 
                 role="status"
-
-                aria-live="polite"
               >
                 {message}
-              </p>
-            </aside>
+              </div>
+            </div>
           </div>
 
-          <div className="profileStrip">
+          <div className="stats">
             <div className="stat">
               <span>
-                Artists
+                Favorite games
               </span>
 
               <strong>
@@ -5653,37 +3702,35 @@ export default function Home() {
 
             <div className="stat">
               <span>
-                Song seeds
+                Selected vibes
               </span>
 
               <strong>
                 {
-                  favoriteSongCount
+                  vibes.length
                 }
               </strong>
             </div>
 
             <div className="stat">
               <span>
-                Blocked artists
+                Blocked
               </span>
 
               <strong>
                 {
-                  excludedArtists.length
+                  blockedGames.length
                 }
               </strong>
             </div>
 
-            <div className="stat spotifyStat">
+            <div className="stat">
               <span>
-                Spotify
+                Discovery
               </span>
 
               <strong>
-                {spotifyUser
-                  ? `Connected as ${spotifyUser.displayName}`
-                  : "Optional"}
+                {discovery}%
               </strong>
             </div>
           </div>
@@ -5699,345 +3746,323 @@ export default function Home() {
               <button
                 type="button"
 
-                className="clearBtn"
+                className="clear"
 
                 onClick={
-                  clearTasteProfile
+                  clearProfile
                 }
               >
-                Clear saved taste profile
+                Clear game taste
               </button>
             </div>
           )}
         </section>
 
-        {tracks.length >
+        {recommendations.length >
           0 && (
           <section className="section results">
-            <div className="playlistHero">
-              <CoverCollage
-                tracks={tracks}
-                large
-              />
-
+            <div className="resultsTop">
               <div>
-                <div className="mixKicker">
-                  02 · YOUR MIX
+                <div className="kicker">
+                  02 · YOUR NEXT GAMES
                 </div>
 
                 <h2 className="resultsTitle">
                   {mixName}
                 </h2>
 
-                <div className="mixMeta">
-                  {tracks.length} tracks ·{" "}
-                  {discovery}% discovery
-
-                  {mixMeta?.connectedTasteUsed
-                    ? " · shaped with your Spotify taste"
-                    : ""}
-
-                  {mixMeta?.feedbackUsed
-                    ? " · adjusted using your feedback"
-                    : ""}
-                </div>
-
-                {mixMeta?.usedGenres?.length >
-                  0 && (
-                  <div className="genreTags">
-                    {mixMeta.usedGenres.map(
+                <div className="resultsMeta">
+                  {recommendations.length} games ·{" "}
+                  {discovery}% discovery ·{" "}
+                  {
+                    PLATFORMS.find(
                       (
-                        genre
-                      ) => (
-                        <span
-                          className="genreTag"
-
-                          key={
-                            genre
-                          }
-                        >
-                          {
-                            genre
-                          }
-                        </span>
-                      )
-                    )}
-                  </div>
-                )}
-
-                <div className="resultsActions">
-                  <button
-                    type="button"
-
-                    className="ghostBtn"
-
-                    disabled={busy}
-
-                    onClick={() =>
-                      findSongs(
-                        true
-                      )
-                    }
-                  >
-                    <Icon
-                      name="refresh"
-
-                      size={15}
-                    />
-
-                    Make another mix
-                  </button>
-
-                  <button
-                    type="button"
-
-                    className="ghostBtn"
-
-                    disabled={busy}
-
-                    onClick={
-                      copyTracks
-                    }
-                  >
-                    <Icon
-                      name="copy"
-
-                      size={15}
-                    />
-
-                    Copy songs
-                  </button>
-
-                  <button
-                    type="button"
-
-                    className="saveBtn"
-
-                    disabled={busy}
-
-                    onClick={
-                      savePlaylist
-                    }
-                  >
-                    <Icon
-                      name="spotify"
-
-                      size={15}
-                    />
-
-                    {saving
-                      ? "Saving..."
-                      : "Save to Spotify"}
-                  </button>
+                        item
+                      ) =>
+                        item.id ===
+                        platform
+                    )?.label
+                  }
                 </div>
+              </div>
+
+              <div className="actions">
+                <button
+                  type="button"
+
+                  className="action"
+
+                  disabled={
+                    loading
+                  }
+
+                  onClick={() =>
+                    generate(
+                      true
+                    )
+                  }
+                >
+                  <Icon
+                    name="refresh"
+                    size={15}
+                  />
+
+                  New picks
+                </button>
+
+                <button
+                  type="button"
+
+                  className="action"
+
+                  onClick={
+                    copyGames
+                  }
+                >
+                  <Icon
+                    name="copy"
+                    size={15}
+                  />
+
+                  Copy list
+                </button>
               </div>
             </div>
 
-            <div className="feedbackNotice">
-              Use{" "}
-              <strong>
-                More like this
-              </strong>{" "}
-              and{" "}
-              <strong>
-                Less like this
-              </strong>
-              , then hit{" "}
-              <strong>
-                Make another mix
-              </strong>
-              . Your likes become extra artist signals and disliked tracks are kept out of the next result.
+            <div className="feedbackBox">
+              Like or dislike games before pressing <strong>New picks</strong>.
+              TasteMaker will use that feedback when it builds the next list.
             </div>
 
-            <div className="trackList">
-              {tracks.map(
+            <div className="gameGrid">
+              {recommendations.map(
                 (
-                  track,
-                  index
+                  game
                 ) => {
                   const liked =
-                    likedTrackIds.includes(
-                      track.id
+                    likedIds.includes(
+                      game.id
                     );
 
                   const disliked =
-                    dislikedTrackIds.includes(
-                      track.id
+                    dislikedIds.includes(
+                      game.id
                     );
 
                   return (
-                    <div
-                      className="track"
+                    <article
+                      className="gameCard"
 
                       key={
-                        track.id
+                        game.id
                       }
                     >
-                      <div className="trackNumber">
-                        {String(
-                          index + 1
-                        ).padStart(
-                          2,
-                          "0"
-                        )}
-                      </div>
+                      <GameCover
+                        game={
+                          game
+                        }
+                      />
 
-                      {track.image ? (
-                        <img
-                          className="cover"
-
-                          src={
-                            track.image
+                      <div className="gameBody">
+                        <div className="reason">
+                          {
+                            game.reason
                           }
-
-                          alt={`${track.title} album cover`}
-                        />
-                      ) : (
-                        <div className="cover coverFallbackSmall">
-                          <Icon
-                            name="music"
-
-                            size={18}
-                          />
                         </div>
-                      )}
 
-                      <div className="trackText">
-                        <p className="trackName">
+                        <h3 className="gameName">
                           {
-                            track.title
+                            game.name
                           }
-                        </p>
+                        </h3>
 
-                        <p className="trackArtist">
-                          {
-                            track.artist
-                          }
-                        </p>
+                        <div className="gameMeta">
+                          {game.year ||
+                            "Unknown year"}
 
-                        <span className="sourceBadge">
-                          {sourceLabel(
-                            track.source
-                          )}
-                        </span>
-                      </div>
+                          {game.genres
+                            ?.length
+                            ? ` · ${game.genres
+                                .slice(
+                                  0,
+                                  2
+                                )
+                                .join(
+                                  ", "
+                                )}`
+                            : ""}
+                        </div>
 
-                      <div className="trackActions">
-                        <button
-                          type="button"
-
-                          className={`feedbackBtn like ${
-                            liked
-                              ? "active"
-                              : ""
-                          }`}
-
-                          onClick={() =>
-                            toggleLike(
-                              track.id
-                            )
-                          }
-
-                          title="More like this"
-
-                          aria-label={`More like ${track.title}`}
-                        >
-                          <Icon
-                            name="up"
-
-                            size={15}
-                          />
-                        </button>
-
-                        <button
-                          type="button"
-
-                          className={`feedbackBtn dislike ${
-                            disliked
-                              ? "active"
-                              : ""
-                          }`}
-
-                          onClick={() =>
-                            toggleDislike(
-                              track.id
-                            )
-                          }
-
-                          title="Less like this"
-
-                          aria-label={`Less like ${track.title}`}
-                        >
-                          <Icon
-                            name="down"
-
-                            size={15}
-                          />
-                        </button>
-
-                        {track.url && (
-                          <a
-                            className="trackLink"
-
-                            href={
-                              track.url
-                            }
-
-                            target="_blank"
-
-                            rel="noopener noreferrer"
-                          >
-                            Spotify
-                          </a>
+                        {game.platforms
+                          ?.length >
+                          0 && (
+                          <div className="gameMeta">
+                            {game.platforms
+                              .slice(
+                                0,
+                                3
+                              )
+                              .join(
+                                " · "
+                              )}
+                          </div>
                         )}
+
+                        {game.rating >
+                          0 && (
+                          <div className="rating">
+                            IGDB rating:{" "}
+                            {
+                              game.rating
+                            }
+                            /100
+                          </div>
+                        )}
+
+                        {game.summary && (
+                          <div className="gameSummary">
+                            {
+                              game.summary
+                            }
+                          </div>
+                        )}
+
+                        <div className="gameActions">
+                          <button
+                            type="button"
+
+                            className={`mini like ${
+                              liked
+                                ? "active"
+                                : ""
+                            }`}
+
+                            title="More like this"
+
+                            onClick={() =>
+                              toggleLike(
+                                game.id
+                              )
+                            }
+                          >
+                            <Icon
+                              name="up"
+                              size={14}
+                            />
+
+                            More
+                          </button>
+
+                          <button
+                            type="button"
+
+                            className={`mini dislike ${
+                              disliked
+                                ? "active"
+                                : ""
+                            }`}
+
+                            title="Less like this"
+
+                            onClick={() =>
+                              toggleDislike(
+                                game.id
+                              )
+                            }
+                          >
+                            <Icon
+                              name="down"
+                              size={14}
+                            />
+
+                            Less
+                          </button>
+
+                          <button
+                            type="button"
+
+                            className="mini"
+
+                            title="Never recommend"
+
+                            onClick={() =>
+                              addBlockedGame(
+                                game
+                              )
+                            }
+                          >
+                            <Icon
+                              name="ban"
+                              size={13}
+                            />
+                          </button>
+
+                          <button
+                            type="button"
+
+                            className="mini"
+
+                            title="Remove"
+
+                            onClick={() =>
+                              removeRecommendation(
+                                game.id
+                              )
+                            }
+                          >
+                            <Icon
+                              name="trash"
+                              size={13}
+                            />
+                          </button>
+
+                          {game.url && (
+                            <a
+                              href={
+                                game.url
+                              }
+
+                              className="mini openLink"
+
+                              target="_blank"
+
+                              rel="noopener noreferrer"
+                            >
+                              IGDB
+
+                              <Icon
+                                name="arrow"
+                                size={12}
+                              />
+                            </a>
+                          )}
+                        </div>
                       </div>
-                    </div>
+                    </article>
                   );
                 }
               )}
             </div>
-
-            {playlistUrl && (
-              <a
-                className="playlistLink"
-
-                href={
-                  playlistUrl
-                }
-
-                target="_blank"
-
-                rel="noopener noreferrer"
-              >
-                Open saved playlist in Spotify
-
-                <Icon
-                  name="arrow"
-
-                  size={14}
-                />
-              </a>
-            )}
           </section>
         )}
 
-        {mixHistory.length >
+        {history.length >
           0 && (
           <section className="section history">
             <div className="kicker">
-              03 · RECENT MIXES
+              03 · RECENT PICKS
             </div>
 
             <h2 className="sectionTitle">
-              Go back to something good.
+              Previous discoveries.
             </h2>
 
             <p className="sectionCopy">
-              Your latest mixes are saved in this browser.
+              Recent recommendation lists are saved in this browser.
             </p>
 
             <div className="historyGrid">
-              {mixHistory.map(
+              {history.map(
                 (
                   item
                 ) => (
@@ -6051,34 +4076,25 @@ export default function Home() {
                     }
 
                     onClick={() =>
-                      loadHistoryMix(
+                      loadHistory(
                         item
                       )
                     }
                   >
-                    <CoverCollage
-                      tracks={
-                        item.tracks ||
-                        []
+                    <div className="historyName">
+                      {
+                        item.name
                       }
-                    />
+                    </div>
 
-                    <div>
-                      <div className="historyName">
-                        {
-                          item.name
-                        }
-                      </div>
-
-                      <div className="historyMeta">
-                        {item.tracks?.length ||
-                          0}{" "}
-                        tracks ·{" "}
-                        {
-                          item.discovery
-                        }
-                        % discovery
-                      </div>
+                    <div className="historyMeta">
+                      {item.games?.length ||
+                        0}{" "}
+                      games ·{" "}
+                      {
+                        item.discovery
+                      }
+                      % discovery
                     </div>
                   </button>
                 )
@@ -6089,17 +4105,15 @@ export default function Home() {
 
         <footer className="footer">
           <div>
-            TasteMaker · Music discovery without the same five recommendations forever.
+            TasteMaker · Find your next game without scrolling through the same charts forever.
           </div>
 
           <div>
             Designed &amp; built by{" "}
-
             <strong>
               Dominik Sakalik
-            </strong>
-
-            {" "}· 2026
+            </strong>{" "}
+            · 2026
           </div>
         </footer>
       </div>

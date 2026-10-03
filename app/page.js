@@ -1306,9 +1306,35 @@ export default function Home() {
             }}
           />
 
-          <div style={styles.badge}>
-            MUSIC DISCOVERY
-          </div>
+          <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    flexWrap: "wrap",
+    justifyContent: "flex-end",
+  }}
+>
+  <div style={styles.badge}>
+    MUSIC DISCOVERY
+  </div>
+
+  <a
+    href="/api/spotify/login"
+    style={{
+      padding: "9px 15px",
+      borderRadius: 999,
+      background: "#1DB954",
+      color: "#07140a",
+      textDecoration: "none",
+      fontSize: 13,
+      fontWeight: 800,
+      whiteSpace: "nowrap",
+    }}
+  >
+    Connect to Spotify
+  </a>
+</div>
         </nav>
 
         <section style={styles.hero}>

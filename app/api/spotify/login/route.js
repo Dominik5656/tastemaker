@@ -1,41 +1,55 @@
 import { NextResponse } from "next/server";
-import { randomBytes } from "node:crypto";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request) {
   const clientId = process.env.SPOTIFY_CLIENT_ID;
   const redirectUri = process.env.SPOTIFY_REDIRECT_URI;
 
   if (!clientId || !redirectUri) {
-    return NextResponse.json(
-      { error: "Missing Spotify login settings in .env.local." },
+    return Response.json(
+      {
+        error:
+          "Missing SPOTIFY_CLIENT_ID or SPOTIFY_REDIRECT_URI.",
+      },
       { status: 500 }
     );
   }
 
-  const state = randomBytes(32).toString("hex");
+  const state = crypto.randomUUID();
+
+  const scopes = [
+    "playlist-modify-private",
+    "playlist-modify-public",
+    "user-read-private",
+  ].join(" ");
 
   const params = new URLSearchParams({
     client_id: clientId,
     response_type: "code",
     redirect_uri: redirectUri,
-    scope: "playlist-modify-private",
     state,
+    scope: scopes,
   });
 
-  const response = NextResponse.redirect(
-    `https://accounts.spotify.com/authorize?${params}`
+  const spotifyUrl =
+    `https://accounts.spotify.com/authorize?${params.toString()}`;
+
+  const response = NextResponse.redirect(spotifyUrl);
+
+  response.cookies.set(
+    "spotify_oauth_state",
+    state,
+    {
+      httpOnly: true,
+      secure:
+        new URL(request.url).protocol === "https:",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 10,
+    }
   );
 
-  response.cookies.set("spotify_oauth_state", state, {
-    httpOnly: true,
-    secure: new URL(redirectUri).protocol === "https:",
-    sameSite: "lax",
-    path: "/",
-    maxAge: 600,
-  });
-
-  response.headers.set("Cache-Control", "no-store");
   return response;
 }

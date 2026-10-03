@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useMemo, useState } from "react";
 
 function normalize(text = "") {
@@ -13,17 +12,22 @@ function normalize(text = "") {
 }
 
 function distance(a, b) {
-  const matrix = Array.from({ length: b.length + 1 }, () =>
-    Array(a.length + 1).fill(0)
+  const matrix = Array.from(
+    { length: b.length + 1 },
+    () => Array(a.length + 1).fill(0)
   );
 
-  for (let i = 0; i <= a.length; i++) matrix[0][i] = i;
-  for (let j = 0; j <= b.length; j++) matrix[j][0] = j;
+  for (let i = 0; i <= a.length; i++)
+    matrix[0][i] = i;
+
+  for (let j = 0; j <= b.length; j++)
+    matrix[j][0] = j;
 
   for (let j = 1; j <= b.length; j++) {
     for (let i = 1; i <= a.length; i++) {
       if (a[i - 1] === b[j - 1]) {
-        matrix[j][i] = matrix[j - 1][i - 1];
+        matrix[j][i] =
+          matrix[j - 1][i - 1];
       } else {
         matrix[j][i] = Math.min(
           matrix[j - 1][i] + 1,
@@ -37,7 +41,10 @@ function distance(a, b) {
   return matrix[b.length][a.length];
 }
 
-function Icon({ name, size = 18 }) {
+function Icon({
+  name,
+  size = 18,
+}) {
   const common = {
     width: size,
     height: size,
@@ -57,6 +64,7 @@ function Icon({ name, size = 18 }) {
         <path d="M18.5 13.5l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7.7-2Z" />
       </>
     ),
+
     music: (
       <>
         <path d="M9 18V5l11-2v13" />
@@ -64,6 +72,7 @@ function Icon({ name, size = 18 }) {
         <circle cx="17" cy="16" r="3" />
       </>
     ),
+
     spotify: (
       <>
         <circle cx="12" cy="12" r="9" />
@@ -72,19 +81,31 @@ function Icon({ name, size = 18 }) {
         <path d="M8.5 15.4c2.15-.55 4.4-.4 6.4.5" />
       </>
     ),
-    plus: <path d="M12 5v14M5 12h14" />,
+
+    plus: (
+      <path d="M12 5v14M5 12h14" />
+    ),
+
     arrow: (
       <>
         <path d="M5 12h14" />
         <path d="m14 7 5 5-5 5" />
       </>
     ),
+
     copy: (
       <>
-        <rect x="8" y="8" width="11" height="11" rx="2" />
+        <rect
+          x="8"
+          y="8"
+          width="11"
+          height="11"
+          rx="2"
+        />
         <path d="M5 16H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v1" />
       </>
     ),
+
     trash: (
       <>
         <path d="M4 7h16" />
@@ -93,6 +114,7 @@ function Icon({ name, size = 18 }) {
         <path d="M9 7V4h6v3" />
       </>
     ),
+
     refresh: (
       <>
         <path d="M20 7v5h-5" />
@@ -101,7 +123,11 @@ function Icon({ name, size = 18 }) {
         <path d="M17.9 15A7 7 0 0 1 5.3 16.3L4 12" />
       </>
     ),
-    check: <path d="m5 12 4 4L19 6" />,
+
+    check: (
+      <path d="m5 12 4 4L19 6" />
+    ),
+
     up: (
       <>
         <path d="M7 10v11" />
@@ -109,6 +135,7 @@ function Icon({ name, size = 18 }) {
         <path d="M7 19h9.4a2 2 0 0 0 1.9-1.4l2.1-7A2 2 0 0 0 18.5 8H14l.7-3.1A2.4 2.4 0 0 0 10.2 3L7 10Z" />
       </>
     ),
+
     down: (
       <>
         <path d="M7 14V3" />
@@ -116,12 +143,14 @@ function Icon({ name, size = 18 }) {
         <path d="M7 5h9.4a2 2 0 0 1 1.9 1.4l2.1 7a2 2 0 0 1-1.9 2.6H14l.7 3.1a2.4 2.4 0 0 1-4.5 1.9L7 14Z" />
       </>
     ),
+
     ban: (
       <>
         <circle cx="12" cy="12" r="9" />
         <path d="m5.6 5.6 12.8 12.8" />
       </>
     ),
+
     history: (
       <>
         <path d="M3 12a9 9 0 1 0 3-6.7L3 8" />
@@ -131,19 +160,37 @@ function Icon({ name, size = 18 }) {
     ),
   };
 
-  return <svg {...common}>{icons[name] || null}</svg>;
+  return (
+    <svg {...common}>
+      {icons[name] || null}
+    </svg>
+  );
 }
 
 function sourceLabel(source) {
-  if (source === "close") return "Close match";
-  if (source === "collaborator") return "Connected artist";
-  if (source === "genre") return "Genre discovery";
-  if (source === "spotify-taste") return "Your Spotify taste";
-  if (source === "feedback") return "More like your picks";
+  if (source === "close")
+    return "Close match";
+
+  if (source === "collaborator")
+    return "Connected artist";
+
+  if (source === "genre")
+    return "Genre discovery";
+
+  if (source === "spotify-taste")
+    return "Your Spotify taste";
+
+  if (source === "feedback")
+    return "More like your picks";
+
   return "Discovery";
 }
 
-function buildMixName(discovery, meta, tracks) {
+function buildMixName(
+  discovery,
+  meta,
+  tracks
+) {
   const soft = [
     "Velvet",
     "Quiet",
@@ -190,18 +237,32 @@ function buildMixName(discovery, meta, tracks) {
       : wild;
 
   const seed =
-    (tracks?.[0]?.id || "tastemaker") +
-    (meta?.usedGenres?.join("") || "") +
+    (tracks?.[0]?.id ||
+      "tastemaker") +
+    (meta?.usedGenres?.join("") ||
+      "") +
     String(Date.now());
 
   let total = 0;
 
-  for (let i = 0; i < seed.length; i++) {
-    total += seed.charCodeAt(i);
+  for (
+    let i = 0;
+    i < seed.length;
+    i++
+  ) {
+    total +=
+      seed.charCodeAt(i);
   }
 
-  return `${firstPool[total % firstPool.length]} ${
-    nouns[(total * 7) % nouns.length]
+  return `${
+    firstPool[
+      total % firstPool.length
+    ]
+  } ${
+    nouns[
+      (total * 7) %
+        nouns.length
+    ]
   }`;
 }
 
@@ -210,7 +271,9 @@ function CoverCollage({
   large = false,
 }) {
   const images = tracks
-    .filter((track) => track.image)
+    .filter(
+      (track) => track.image
+    )
     .slice(0, 4);
 
   if (!images.length) {
@@ -222,7 +285,9 @@ function CoverCollage({
       >
         <Icon
           name="music"
-          size={large ? 42 : 26}
+          size={
+            large ? 42 : 26
+          }
         />
       </div>
     );
@@ -238,7 +303,10 @@ function CoverCollage({
         length: 4,
       }).map((_, index) => {
         const item =
-          images[index % images.length];
+          images[
+            index %
+              images.length
+          ];
 
         return (
           <img
@@ -253,8 +321,10 @@ function CoverCollage({
 }
 
 export default function Home() {
-  const [input, setInput] =
-    useState("");
+  const [
+    input,
+    setInput,
+  ] = useState("");
 
   const [
     songInput,
@@ -374,6 +444,21 @@ export default function Home() {
   ] = useState("");
 
   const [
+    excludedResults,
+    setExcludedResults,
+  ] = useState([]);
+
+  const [
+    searchingExcluded,
+    setSearchingExcluded,
+  ] = useState(false);
+
+  const [
+    selectedExcludedArtist,
+    setSelectedExcludedArtist,
+  ] = useState(null);
+
+  const [
     excludedArtists,
     setExcludedArtists,
   ] = useState([]);
@@ -419,15 +504,21 @@ export default function Home() {
 
   const discoveryLabel =
     useMemo(() => {
-      if (discovery <= 25) {
+      if (
+        discovery <= 25
+      ) {
         return "Familiar";
       }
 
-      if (discovery <= 55) {
+      if (
+        discovery <= 55
+      ) {
         return "Balanced";
       }
 
-      if (discovery <= 80) {
+      if (
+        discovery <= 80
+      ) {
         return "Explorer";
       }
 
@@ -436,15 +527,21 @@ export default function Home() {
 
   const discoveryHint =
     useMemo(() => {
-      if (discovery <= 25) {
+      if (
+        discovery <= 25
+      ) {
         return "Stay close to the artists you already know.";
       }
 
-      if (discovery <= 55) {
+      if (
+        discovery <= 55
+      ) {
         return "Mix familiar artists with fresh connections.";
       }
 
-      if (discovery <= 80) {
+      if (
+        discovery <= 80
+      ) {
         return "Reach further into collaborators and genres.";
       }
 
@@ -692,6 +789,7 @@ export default function Home() {
       query.length < 2
     ) {
       setArtistResults([]);
+
       setSearchingArtists(
         false
       );
@@ -703,9 +801,11 @@ export default function Home() {
       selectedArtist &&
       normalize(
         selectedArtist.name
-      ) === normalize(query)
+      ) ===
+        normalize(query)
     ) {
       setArtistResults([]);
+
       setSearchingArtists(
         false
       );
@@ -799,6 +899,7 @@ export default function Home() {
       query.length < 2
     ) {
       setSongResults([]);
+
       setSearchingSongs(
         false
       );
@@ -814,6 +915,7 @@ export default function Home() {
         normalize(query)
     ) {
       setSongResults([]);
+
       setSearchingSongs(
         false
       );
@@ -842,7 +944,9 @@ export default function Home() {
                 q: query,
               });
 
-            if (artistName) {
+            if (
+              artistName
+            ) {
               params.set(
                 "artist",
                 artistName
@@ -917,8 +1021,133 @@ export default function Home() {
   ]);
 
   useEffect(() => {
+    const query =
+      excludedInput.trim();
+
+    if (
+      query.length < 2
+    ) {
+      setExcludedResults([]);
+
+      setSearchingExcluded(
+        false
+      );
+
+      return;
+    }
+
+    if (
+      selectedExcludedArtist &&
+      normalize(
+        selectedExcludedArtist.name
+      ) ===
+        normalize(query)
+    ) {
+      setExcludedResults([]);
+
+      setSearchingExcluded(
+        false
+      );
+
+      return;
+    }
+
+    const controller =
+      new AbortController();
+
+    const timer =
+      setTimeout(
+        async () => {
+          try {
+            setSearchingExcluded(
+              true
+            );
+
+            const response =
+              await fetch(
+                `/api/search-artists?q=${encodeURIComponent(
+                  query
+                )}`,
+                {
+                  signal:
+                    controller.signal,
+                }
+              );
+
+            const data =
+              await response.json();
+
+            if (!response.ok) {
+              throw new Error(
+                data.error ||
+                  "Artist search failed."
+              );
+            }
+
+            const filtered =
+              (
+                data.artists ||
+                []
+              ).filter(
+                (artist) =>
+                  !excludedArtists.some(
+                    (blocked) =>
+                      normalize(
+                        blocked
+                      ) ===
+                      normalize(
+                        artist.name
+                      )
+                  )
+              );
+
+            setExcludedResults(
+              filtered
+            );
+          } catch (error) {
+            if (
+              error.name !==
+              "AbortError"
+            ) {
+              console.error(
+                error
+              );
+
+              setExcludedResults(
+                []
+              );
+            }
+          } finally {
+            if (
+              !controller.signal
+                .aborted
+            ) {
+              setSearchingExcluded(
+                false
+              );
+            }
+          }
+        },
+        280
+      );
+
+    return () => {
+      clearTimeout(
+        timer
+      );
+
+      controller.abort();
+    };
+  }, [
+    excludedInput,
+    selectedExcludedArtist,
+    excludedArtists,
+  ]);
+
+  useEffect(() => {
     if (!loading) {
       setLoadingStage("");
+
       return;
     }
 
@@ -955,11 +1184,14 @@ export default function Home() {
     keepFeedback = false,
   } = {}) {
     setTracks([]);
+
     setMixMeta(null);
+
     setPlaylistUrl("");
 
     if (!keepFeedback) {
       setLikedTrackIds([]);
+
       setDislikedTrackIds(
         []
       );
@@ -1048,6 +1280,7 @@ export default function Home() {
     }
 
     setInput("");
+
     setSongInput("");
 
     setSelectedArtist(
@@ -1055,8 +1288,11 @@ export default function Home() {
     );
 
     setSelectedSong(null);
+
     setArtistResults([]);
+
     setSongResults([]);
+
     setMessage("");
 
     clearResults();
@@ -1135,7 +1371,8 @@ export default function Home() {
         await response.json();
 
       const spotifyArtists =
-        data.artists || [];
+        data.artists ||
+        [];
 
       if (
         !spotifyArtists.length
@@ -1272,7 +1509,8 @@ export default function Home() {
         };
 
         updated[key] = (
-          updated[key] || []
+          updated[key] ||
+          []
         ).filter(
           (song) =>
             normalize(
@@ -1284,7 +1522,8 @@ export default function Home() {
         );
 
         if (
-          !updated[key].length
+          !updated[key]
+            .length
         ) {
           delete updated[key];
         }
@@ -1348,8 +1587,19 @@ export default function Home() {
   }
 
   function addExcludedArtist() {
-    const name =
+    const typedName =
       excludedInput.trim();
+
+    const name =
+      selectedExcludedArtist &&
+      normalize(
+        selectedExcludedArtist.name
+      ) ===
+        normalize(
+          typedName
+        )
+        ? selectedExcludedArtist.name
+        : typedName;
 
     if (!name) {
       return;
@@ -1363,7 +1613,9 @@ export default function Home() {
               normalize(
                 artist
               ) ===
-              normalize(name)
+              normalize(
+                name
+              )
           );
 
         return exists
@@ -1371,11 +1623,21 @@ export default function Home() {
           : [
               ...previous,
               name,
-            ].slice(0, 30);
+            ].slice(
+              0,
+              30
+            );
       }
     );
 
     setExcludedInput("");
+
+    setSelectedExcludedArtist(
+      null
+    );
+
+    setExcludedResults([]);
+
     clearResults();
   }
 
@@ -1389,7 +1651,9 @@ export default function Home() {
             normalize(
               artist
             ) !==
-            normalize(name)
+            normalize(
+              name
+            )
         )
     );
 
@@ -1419,7 +1683,8 @@ export default function Home() {
       (previous) =>
         previous.filter(
           (id) =>
-            id !== trackId
+            id !==
+            trackId
         )
     );
   }
@@ -1447,7 +1712,8 @@ export default function Home() {
       (previous) =>
         previous.filter(
           (id) =>
-            id !== trackId
+            id !==
+            trackId
         )
     );
   }
@@ -1480,21 +1746,28 @@ export default function Home() {
       (previous) => [
         entry,
         ...previous,
-      ].slice(0, 6)
+      ].slice(
+        0,
+        6
+      )
     );
   }
 
   function loadHistoryMix(
     item
   ) {
-    setMixName(item.name);
+    setMixName(
+      item.name
+    );
 
     setTracks(
-      item.tracks || []
+      item.tracks ||
+        []
     );
 
     setMixMeta(
-      item.meta || null
+      item.meta ||
+        null
     );
 
     setDiscovery(
@@ -1503,7 +1776,9 @@ export default function Home() {
     );
 
     setLikedTrackIds([]);
+
     setDislikedTrackIds([]);
+
     setPlaylistUrl("");
 
     setMessage(
@@ -1530,12 +1805,16 @@ export default function Home() {
     }
 
     setFavorites([]);
+
     setFavoriteSongs({});
+
     setFavoriteArtistData(
       {}
     );
 
-    setExcludedArtists([]);
+    setExcludedArtists(
+      []
+    );
 
     clearResults();
 
@@ -1558,7 +1837,9 @@ export default function Home() {
     }
 
     setLoading(true);
+
     setMessage("");
+
     setPlaylistUrl("");
 
     const likedTracks =
@@ -1632,7 +1913,9 @@ export default function Home() {
       const data =
         await response.json();
 
-      if (!response.ok) {
+      if (
+        !response.ok
+      ) {
         throw new Error(
           data.error ||
             "Recommendation search failed."
@@ -1640,10 +1923,12 @@ export default function Home() {
       }
 
       const newTracks =
-        data.tracks || [];
+        data.tracks ||
+        [];
 
       const newMeta =
-        data.meta || null;
+        data.meta ||
+        null;
 
       const newName =
         buildMixName(
@@ -1665,6 +1950,7 @@ export default function Home() {
       );
 
       setLikedTrackIds([]);
+
       setDislikedTrackIds(
         []
       );
@@ -1689,14 +1975,18 @@ export default function Home() {
         );
       }
     } catch (error) {
-      console.error(error);
+      console.error(
+        error
+      );
 
       setMessage(
         error.message ||
           "Could not build your playlist."
       );
     } finally {
-      setLoading(false);
+      setLoading(
+        false
+      );
     }
   }
 
@@ -1732,6 +2022,7 @@ export default function Home() {
     }
 
     setSaving(true);
+
     setPlaylistUrl("");
 
     setMessage(
@@ -1777,7 +2068,9 @@ export default function Home() {
         );
       }
 
-      if (!response.ok) {
+      if (
+        !response.ok
+      ) {
         if (
           data.needsLogin
         ) {
@@ -1802,2721 +2095,2039 @@ export default function Home() {
         "Saving could not be confirmed."
       );
     } finally {
-      setSaving(false);
+      setSaving(
+        false
+      );
     }
   }
 
   return (
     <main className="tm">
       <style>{`
-        :root {
-          color-scheme: dark;
-        }
-
-        * {
-          box-sizing: border-box;
-        }
-
-        html {
-          scroll-behavior: smooth;
-          background: #09090b;
-        }
-
-        body {
-          margin: 0;
-          background: #09090b;
-        }
-
-        button,
-        input,
-        select {
-          font: inherit;
-        }
-
-        button,
-        a {
-          -webkit-tap-highlight-color: transparent;
-        }
-
-        .tm {
-          --bg: #09090b;
-          --panel: #121216;
-          --panel2: #18181e;
-          --soft: #202027;
-          --line: #292930;
-          --text: #f7f4eb;
-          --muted: #aaa7a0;
-          --dim: #76736e;
-          --lime: #b7ff5a;
-          --purple: #8b78ff;
-          --pink: #ff7f9f;
-
-          min-height: 100vh;
-          overflow-x: hidden;
-          color: var(--text);
-
-          background:
-            radial-gradient(
-              circle at 92% 8%,
-              rgba(139,120,255,.17),
-              transparent 28%
-            ),
-            radial-gradient(
-              circle at 5% 32%,
-              rgba(183,255,90,.10),
-              transparent 23%
-            ),
-            #09090b;
-
-          font-family:
-            Inter,
-            ui-sans-serif,
-            system-ui,
-            -apple-system,
-            BlinkMacSystemFont,
-            "Segoe UI",
-            sans-serif;
-        }
-
-        .tm::before {
-          content: "";
-          position: fixed;
-          inset: 0;
-          pointer-events: none;
-          opacity: .45;
-
-          background-image:
-            radial-gradient(
-              rgba(255,255,255,.06)
-              .7px,
-              transparent .7px
-            );
-
-          background-size:
-            18px 18px;
-
-          mask-image:
-            linear-gradient(
-              to bottom,
-              #000,
-              transparent 78%
-            );
-        }
-
-        .shell {
-          position: relative;
-          z-index: 1;
-
-          width:
-            min(
-              1220px,
-              calc(100% - 32px)
-            );
-
-          margin:
-            0 auto;
-
-          padding:
-            18px 0 64px;
-        }
-
-        .nav {
-          position: sticky;
-          top: 12px;
-          z-index: 500;
-
-          min-height: 70px;
-
-          padding:
-            10px 12px;
-
-          display: flex;
-          align-items: center;
-          justify-content:
-            space-between;
-
-          gap: 18px;
-
-          border:
-            1px solid
-            rgba(
-              255,
-              255,
-              255,
-              .08
-            );
-
-          border-radius:
-            20px;
-
-          background:
-            rgba(
-              11,
-              11,
-              14,
-              .86
-            );
-
-          backdrop-filter:
-            blur(20px);
-
-          box-shadow:
-            0 18px 60px
-            rgba(
-              0,
-              0,
-              0,
-              .30
-            );
-        }
-
-        .brand {
-          display: flex;
-          align-items: center;
-
-          gap: 12px;
-
-          min-width: 0;
-        }
-
-        .brandLogo {
-          width: 44px;
-          height: 44px;
-
-          border-radius:
-            12px;
-
-          object-fit:
-            cover;
-
-          background:
-            #050505;
-
-          box-shadow:
-            inset
-            0 0 0 1px
-            rgba(
-              255,
-              255,
-              255,
-              .08
-            );
-        }
-
-        .brandText {
-          display: flex;
-          flex-direction:
-            column;
-
-          line-height: 1;
-        }
-
-        .brandText strong {
-          font-size:
-            17px;
-
-          letter-spacing:
-            -.03em;
-        }
-
-        .brandText span {
-          margin-top:
-            5px;
-
-          color:
-            var(--dim);
+:root{color-scheme:dark;}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;background:#09090b;}
+body{margin:0;background:#09090b;}
+button,input,select{font:inherit;}
+button,a{-webkit-tap-highlight-color:transparent;}
+
+.tm{
+  --bg:#09090b;
+  --panel:#121216;
+  --panel2:#18181e;
+  --soft:#202027;
+  --line:#292930;
+  --text:#f7f4eb;
+  --muted:#aaa7a0;
+  --dim:#76736e;
+  --lime:#b7ff5a;
+  --purple:#8b78ff;
+  --pink:#ff7f9f;
+
+  min-height:100vh;
+  overflow-x:hidden;
+  color:var(--text);
+
+  background:
+    radial-gradient(
+      circle at 92% 8%,
+      rgba(139,120,255,.17),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 5% 32%,
+      rgba(183,255,90,.10),
+      transparent 23%
+    ),
+    #09090b;
+
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+.tm::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  opacity:.45;
+
+  background-image:
+    radial-gradient(
+      rgba(255,255,255,.06) .7px,
+      transparent .7px
+    );
+
+  background-size:
+    18px 18px;
+
+  mask-image:
+    linear-gradient(
+      to bottom,
+      #000,
+      transparent 78%
+    );
+}
+
+.shell{
+  position:relative;
+  z-index:1;
+
+  width:min(
+    1220px,
+    calc(100% - 32px)
+  );
+
+  margin:0 auto;
+  padding:18px 0 64px;
+}
+
+.nav{
+  position:sticky;
+  top:12px;
+  z-index:500;
+
+  min-height:70px;
+  padding:10px 12px;
+
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+
+  gap:18px;
+
+  border:1px solid
+    rgba(255,255,255,.08);
+
+  border-radius:20px;
 
-          font-size:
-            11px;
-        }
+  background:
+    rgba(11,11,14,.86);
 
-        .navRight {
-          display: flex;
-          align-items:
-            center;
-
-          gap: 10px;
-        }
+  backdrop-filter:
+    blur(20px);
 
-        .connect,
-        .userPill {
-          min-height:
-            44px;
-
-          display:
-            inline-flex;
+  box-shadow:
+    0 18px 60px
+    rgba(0,0,0,.30);
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:0;
+}
 
-          align-items:
-            center;
+.brandLogo{
+  width:44px;
+  height:44px;
 
-          justify-content:
-            center;
+  border-radius:12px;
+  object-fit:cover;
 
-          gap: 9px;
+  background:#050505;
 
-          border-radius:
-            14px;
+  box-shadow:
+    inset 0 0 0 1px
+    rgba(255,255,255,.08);
+}
 
-          text-decoration:
-            none;
+.brandText{
+  display:flex;
+  flex-direction:column;
+  line-height:1;
+}
 
-          transition:
-            .16s ease;
-        }
+.brandText strong{
+  font-size:17px;
+  letter-spacing:-.03em;
+}
 
-        .connect {
-          padding:
-            0 16px;
+.brandText span{
+  margin-top:5px;
+  color:var(--dim);
+  font-size:11px;
+}
 
-          color:
-            #090b07;
+.navRight{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
 
-          background:
-            var(--lime);
+.connect,
+.userPill{
+  min-height:44px;
 
-          font-size:
-            14px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
 
-          font-weight:
-            900;
-        }
+  gap:9px;
 
-        .connect:hover,
-        .userPill:hover {
-          transform:
-            translateY(-2px);
-        }
-
-        .userPill {
-          max-width:
-            230px;
-
-          justify-content:
-            flex-start;
+  border-radius:14px;
+  text-decoration:none;
 
-          padding:
-            5px 12px
-            5px 5px;
+  transition:.16s ease;
+}
 
-          border:
-            1px solid
-            var(--line);
+.connect{
+  padding:0 16px;
+  color:#090b07;
+  background:var(--lime);
 
-          background:
-            var(--panel2);
+  font-size:14px;
+  font-weight:900;
+}
 
-          color:
-            var(--text);
-        }
+.connect:hover,
+.userPill:hover{
+  transform:
+    translateY(-2px);
+}
 
-        .userAvatar,
-        .userAvatarFallback {
-          width: 34px;
-          height: 34px;
+.userPill{
+  max-width:230px;
 
-          flex:
-            0 0 auto;
+  justify-content:flex-start;
 
-          border-radius:
-            10px;
+  padding:
+    5px 12px
+    5px 5px;
 
-          object-fit:
-            cover;
+  border:
+    1px solid
+    var(--line);
 
-          background:
-            #0d0d10;
-        }
+  background:
+    var(--panel2);
 
-        .userAvatarFallback {
-          display: grid;
-          place-items:
-            center;
+  color:
+    var(--text);
+}
 
-          color:
-            var(--lime);
-        }
+.userAvatar,
+.userAvatarFallback{
+  width:34px;
+  height:34px;
 
-        .userText {
-          min-width: 0;
+  flex:0 0 auto;
 
-          display: flex;
-          flex-direction:
-            column;
-        }
+  border-radius:10px;
+  object-fit:cover;
 
-        .userText strong {
-          overflow:
-            hidden;
+  background:#0d0d10;
+}
 
-          text-overflow:
-            ellipsis;
+.userAvatarFallback{
+  display:grid;
+  place-items:center;
+  color:var(--lime);
+}
 
-          white-space:
-            nowrap;
+.userText{
+  min-width:0;
 
-          font-size:
-            13px;
-        }
+  display:flex;
+  flex-direction:column;
+}
 
-        .userText small {
-          margin-top:
-            3px;
+.userText strong{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
 
-          color:
-            var(--lime);
+  font-size:13px;
+}
 
-          font-size:
-            10px;
-        }
+.userText small{
+  margin-top:3px;
 
-        .hero {
-          min-height:
-            610px;
+  color:
+    var(--lime);
 
-          padding:
-            92px 26px
-            72px;
+  font-size:10px;
+}
 
-          display: grid;
+.hero{
+  min-height:610px;
 
-          grid-template-columns:
-            minmax(
-              0,
-              1.25fr
-            )
-            minmax(
-              300px,
-              .75fr
-            );
+  padding:
+    92px 26px
+    72px;
 
-          gap: 62px;
+  display:grid;
 
-          align-items:
-            center;
-        }
+  grid-template-columns:
+    minmax(0,1.25fr)
+    minmax(300px,.75fr);
 
-        .heroEyebrow {
-          display:
-            inline-flex;
+  gap:62px;
 
-          align-items:
-            center;
+  align-items:center;
+}
 
-          gap: 8px;
+.heroEyebrow{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
 
-          margin-bottom:
-            24px;
+  margin-bottom:24px;
 
-          color:
-            var(--lime);
+  color:var(--lime);
 
-          font-size:
-            13px;
+  font-size:13px;
+  font-weight:850;
+}
 
-          font-weight:
-            850;
-        }
+.hero h1{
+  margin:0;
 
-        .hero h1 {
-          margin: 0;
+  max-width:820px;
 
-          max-width:
-            820px;
+  font-size:
+    clamp(
+      58px,
+      8.2vw,
+      110px
+    );
 
-          font-size:
-            clamp(
-              58px,
-              8.2vw,
-              110px
-            );
+  line-height:.91;
 
-          line-height:
-            .91;
+  letter-spacing:
+    -.068em;
 
-          letter-spacing:
-            -.068em;
+  font-weight:950;
 
-          font-weight:
-            950;
+  text-wrap:balance;
+}
 
-          text-wrap:
-            balance;
-        }
+.hero h1 .stroke{
+  color:transparent;
 
-        .hero h1 .stroke {
-          color:
-            transparent;
+  -webkit-text-stroke:
+    1px
+    rgba(247,244,235,.55);
+}
 
-          -webkit-text-stroke:
-            1px
-            rgba(
-              247,
-              244,
-              235,
-              .55
-            );
-        }
+.hero h1 .lime{
+  color:var(--lime);
+}
 
-        .hero h1 .lime {
-          color:
-            var(--lime);
-        }
+.heroCopy{
+  max-width:690px;
 
-        .heroCopy {
-          max-width:
-            690px;
+  margin:
+    28px 0 0;
 
-          margin:
-            28px 0 0;
+  color:#b7b3ac;
 
-          color:
-            #b7b3ac;
+  font-size:18px;
+  line-height:1.7;
+}
 
-          font-size:
-            18px;
+.heroActions{
+  display:flex;
+  flex-wrap:wrap;
 
-          line-height:
-            1.7;
-        }
+  gap:10px;
 
-        .heroActions {
-          display: flex;
-          flex-wrap:
-            wrap;
+  margin-top:30px;
+}
 
-          gap: 10px;
+.heroBadge{
+  padding:
+    10px 13px;
 
-          margin-top:
-            30px;
-        }
+  display:inline-flex;
+  align-items:center;
 
-        .heroBadge {
-          padding:
-            10px 13px;
+  gap:8px;
 
-          display:
-            inline-flex;
+  border:
+    1px solid
+    var(--line);
 
-          align-items:
-            center;
+  border-radius:12px;
 
-          gap: 8px;
+  background:
+    rgba(255,255,255,.025);
 
-          border:
-            1px solid
-            var(--line);
+  color:#c9c6bf;
 
-          border-radius:
-            12px;
+  font-size:13px;
+  font-weight:700;
+}
 
-          background:
-            rgba(
-              255,
-              255,
-              255,
-              .025
-            );
+.heroArt{
+  position:relative;
 
-          color:
-            #c9c6bf;
-
-          font-size:
-            13px;
-
-          font-weight:
-            700;
-        }
-
-        .heroArt {
-          position:
-            relative;
-
-          min-height:
-            370px;
-
-          display: grid;
-
-          place-items:
-            center;
-        }
-
-        .orbit {
-          position:
-            absolute;
-
-          width:
-            340px;
-
-          height:
-            340px;
-
-          border:
-            1px solid
-            rgba(
-              255,
-              255,
-              255,
-              .09
-            );
-
-          border-radius:
-            50%;
-        }
-
-        .orbit::before,
-        .orbit::after {
-          content: "";
-
-          position:
-            absolute;
-
-          border-radius:
-            50%;
-
-          border:
-            1px solid
-            rgba(
-              255,
-              255,
-              255,
-              .07
-            );
-        }
-
-        .orbit::before {
-          inset: 36px;
-        }
-
-        .orbit::after {
-          inset: 76px;
-        }
-
-        .heroCard {
-          position:
-            relative;
-
-          width:
-            min(
-              310px,
-              100%
-            );
-
-          padding:
-            24px;
-
-          border:
-            1px solid
-            rgba(
-              255,
-              255,
-              255,
-              .10
-            );
-
-          border-radius:
-            26px;
-
-          background:
-            linear-gradient(
-              160deg,
-              rgba(
-                139,
-                120,
-                255,
-                .20
-              ),
-              rgba(
-                18,
-                18,
-                22,
-                .96
-              ) 48%,
-              rgba(
-                183,
-                255,
-                90,
-                .08
-              )
-            );
-
-          box-shadow:
-            0 35px 90px
-            rgba(
-              0,
-              0,
-              0,
-              .42
-            );
-
-          transform:
-            rotate(4deg);
-        }
-
-        .heroCardTop {
-          display: flex;
-
-          align-items:
-            center;
-
-          justify-content:
-            space-between;
-
-          gap: 12px;
-        }
-
-        .heroCardLabel {
-          color:
-            #d8d4cc;
-
-          font-size:
-            13px;
-
-          font-weight:
-            800;
-        }
-
-        .heroDot {
-          width: 10px;
-          height: 10px;
-
-          border-radius:
-            50%;
-
-          background:
-            var(--lime);
-
-          box-shadow:
-            0 0 20px
-            rgba(
-              183,
-              255,
-              90,
-              .8
-            );
-        }
-
-        .heroCardBig {
-          margin-top:
-            42px;
-
-          font-size:
-            52px;
-
-          font-weight:
-            950;
-
-          letter-spacing:
-            -.06em;
-        }
-
-        .heroCardSmall {
-          margin-top:
-            6px;
-
-          color:
-            #aaa7a0;
-
-          font-size:
-            14px;
-
-          line-height:
-            1.55;
-        }
-
-        .heroBars {
-          display: grid;
-
-          gap: 8px;
-
-          margin-top:
-            28px;
-        }
-
-        .heroBar {
-          height: 10px;
-
-          border-radius:
-            999px;
-
-          background:
-            #24242b;
-
-          overflow:
-            hidden;
-        }
-
-        .heroBar span {
-          display: block;
-
-          height: 100%;
-
-          border-radius:
-            inherit;
-
-          background:
-            linear-gradient(
-              90deg,
-              var(--purple),
-              var(--lime)
-            );
-        }
-
-        .section {
-          margin-top:
-            20px;
-
-          border:
-            1px solid
-            var(--line);
-
-          border-radius:
-            26px;
-
-          background:
-            var(--panel);
-
-          overflow:
-            visible;
-        }
-
-        .sectionHead {
-          padding:
-            28px 30px 0;
-
-          display: flex;
-
-          align-items:
-            flex-start;
-
-          justify-content:
-            space-between;
-
-          gap: 20px;
-        }
-
-        .kicker {
-          color:
-            var(--lime);
-
-          font-size:
-            13px;
-
-          font-weight:
-            850;
-        }
-
-        .sectionTitle {
-          margin:
-            7px 0 0;
-
-          font-size:
-            clamp(
-              30px,
-              4vw,
-              46px
-            );
-
-          line-height: 1;
-
-          letter-spacing:
-            -.045em;
-        }
-
-        .sectionCopy {
-          max-width:
-            650px;
-
-          margin:
-            12px 0 0;
-
-          color:
-            var(--muted);
-
-          font-size:
-            16px;
-
-          line-height:
-            1.65;
-        }
-
-        .builderGrid {
-          padding:
-            28px 30px
-            30px;
-
-          display: grid;
-
-          grid-template-columns:
-            minmax(
-              0,
-              1.35fr
-            )
-            minmax(
-              320px,
-              .65fr
-            );
-
-          gap: 18px;
-        }
-
-        .panel {
-          border:
-            1px solid
-            var(--line);
-
-          border-radius:
-            20px;
-
-          background:
-            #0d0d10;
-        }
-
-        .seedPanel {
-          padding:
-            22px;
-        }
+  min-height:370px;
 
-        .controlPanel {
-          padding:
-            22px;
-        }
+  display:grid;
+  place-items:center;
+}
 
-        .panelTitle {
-          margin: 0;
+.orbit{
+  position:absolute;
 
-          font-size:
-            20px;
+  width:340px;
+  height:340px;
 
-          letter-spacing:
-            -.025em;
-        }
+  border:
+    1px solid
+    rgba(255,255,255,.09);
 
-        .panelCopy {
-          margin:
-            7px 0 0;
+  border-radius:50%;
+}
 
-          color:
-            var(--muted);
+.orbit::before,
+.orbit::after{
+  content:"";
+  position:absolute;
 
-          font-size:
-            14px;
-
-          line-height:
-            1.55;
-        }
-
-        .formGrid {
-          margin-top:
-            22px;
-
-          display: grid;
-
-          grid-template-columns:
-            minmax(
-              0,
-              1fr
-            )
-            minmax(
-              0,
-              1fr
-            )
-            auto;
+  border-radius:50%;
 
-          gap: 10px;
+  border:
+    1px solid
+    rgba(255,255,255,.07);
+}
 
-          align-items:
-            end;
-        }
+.orbit::before{
+  inset:36px;
+}
 
-        .field {
-          position:
-            relative;
+.orbit::after{
+  inset:76px;
+}
 
-          min-width: 0;
-        }
+.heroCard{
+  position:relative;
 
-        .field label {
-          display: block;
+  width:min(
+    310px,
+    100%
+  );
 
-          margin:
-            0 0 8px
-            2px;
+  padding:24px;
 
-          color:
-            #c9c6bf;
+  border:
+    1px solid
+    rgba(255,255,255,.10);
 
-          font-size:
-            13px;
+  border-radius:26px;
 
-          font-weight:
-            750;
-        }
+  background:
+    linear-gradient(
+      160deg,
+      rgba(139,120,255,.20),
+      rgba(18,18,22,.96) 48%,
+      rgba(183,255,90,.08)
+    );
 
-        .input {
-          width: 100%;
-          height: 54px;
+  box-shadow:
+    0 35px 90px
+    rgba(0,0,0,.42);
 
-          padding:
-            0 15px;
+  transform:
+    rotate(4deg);
+}
 
-          border:
-            1px solid
-            #303038;
+.heroCardTop{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
 
-          border-radius:
-            13px;
+  gap:12px;
+}
 
-          outline: none;
+.heroCardLabel{
+  color:#d8d4cc;
 
-          background:
-            #15151a;
+  font-size:13px;
+  font-weight:800;
+}
 
-          color:
-            var(--text);
+.heroDot{
+  width:10px;
+  height:10px;
 
-          font-size:
-            15px;
+  border-radius:50%;
 
-          font-weight:
-            650;
+  background:
+    var(--lime);
 
-          transition:
-            .15s ease;
-        }
+  box-shadow:
+    0 0 20px
+    rgba(183,255,90,.8);
+}
 
-        .input::placeholder {
-          color:
-            #68656f;
-        }
+.heroCardBig{
+  margin-top:42px;
 
-        .input:focus {
-          border-color:
-            var(--purple);
+  font-size:52px;
+  font-weight:950;
 
-          box-shadow:
-            0 0 0 3px
-            rgba(
-              139,
-              120,
-              255,
-              .12
-            );
-        }
+  letter-spacing:
+    -.06em;
+}
 
-        .addBtn {
-          height: 54px;
+.heroCardSmall{
+  margin-top:6px;
 
-          padding:
-            0 18px;
+  color:#aaa7a0;
 
-          display:
-            inline-flex;
+  font-size:14px;
+  line-height:1.55;
+}
 
-          align-items:
-            center;
+.heroBars{
+  display:grid;
+  gap:8px;
 
-          justify-content:
-            center;
+  margin-top:28px;
+}
 
-          gap: 8px;
+.heroBar{
+  height:10px;
 
-          border: 0;
+  border-radius:999px;
 
-          border-radius:
-            13px;
+  background:#24242b;
+  overflow:hidden;
+}
 
-          background:
-            var(--text);
+.heroBar span{
+  display:block;
 
-          color:
-            #0c0c0f;
+  height:100%;
 
-          font-size:
-            14px;
+  border-radius:inherit;
 
-          font-weight:
-            900;
+  background:
+    linear-gradient(
+      90deg,
+      var(--purple),
+      var(--lime)
+    );
+}
 
-          cursor:
-            pointer;
+.section{
+  margin-top:20px;
 
-          white-space:
-            nowrap;
+  border:
+    1px solid
+    var(--line);
 
-          transition:
-            .15s ease;
-        }
+  border-radius:26px;
 
-        .addBtn:hover:not(:disabled) {
-          transform:
-            translateY(-2px);
-        }
+  background:
+    var(--panel);
 
-        .dropdown {
-          position:
-            absolute;
+  overflow:visible;
+}
 
-          left: 0;
-          right: 0;
+.sectionHead{
+  padding:
+    28px 30px 0;
 
-          top:
-            calc(
-              100% + 8px
-            );
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
 
-          z-index: 700;
+  gap:20px;
+}
 
-          max-height:
-            360px;
+.kicker{
+  color:var(--lime);
 
-          overflow-y:
-            auto;
+  font-size:13px;
+  font-weight:850;
+}
 
-          border:
-            1px solid
-            #34343c;
+.sectionTitle{
+  margin:
+    7px 0 0;
 
-          border-radius:
-            15px;
+  font-size:
+    clamp(
+      30px,
+      4vw,
+      46px
+    );
 
-          background:
-            #111116;
+  line-height:1;
 
-          box-shadow:
-            0 24px 70px
-            rgba(
-              0,
-              0,
-              0,
-              .52
-            );
-        }
+  letter-spacing:
+    -.045em;
+}
 
-        .searching {
-          padding:
-            15px;
+.sectionCopy{
+  max-width:650px;
 
-          color:
-            var(--muted);
+  margin:
+    12px 0 0;
 
-          font-size:
-            14px;
-        }
+  color:var(--muted);
 
-        .searchResult {
-          width: 100%;
+  font-size:16px;
+  line-height:1.65;
+}
 
-          padding: 11px;
+.builderGrid{
+  padding:
+    28px 30px 30px;
 
-          display: flex;
+  display:grid;
 
-          align-items:
-            center;
+  grid-template-columns:
+    minmax(0,1.35fr)
+    minmax(320px,.65fr);
 
-          gap: 12px;
+  gap:18px;
+}
 
-          border: 0;
+.panel{
+  border:
+    1px solid
+    var(--line);
 
-          border-bottom:
-            1px solid
-            #24242a;
+  border-radius:20px;
 
-          background:
-            transparent;
+  background:#0d0d10;
+}
 
-          color:
-            var(--text);
+.seedPanel{
+  padding:22px;
+}
 
-          text-align:
-            left;
+.controlPanel{
+  padding:22px;
+}
 
-          cursor:
-            pointer;
-        }
+.panelTitle{
+  margin:0;
 
-        .searchResult:hover {
-          background:
-            #19191f;
-        }
+  font-size:20px;
 
-        .searchResult:last-child {
-          border-bottom: 0;
-        }
+  letter-spacing:
+    -.025em;
+}
 
-        .resultArt {
-          width: 48px;
-          height: 48px;
+.panelCopy{
+  margin:
+    7px 0 0;
 
-          flex:
-            0 0 auto;
+  color:var(--muted);
 
-          object-fit:
-            cover;
+  font-size:14px;
+  line-height:1.55;
+}
 
-          background:
-            #202027;
-        }
+.formGrid{
+  margin-top:22px;
 
-        .resultArt.artist {
-          border-radius:
-            50%;
-        }
+  display:grid;
 
-        .resultArt.song {
-          border-radius:
-            10px;
-        }
+  grid-template-columns:
+    minmax(0,1fr)
+    minmax(0,1fr)
+    auto;
 
-        .resultFallback {
-          display: grid;
+  gap:10px;
 
-          place-items:
-            center;
+  align-items:end;
+}
 
-          color:
-            var(--lime);
-        }
+.field{
+  position:relative;
+  min-width:0;
+}
 
-        .resultText {
-          min-width: 0;
-        }
+.field label{
+  display:block;
 
-        .resultName {
-          font-size:
-            14px;
+  margin:
+    0 0 8px
+    2px;
 
-          font-weight:
-            850;
+  color:#c9c6bf;
 
-          white-space:
-            nowrap;
+  font-size:13px;
+  font-weight:750;
+}
 
-          overflow:
-            hidden;
+.input{
+  width:100%;
+  height:54px;
 
-          text-overflow:
-            ellipsis;
-        }
+  padding:
+    0 15px;
 
-        .resultMeta {
-          margin-top:
-            4px;
+  border:
+    1px solid
+    #303038;
 
-          color:
-            var(--muted);
+  border-radius:13px;
 
-          font-size:
-            12px;
+  outline:none;
 
-          white-space:
-            nowrap;
+  background:#15151a;
 
-          overflow:
-            hidden;
+  color:var(--text);
 
-          text-overflow:
-            ellipsis;
-        }
+  font-size:15px;
+  font-weight:650;
 
-        .tasteGrid {
-          margin-top:
-            18px;
+  transition:.15s ease;
+}
 
-          display: grid;
+.input::placeholder{
+  color:#68656f;
+}
 
-          grid-template-columns:
-            repeat(
-              2,
-              minmax(
-                0,
-                1fr
-              )
-            );
+.input:focus{
+  border-color:
+    var(--purple);
 
-          gap: 9px;
-        }
+  box-shadow:
+    0 0 0 3px
+    rgba(139,120,255,.12);
+}
 
-        .tasteCard {
-          min-width: 0;
+.addBtn{
+  height:54px;
 
-          padding: 12px;
+  padding:
+    0 18px;
 
-          display: grid;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
 
-          grid-template-columns:
-            auto
-            minmax(
-              0,
-              1fr
-            )
-            auto;
+  gap:8px;
 
-          align-items:
-            center;
+  border:0;
+  border-radius:13px;
 
-          gap: 11px;
+  background:
+    var(--text);
 
-          border:
-            1px solid
-            #292930;
+  color:#0c0c0f;
 
-          border-radius:
-            15px;
+  font-size:14px;
+  font-weight:900;
 
-          background:
-            #15151a;
-        }
+  cursor:pointer;
+  white-space:nowrap;
 
-        .tasteAvatar {
-          width: 46px;
-          height: 46px;
+  transition:.15s ease;
+}
 
-          border-radius:
-            12px;
+.addBtn:hover:not(:disabled){
+  transform:
+    translateY(-2px);
+}
 
-          object-fit:
-            cover;
+.dropdown{
+  position:absolute;
 
-          background:
-            #202027;
-        }
+  left:0;
+  right:0;
 
-        .tasteFallback {
-          display: grid;
+  top:
+    calc(100% + 8px);
 
-          place-items:
-            center;
+  z-index:700;
 
-          color:
-            var(--lime);
-        }
+  max-height:360px;
 
-        .tasteText {
-          min-width: 0;
-        }
+  overflow-y:auto;
 
-        .tasteArtist {
-          font-size:
-            14px;
+  border:
+    1px solid
+    #34343c;
 
-          font-weight:
-            900;
+  border-radius:15px;
 
-          white-space:
-            nowrap;
+  background:#111116;
 
-          overflow:
-            hidden;
+  box-shadow:
+    0 24px 70px
+    rgba(0,0,0,.52);
+}
 
-          text-overflow:
-            ellipsis;
-        }
+.searching{
+  padding:15px;
 
-        .seedText {
-          margin-top:
-            4px;
+  color:var(--muted);
 
-          color:
-            var(--muted);
+  font-size:14px;
+}
 
-          font-size:
-            12px;
-        }
+.searchResult{
+  width:100%;
 
-        .removeBtn {
-          width: 34px;
-          height: 34px;
+  padding:11px;
 
-          display: grid;
+  display:flex;
+  align-items:center;
 
-          place-items:
-            center;
+  gap:12px;
 
-          border:
-            1px solid
-            transparent;
+  border:0;
 
-          border-radius:
-            10px;
+  border-bottom:
+    1px solid
+    #24242a;
 
-          background:
-            transparent;
+  background:transparent;
 
-          color:
-            #7c7981;
+  color:var(--text);
 
-          cursor:
-            pointer;
-        }
+  text-align:left;
 
-        .removeBtn:hover {
-          color: #fff;
+  cursor:pointer;
+}
 
-          border-color:
-            #323239;
+.searchResult:hover{
+  background:#19191f;
+}
 
-          background:
-            #202027;
-        }
+.searchResult:last-child{
+  border-bottom:0;
+}
 
-        .songSeeds {
-          grid-column:
-            2 / 4;
+.resultArt{
+  width:48px;
+  height:48px;
 
-          display: flex;
+  flex:0 0 auto;
 
-          flex-wrap:
-            wrap;
+  object-fit:cover;
 
-          gap: 6px;
-        }
+  background:#202027;
+}
 
-        .songSeed {
-          padding:
-            6px 9px;
+.resultArt.artist{
+  border-radius:50%;
+}
 
-          border:
-            1px solid
-            #2d2d34;
+.resultArt.song{
+  border-radius:10px;
+}
 
-          border-radius:
-            999px;
+.resultFallback{
+  display:grid;
+  place-items:center;
 
-          background:
-            #1b1b20;
+  color:var(--lime);
+}
 
-          color:
-            #bbb8b1;
+.resultText{
+  min-width:0;
+}
 
-          font-size:
-            11px;
+.resultName{
+  font-size:14px;
+  font-weight:850;
 
-          cursor:
-            pointer;
-        }
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
 
-        .controlBlock +
-        .controlBlock {
-          margin-top:
-            24px;
+.resultMeta{
+  margin-top:4px;
 
-          padding-top:
-            24px;
+  color:var(--muted);
 
-          border-top:
-            1px solid
-            #26262c;
-        }
+  font-size:12px;
 
-        .controlTop {
-          display: flex;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
 
-          align-items:
-            center;
+.tasteGrid{
+  margin-top:18px;
 
-          justify-content:
-            space-between;
+  display:grid;
 
-          gap: 12px;
-        }
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(
+        0,
+        1fr
+      )
+    );
 
-        .controlName {
-          font-size:
-            15px;
+  gap:9px;
+}
 
-          font-weight:
-            850;
-        }
+.tasteCard{
+  min-width:0;
 
-        .controlHint {
-          margin-top:
-            6px;
+  padding:12px;
 
-          color:
-            var(--muted);
+  display:grid;
 
-          font-size:
-            13px;
+  grid-template-columns:
+    auto
+    minmax(0,1fr)
+    auto;
 
-          line-height:
-            1.5;
-        }
+  align-items:center;
 
-        .select {
-          height: 42px;
+  gap:11px;
 
-          padding:
-            0 32px
-            0 12px;
+  border:
+    1px solid
+    #292930;
 
-          border:
-            1px solid
-            #303038;
+  border-radius:15px;
 
-          border-radius:
-            11px;
+  background:#15151a;
+}
 
-          background:
-            #15151a;
+.tasteAvatar{
+  width:46px;
+  height:46px;
 
-          color:
-            var(--text);
+  border-radius:12px;
 
-          font-size:
-            14px;
+  object-fit:cover;
 
-          font-weight:
-            800;
-        }
+  background:#202027;
+}
 
-        .range {
-          width: 100%;
+.tasteFallback{
+  display:grid;
+  place-items:center;
 
-          margin-top:
-            14px;
+  color:var(--lime);
+}
 
-          accent-color:
-            var(--lime);
+.tasteText{
+  min-width:0;
+}
 
-          cursor:
-            pointer;
-        }
+.tasteArtist{
+  font-size:14px;
+  font-weight:900;
 
-        .rangeLabels {
-          margin-top:
-            7px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
 
-          display: flex;
+.seedText{
+  margin-top:4px;
 
-          justify-content:
-            space-between;
+  color:var(--muted);
 
-          color:
-            var(--dim);
+  font-size:12px;
+}
 
-          font-size:
-            11px;
-        }
+.removeBtn{
+  width:34px;
+  height:34px;
 
-        .excludeRow {
-          margin-top:
-            13px;
+  display:grid;
+  place-items:center;
 
-          display: flex;
+  border:
+    1px solid
+    transparent;
 
-          gap: 8px;
-        }
+  border-radius:10px;
 
-        .excludeRow .input {
-          height: 44px;
+  background:transparent;
 
-          font-size:
-            14px;
-        }
+  color:#7c7981;
 
-        .miniBtn {
-          min-width:
-            44px;
+  cursor:pointer;
+}
 
-          height: 44px;
+.removeBtn:hover{
+  color:#fff;
 
-          display: grid;
+  border-color:#323239;
 
-          place-items:
-            center;
+  background:#202027;
+}
 
-          border: 0;
+.songSeeds{
+  grid-column:
+    2 / 4;
 
-          border-radius:
-            11px;
+  display:flex;
+  flex-wrap:wrap;
 
-          background:
-            var(--purple);
+  gap:6px;
+}
 
-          color: #fff;
+.songSeed{
+  padding:
+    6px 9px;
 
-          cursor:
-            pointer;
-        }
+  border:
+    1px solid
+    #2d2d34;
 
-        .excludeChips {
-          display: flex;
+  border-radius:999px;
 
-          flex-wrap:
-            wrap;
+  background:#1b1b20;
 
-          gap: 7px;
+  color:#bbb8b1;
 
-          margin-top:
-            10px;
-        }
+  font-size:11px;
 
-        .excludeChip {
-          padding:
-            7px 9px;
+  cursor:pointer;
+}
 
-          display:
-            inline-flex;
+.controlBlock + .controlBlock{
+  margin-top:24px;
 
-          align-items:
-            center;
+  padding-top:24px;
 
-          gap: 6px;
+  border-top:
+    1px solid
+    #26262c;
+}
 
-          border:
-            1px solid
-            rgba(
-              255,
-              127,
-              159,
-              .24
-            );
+.controlTop{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
 
-          border-radius:
-            999px;
+  gap:12px;
+}
 
-          background:
-            rgba(
-              255,
-              127,
-              159,
-              .08
-            );
+.controlName{
+  font-size:15px;
+  font-weight:850;
+}
 
-          color:
-            #ffb0c3;
+.controlHint{
+  margin-top:6px;
 
-          font-size:
-            12px;
+  color:var(--muted);
 
-          cursor:
-            pointer;
-        }
+  font-size:13px;
+  line-height:1.5;
+}
 
-        .generate {
-          width: 100%;
+.select{
+  height:42px;
 
-          height: 60px;
+  padding:
+    0 32px
+    0 12px;
 
-          margin-top:
-            22px;
+  border:
+    1px solid
+    #303038;
 
-          display: flex;
+  border-radius:11px;
 
-          align-items:
-            center;
+  background:#15151a;
 
-          justify-content:
-            center;
+  color:var(--text);
 
-          gap: 10px;
+  font-size:14px;
+  font-weight:800;
+}
 
-          border: 0;
+.range{
+  width:100%;
 
-          border-radius:
-            15px;
+  margin-top:14px;
 
-          background:
-            var(--lime);
+  accent-color:
+    var(--lime);
 
-          color:
-            #0b0d08;
+  cursor:pointer;
+}
 
-          font-size:
-            16px;
+.rangeLabels{
+  margin-top:7px;
 
-          font-weight:
-            950;
+  display:flex;
+  justify-content:space-between;
 
-          cursor:
-            pointer;
+  color:var(--dim);
 
-          transition:
-            .16s ease;
-        }
+  font-size:11px;
+}
 
-        .generate:hover:not(:disabled) {
-          transform:
-            translateY(-2px);
+.excludeRow{
+  margin-top:13px;
 
-          box-shadow:
-            0 14px 40px
-            rgba(
-              183,
-              255,
-              90,
-              .14
-            );
-        }
+  display:flex;
 
-        .status {
-          min-height:
-            22px;
+  gap:8px;
 
-          margin:
-            14px 0 0;
+  align-items:flex-start;
+}
 
-          color:
-            var(--muted);
+.excludeSearchWrap{
+  position:relative;
 
-          text-align:
-            center;
+  flex:1;
 
-          font-size:
-            13px;
+  min-width:0;
+}
 
-          line-height:
-            1.5;
-        }
+.excludeSearchWrap .dropdown{
+  top:
+    calc(100% + 8px);
+}
 
-        .profileStrip {
-          margin-top:
-            18px;
+.excludeRow .input{
+  height:44px;
 
-          padding:
-            16px 18px;
+  font-size:14px;
+}
 
-          display: grid;
+.miniBtn{
+  min-width:44px;
+  height:44px;
 
-          grid-template-columns:
-            repeat(
-              4,
-              minmax(
-                0,
-                1fr
-              )
-            );
+  display:grid;
+  place-items:center;
 
-          gap: 8px;
+  border:0;
 
-          border:
-            1px solid
-            var(--line);
+  border-radius:11px;
 
-          border-radius:
-            18px;
+  background:
+    var(--purple);
 
-          background:
-            #0d0d10;
-        }
+  color:#fff;
 
-        .stat {
-          padding: 12px;
+  cursor:pointer;
+}
 
-          border-radius:
-            12px;
+.excludeChips{
+  display:flex;
+  flex-wrap:wrap;
 
-          background:
-            #15151a;
-        }
+  gap:7px;
 
-        .stat span {
-          color:
-            var(--muted);
+  margin-top:10px;
+}
 
-          font-size:
-            12px;
-        }
+.excludeChip{
+  padding:
+    7px 9px;
 
-        .stat strong {
-          display: block;
+  display:inline-flex;
+  align-items:center;
 
-          margin-top:
-            5px;
+  gap:6px;
 
-          font-size:
-            22px;
+  border:
+    1px solid
+    rgba(255,127,159,.24);
 
-          letter-spacing:
-            -.03em;
-        }
+  border-radius:999px;
 
-        .stat.spotifyStat strong {
-          color:
-            var(--lime);
+  background:
+    rgba(255,127,159,.08);
 
-          font-size:
-            14px;
+  color:#ffb0c3;
 
-          line-height:
-            1.2;
-        }
+  font-size:12px;
 
-        .results {
-          padding:
-            30px;
-        }
+  cursor:pointer;
+}
 
-        .playlistHero {
-          display: grid;
+.generate{
+  width:100%;
+  height:60px;
 
-          grid-template-columns:
-            220px
-            minmax(
-              0,
-              1fr
-            );
+  margin-top:22px;
 
-          gap: 28px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 
-          align-items:
-            end;
-        }
+  gap:10px;
 
-        .coverCollage {
-          width: 100%;
+  border:0;
 
-          aspect-ratio:
-            1;
+  border-radius:15px;
 
-          display: grid;
+  background:
+    var(--lime);
 
-          grid-template-columns:
-            1fr 1fr;
+  color:#0b0d08;
 
-          overflow:
-            hidden;
+  font-size:16px;
+  font-weight:950;
 
-          border-radius:
-            18px;
+  cursor:pointer;
 
-          background:
-            linear-gradient(
-              145deg,
-              #2a234c,
-              #17200e
-            );
+  transition:.16s ease;
+}
 
-          border:
-            1px solid
-            #34343c;
-        }
+.generate:hover:not(:disabled){
+  transform:
+    translateY(-2px);
 
-        .coverCollage.large {
-          width: 220px;
+  box-shadow:
+    0 14px 40px
+    rgba(183,255,90,.14);
+}
 
-          border-radius:
-            24px;
+.status{
+  min-height:22px;
 
-          box-shadow:
-            0 28px 70px
-            rgba(
-              0,
-              0,
-              0,
-              .40
-            );
-        }
+  margin:
+    14px 0 0;
 
-        .coverCollage img {
-          width: 100%;
-          height: 100%;
+  color:var(--muted);
 
-          object-fit:
-            cover;
+  text-align:center;
 
-          min-width: 0;
-          min-height: 0;
-        }
+  font-size:13px;
+  line-height:1.5;
+}
 
-        .coverFallback {
-          display: grid;
+.profileStrip{
+  margin-top:18px;
 
-          place-items:
-            center;
+  padding:
+    16px 18px;
 
-          color:
-            var(--lime);
-        }
+  display:grid;
 
-        .mixKicker {
-          color:
-            var(--lime);
+  grid-template-columns:
+    repeat(
+      4,
+      minmax(
+        0,
+        1fr
+      )
+    );
 
-          font-size:
-            13px;
+  gap:8px;
 
-          font-weight:
-            850;
-        }
+  border:
+    1px solid
+    var(--line);
 
-        .resultsTitle {
-          margin:
-            8px 0 0;
+  border-radius:18px;
 
-          font-size:
-            clamp(
-              42px,
-              6vw,
-              74px
-            );
+  background:#0d0d10;
+}
 
-          line-height:
-            .92;
+.stat{
+  padding:12px;
 
-          letter-spacing:
-            -.055em;
-        }
+  border-radius:12px;
 
-        .mixMeta {
-          margin-top:
-            13px;
+  background:#15151a;
+}
 
-          color:
-            var(--muted);
+.stat span{
+  color:var(--muted);
 
-          font-size:
-            14px;
+  font-size:12px;
+}
 
-          line-height:
-            1.55;
-        }
+.stat strong{
+  display:block;
 
-        .genreTags {
-          margin-top:
-            12px;
+  margin-top:5px;
 
-          display: flex;
+  font-size:22px;
 
-          flex-wrap:
-            wrap;
+  letter-spacing:
+    -.03em;
+}
 
-          gap: 7px;
-        }
+.stat.spotifyStat strong{
+  color:var(--lime);
 
-        .genreTag {
-          padding:
-            7px 10px;
+  font-size:14px;
+  line-height:1.2;
+}
 
-          border:
-            1px solid
-            #303038;
+.results{
+  padding:30px;
+}
 
-          border-radius:
-            999px;
+.playlistHero{
+  display:grid;
 
-          background:
-            #17171c;
+  grid-template-columns:
+    220px
+    minmax(0,1fr);
 
-          color:
-            #cbc7c0;
+  gap:28px;
 
-          font-size:
-            12px;
-        }
+  align-items:end;
+}
 
-        .resultsActions {
-          display: flex;
+.coverCollage{
+  width:100%;
 
-          flex-wrap:
-            wrap;
+  aspect-ratio:1;
 
-          gap: 8px;
+  display:grid;
 
-          margin-top:
-            19px;
-        }
+  grid-template-columns:
+    1fr 1fr;
 
-        .ghostBtn,
-        .saveBtn {
-          min-height:
-            44px;
+  overflow:hidden;
 
-          padding:
-            0 14px;
+  border-radius:18px;
 
-          display:
-            inline-flex;
+  background:
+    linear-gradient(
+      145deg,
+      #2a234c,
+      #17200e
+    );
 
-          align-items:
-            center;
+  border:
+    1px solid
+    #34343c;
+}
 
-          justify-content:
-            center;
+.coverCollage.large{
+  width:220px;
 
-          gap: 8px;
+  border-radius:24px;
 
-          border-radius:
-            12px;
+  box-shadow:
+    0 28px 70px
+    rgba(0,0,0,.40);
+}
 
-          font-size:
-            13px;
+.coverCollage img{
+  width:100%;
+  height:100%;
 
-          font-weight:
-            850;
+  object-fit:cover;
 
-          cursor:
-            pointer;
-        }
+  min-width:0;
+  min-height:0;
+}
 
-        .ghostBtn {
-          border:
-            1px solid
-            #303038;
+.coverFallback{
+  display:grid;
+  place-items:center;
 
-          background:
-            #17171c;
+  color:var(--lime);
+}
 
-          color:
-            var(--text);
-        }
+.mixKicker{
+  color:var(--lime);
 
-        .saveBtn {
-          border: 0;
+  font-size:13px;
+  font-weight:850;
+}
 
-          background:
-            var(--lime);
+.resultsTitle{
+  margin:
+    8px 0 0;
 
-          color:
-            #0b0d08;
-        }
+  font-size:
+    clamp(
+      42px,
+      6vw,
+      74px
+    );
 
-        .feedbackNotice {
-          margin-top:
-            20px;
+  line-height:.92;
 
-          padding:
-            13px 15px;
+  letter-spacing:
+    -.055em;
+}
 
-          border:
-            1px solid
-            rgba(
-              139,
-              120,
-              255,
-              .22
-            );
+.mixMeta{
+  margin-top:13px;
 
-          border-radius:
-            13px;
+  color:var(--muted);
 
-          background:
-            rgba(
-              139,
-              120,
-              255,
-              .07
-            );
+  font-size:14px;
+  line-height:1.55;
+}
 
-          color:
-            #c8c1ff;
+.genreTags{
+  margin-top:12px;
 
-          font-size:
-            13px;
+  display:flex;
+  flex-wrap:wrap;
 
-          line-height:
-            1.5;
-        }
+  gap:7px;
+}
 
-        .trackList {
-          margin-top:
-            22px;
+.genreTag{
+  padding:
+    7px 10px;
 
-          display: grid;
+  border:
+    1px solid
+    #303038;
 
-          gap: 8px;
-        }
+  border-radius:999px;
 
-        .track {
-          padding: 10px;
+  background:#17171c;
 
-          display: grid;
+  color:#cbc7c0;
 
-          grid-template-columns:
-            34px
-            58px
-            minmax(
-              0,
-              1fr
-            )
-            auto;
+  font-size:12px;
+}
 
-          align-items:
-            center;
+.resultsActions{
+  display:flex;
+  flex-wrap:wrap;
 
-          gap: 12px;
+  gap:8px;
 
-          border:
-            1px solid
-            #27272e;
+  margin-top:19px;
+}
 
-          border-radius:
-            15px;
+.ghostBtn,
+.saveBtn{
+  min-height:44px;
 
-          background:
-            #111115;
+  padding:
+    0 14px;
 
-          transition:
-            .14s ease;
-        }
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
 
-        .track:hover {
-          border-color:
-            #3a3a44;
+  gap:8px;
 
-          background:
-            #15151a;
-        }
+  border-radius:12px;
 
-        .trackNumber {
-          color:
-            #66636d;
+  font-size:13px;
+  font-weight:850;
 
-          font-size:
-            12px;
+  cursor:pointer;
+}
 
-          text-align:
-            center;
-        }
+.ghostBtn{
+  border:
+    1px solid
+    #303038;
 
-        .cover {
-          width: 58px;
-          height: 58px;
+  background:#17171c;
 
-          border-radius:
-            10px;
+  color:var(--text);
+}
 
-          object-fit:
-            cover;
+.saveBtn{
+  border:0;
 
-          background:
-            #202027;
-        }
+  background:
+    var(--lime);
 
-        .coverFallbackSmall {
-          display: grid;
+  color:#0b0d08;
+}
 
-          place-items:
-            center;
+.feedbackNotice{
+  margin-top:20px;
 
-          color:
-            var(--lime);
-        }
+  padding:
+    13px 15px;
 
-        .trackText {
-          min-width: 0;
-        }
+  border:
+    1px solid
+    rgba(139,120,255,.22);
 
-        .trackName {
-          margin: 0;
+  border-radius:13px;
 
-          color:
-            var(--text);
+  background:
+    rgba(139,120,255,.07);
 
-          font-size:
-            15px;
+  color:#c8c1ff;
 
-          font-weight:
-            900;
+  font-size:13px;
+  line-height:1.5;
+}
 
-          white-space:
-            nowrap;
+.trackList{
+  margin-top:22px;
 
-          overflow:
-            hidden;
+  display:grid;
 
-          text-overflow:
-            ellipsis;
-        }
+  gap:8px;
+}
 
-        .trackArtist {
-          margin:
-            5px 0 0;
+.track{
+  padding:10px;
 
-          color:
-            var(--muted);
+  display:grid;
 
-          font-size:
-            13px;
+  grid-template-columns:
+    34px
+    58px
+    minmax(0,1fr)
+    auto;
 
-          white-space:
-            nowrap;
+  align-items:center;
 
-          overflow:
-            hidden;
+  gap:12px;
 
-          text-overflow:
-            ellipsis;
-        }
+  border:
+    1px solid
+    #27272e;
 
-        .sourceBadge {
-          display:
-            inline-block;
+  border-radius:15px;
 
-          margin-top:
-            6px;
+  background:#111115;
 
-          color:
-            #8f88c9;
+  transition:.14s ease;
+}
 
-          font-size:
-            11px;
+.track:hover{
+  border-color:#3a3a44;
 
-          font-weight:
-            750;
-        }
+  background:#15151a;
+}
 
-        .trackActions {
-          display: flex;
+.trackNumber{
+  color:#66636d;
 
-          align-items:
-            center;
+  font-size:12px;
 
-          gap: 6px;
-        }
+  text-align:center;
+}
 
-        .feedbackBtn,
-        .trackLink {
-          min-width:
-            38px;
+.cover{
+  width:58px;
+  height:58px;
 
-          height: 38px;
+  border-radius:10px;
 
-          padding:
-            0 10px;
+  object-fit:cover;
 
-          display:
-            inline-flex;
+  background:#202027;
+}
 
-          align-items:
-            center;
+.coverFallbackSmall{
+  display:grid;
+  place-items:center;
 
-          justify-content:
-            center;
+  color:var(--lime);
+}
 
-          gap: 6px;
+.trackText{
+  min-width:0;
+}
 
-          border:
-            1px solid
-            #303038;
+.trackName{
+  margin:0;
 
-          border-radius:
-            10px;
+  color:var(--text);
 
-          background:
-            #17171c;
+  font-size:15px;
+  font-weight:900;
 
-          color:
-            #aaa7b0;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
 
-          cursor:
-            pointer;
+.trackArtist{
+  margin:
+    5px 0 0;
 
-          text-decoration:
-            none;
+  color:var(--muted);
 
-          transition:
-            .14s ease;
-        }
+  font-size:13px;
 
-        .feedbackBtn:hover,
-        .trackLink:hover {
-          color: #fff;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
 
-          border-color:
-            #44444f;
-        }
+.sourceBadge{
+  display:inline-block;
 
-        .feedbackBtn.like.active {
-          color:
-            #101407;
+  margin-top:6px;
 
-          border-color:
-            var(--lime);
+  color:#8f88c9;
 
-          background:
-            var(--lime);
-        }
+  font-size:11px;
+  font-weight:750;
+}
 
-        .feedbackBtn.dislike.active {
-          color: #fff;
+.trackActions{
+  display:flex;
+  align-items:center;
 
-          border-color:
-            var(--pink);
+  gap:6px;
+}
 
-          background:
-            #a94360;
-        }
+.feedbackBtn,
+.trackLink{
+  min-width:38px;
+  height:38px;
 
-        .trackLink {
-          color:
-            var(--lime);
+  padding:
+    0 10px;
 
-          font-size:
-            12px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
 
-          font-weight:
-            850;
-        }
+  gap:6px;
 
-        .playlistLink {
-          margin-top:
-            15px;
+  border:
+    1px solid
+    #303038;
 
-          display:
-            inline-flex;
+  border-radius:10px;
 
-          align-items:
-            center;
+  background:#17171c;
 
-          gap: 7px;
+  color:#aaa7b0;
 
-          color:
-            var(--lime);
+  cursor:pointer;
 
-          font-size:
-            14px;
+  text-decoration:none;
 
-          font-weight:
-            850;
+  transition:.14s ease;
+}
 
-          text-decoration:
-            none;
-        }
+.feedbackBtn:hover,
+.trackLink:hover{
+  color:#fff;
 
-        .history {
-          padding:
-            26px 30px
-            30px;
-        }
+  border-color:#44444f;
+}
 
-        .historyGrid {
-          margin-top:
-            18px;
+.feedbackBtn.like.active{
+  color:#101407;
 
-          display: grid;
+  border-color:
+    var(--lime);
 
-          grid-template-columns:
-            repeat(
-              3,
-              minmax(
-                0,
-                1fr
-              )
-            );
+  background:
+    var(--lime);
+}
 
-          gap: 10px;
-        }
+.feedbackBtn.dislike.active{
+  color:#fff;
 
-        .historyCard {
-          padding: 12px;
+  border-color:
+    var(--pink);
 
-          display: grid;
+  background:#a94360;
+}
 
-          grid-template-columns:
-            72px
-            minmax(
-              0,
-              1fr
-            );
+.trackLink{
+  color:var(--lime);
 
-          gap: 12px;
+  font-size:12px;
+  font-weight:850;
+}
 
-          align-items:
-            center;
+.playlistLink{
+  margin-top:15px;
 
-          border:
-            1px solid
-            #292930;
+  display:inline-flex;
+  align-items:center;
 
-          border-radius:
-            16px;
+  gap:7px;
 
-          background:
-            #111115;
+  color:var(--lime);
 
-          color:
-            var(--text);
+  font-size:14px;
+  font-weight:850;
 
-          text-align:
-            left;
+  text-decoration:none;
+}
 
-          cursor:
-            pointer;
-        }
+.history{
+  padding:
+    26px 30px
+    30px;
+}
 
-        .historyCard:hover {
-          border-color:
-            #3d3d47;
+.historyGrid{
+  margin-top:18px;
 
-          background:
-            #15151a;
-        }
+  display:grid;
 
-        .historyCard
-        .coverCollage {
-          width: 72px;
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(
+        0,
+        1fr
+      )
+    );
 
-          border-radius:
-            11px;
-        }
+  gap:10px;
+}
 
-        .historyName {
-          font-size:
-            14px;
+.historyCard{
+  padding:12px;
 
-          font-weight:
-            900;
+  display:grid;
 
-          white-space:
-            nowrap;
+  grid-template-columns:
+    72px
+    minmax(0,1fr);
 
-          overflow:
-            hidden;
+  gap:12px;
 
-          text-overflow:
-            ellipsis;
-        }
+  align-items:center;
 
-        .historyMeta {
-          margin-top:
-            5px;
+  border:
+    1px solid
+    #292930;
 
-          color:
-            var(--muted);
+  border-radius:16px;
 
-          font-size:
-            12px;
-        }
+  background:#111115;
 
-        .clearBtn {
-          margin-top:
-            18px;
+  color:var(--text);
 
-          padding:
-            10px 12px;
+  text-align:left;
 
-          border:
-            1px solid
-            #303038;
+  cursor:pointer;
+}
 
-          border-radius:
-            11px;
+.historyCard:hover{
+  border-color:#3d3d47;
 
-          background:
-            transparent;
+  background:#15151a;
+}
 
-          color:
-            #8b8790;
+.historyCard .coverCollage{
+  width:72px;
 
-          font-size:
-            12px;
+  border-radius:11px;
+}
 
-          cursor:
-            pointer;
-        }
+.historyName{
+  font-size:14px;
+  font-weight:900;
 
-        .clearBtn:hover {
-          color: #fff;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
 
-          background:
-            #17171c;
-        }
+.historyMeta{
+  margin-top:5px;
 
-        .footer {
-          padding:
-            38px 0 8px;
+  color:var(--muted);
 
-          text-align:
-            center;
+  font-size:12px;
+}
 
-          color:
-            #68656e;
+.clearBtn{
+  margin-top:18px;
 
-          font-size:
-            12px;
+  padding:
+    10px 12px;
 
-          line-height:
-            1.7;
-        }
+  border:
+    1px solid
+    #303038;
 
-        .footer strong {
-          color:
-            #bdb8af;
-        }
+  border-radius:11px;
 
-        button:disabled,
-        input:disabled,
-        select:disabled {
-          opacity: .55;
+  background:transparent;
 
-          cursor: wait;
-        }
+  color:#8b8790;
 
-        @media (
-          max-width:
-            960px
-        ) {
-          .hero {
-            grid-template-columns:
-              1fr;
+  font-size:12px;
 
-            min-height:
-              auto;
+  cursor:pointer;
+}
 
-            padding-top:
-              80px;
-          }
+.clearBtn:hover{
+  color:#fff;
 
-          .heroArt {
-            min-height:
-              320px;
-          }
+  background:#17171c;
+}
 
-          .builderGrid {
-            grid-template-columns:
-              1fr;
-          }
+.footer{
+  padding:
+    38px 0 8px;
 
-          .profileStrip {
-            grid-template-columns:
-              repeat(
-                2,
-                minmax(
-                  0,
-                  1fr
-                )
-              );
-          }
+  text-align:center;
 
-          .historyGrid {
-            grid-template-columns:
-              repeat(
-                2,
-                minmax(
-                  0,
-                  1fr
-                )
-              );
-          }
-        }
+  color:#68656e;
 
-        @media (
-          max-width:
-            760px
-        ) {
-          .shell {
-            width:
-              min(
-                100% - 18px,
-                1220px
-              );
+  font-size:12px;
 
-            padding-top:
-              9px;
-          }
+  line-height:1.7;
+}
 
-          .nav {
-            top: 8px;
+.footer strong{
+  color:#bdb8af;
+}
 
-            min-height:
-              62px;
+button:disabled,
+input:disabled,
+select:disabled{
+  opacity:.55;
 
-            border-radius:
-              16px;
-          }
+  cursor:wait;
+}
 
-          .brandLogo {
-            width: 38px;
-            height: 38px;
-          }
+@media(max-width:960px){
+  .hero{
+    grid-template-columns:
+      1fr;
 
-          .brandText span {
-            display: none;
-          }
+    min-height:auto;
 
-          .brandText strong {
-            font-size:
-              15px;
-          }
+    padding-top:80px;
+  }
 
-          .connect {
-            min-height:
-              40px;
+  .heroArt{
+    min-height:320px;
+  }
 
-            padding:
-              0 12px;
-          }
+  .builderGrid{
+    grid-template-columns:
+      1fr;
+  }
 
-          .hero {
-            padding:
-              65px 8px
-              46px;
+  .profileStrip{
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(
+          0,
+          1fr
+        )
+      );
+  }
 
-            gap: 30px;
-          }
+  .historyGrid{
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(
+          0,
+          1fr
+        )
+      );
+  }
+}
 
-          .hero h1 {
-            font-size:
-              clamp(
-                52px,
-                15vw,
-                78px
-              );
-          }
+@media(max-width:760px){
+  .shell{
+    width:
+      min(
+        calc(100% - 18px),
+        1220px
+      );
 
-          .heroCopy {
-            font-size:
-              16px;
-          }
+    padding-top:9px;
+  }
 
-          .orbit {
-            width: 290px;
-            height: 290px;
-          }
+  .nav{
+    top:8px;
 
-          .sectionHead {
-            padding:
-              22px 20px 0;
-          }
+    min-height:62px;
 
-          .builderGrid,
-          .results,
-          .history {
-            padding:
-              20px;
-          }
+    border-radius:16px;
+  }
 
-          .formGrid {
-            grid-template-columns:
-              1fr;
-          }
+  .brandLogo{
+    width:38px;
+    height:38px;
+  }
 
-          .addBtn {
-            width: 100%;
-          }
+  .brandText span{
+    display:none;
+  }
 
-          .tasteGrid {
-            grid-template-columns:
-              1fr;
-          }
+  .brandText strong{
+    font-size:15px;
+  }
 
-          .playlistHero {
-            grid-template-columns:
-              140px
-              minmax(
-                0,
-                1fr
-              );
+  .connect{
+    min-height:40px;
 
-            gap: 18px;
+    padding:
+      0 12px;
+  }
 
-            align-items:
-              center;
-          }
+  .hero{
+    padding:
+      65px 8px
+      46px;
 
-          .coverCollage.large {
-            width: 140px;
+    gap:30px;
+  }
 
-            border-radius:
-              18px;
-          }
+  .hero h1{
+    font-size:
+      clamp(
+        52px,
+        15vw,
+        78px
+      );
+  }
 
-          .resultsTitle {
-            font-size:
-              clamp(
-                38px,
-                10vw,
-                58px
-              );
-          }
+  .heroCopy{
+    font-size:16px;
+  }
 
-          .track {
-            grid-template-columns:
-              28px
-              52px
-              minmax(
-                0,
-                1fr
-              );
-          }
+  .orbit{
+    width:290px;
+    height:290px;
+  }
 
-          .cover {
-            width: 52px;
-            height: 52px;
-          }
+  .sectionHead{
+    padding:
+      22px 20px 0;
+  }
 
-          .trackActions {
-            grid-column:
-              3 / -1;
+  .builderGrid,
+  .results,
+  .history{
+    padding:20px;
+  }
 
-            justify-content:
-              flex-start;
-          }
+  .formGrid{
+    grid-template-columns:
+      1fr;
+  }
 
-          .historyGrid {
-            grid-template-columns:
-              1fr;
-          }
-        }
+  .addBtn{
+    width:100%;
+  }
 
-        @media (
-          max-width:
-            520px
-        ) {
-          .brandText {
-            display: none;
-          }
+  .tasteGrid{
+    grid-template-columns:
+      1fr;
+  }
 
-          .userText small {
-            display: none;
-          }
+  .playlistHero{
+    grid-template-columns:
+      140px
+      minmax(0,1fr);
 
-          .userPill {
-            max-width:
-              135px;
-          }
+    gap:18px;
 
-          .connect span {
-            display: none;
-          }
+    align-items:center;
+  }
 
-          .heroArt {
-            min-height:
-              280px;
-          }
+  .coverCollage.large{
+    width:140px;
 
-          .heroCard {
-            width: 250px;
+    border-radius:18px;
+  }
 
-            padding:
-              20px;
-          }
+  .resultsTitle{
+    font-size:
+      clamp(
+        38px,
+        10vw,
+        58px
+      );
+  }
 
-          .heroCardBig {
-            font-size:
-              44px;
-          }
+  .track{
+    grid-template-columns:
+      28px
+      52px
+      minmax(0,1fr);
+  }
 
-          .profileStrip {
-            grid-template-columns:
-              1fr 1fr;
-          }
+  .cover{
+    width:52px;
+    height:52px;
+  }
 
-          .playlistHero {
-            grid-template-columns:
-              1fr;
+  .trackActions{
+    grid-column:
+      3 / -1;
 
-            align-items:
-              start;
-          }
+    justify-content:flex-start;
+  }
 
-          .coverCollage.large {
-            width: 132px;
-          }
+  .historyGrid{
+    grid-template-columns:
+      1fr;
+  }
+}
 
-          .resultsActions {
-            display: grid;
+@media(max-width:520px){
+  .brandText{
+    display:none;
+  }
 
-            grid-template-columns:
-              1fr;
-          }
+  .userText small{
+    display:none;
+  }
 
-          .ghostBtn,
-          .saveBtn {
-            width: 100%;
-          }
-        }
+  .userPill{
+    max-width:135px;
+  }
+
+  .connect span{
+    display:none;
+  }
+
+  .heroArt{
+    min-height:280px;
+  }
+
+  .heroCard{
+    width:250px;
+
+    padding:20px;
+  }
+
+  .heroCardBig{
+    font-size:44px;
+  }
+
+  .profileStrip{
+    grid-template-columns:
+      1fr 1fr;
+  }
+
+  .playlistHero{
+    grid-template-columns:
+      1fr;
+
+    align-items:start;
+  }
+
+  .coverCollage.large{
+    width:132px;
+  }
+
+  .resultsActions{
+    display:grid;
+
+    grid-template-columns:
+      1fr;
+  }
+
+  .ghostBtn,
+  .saveBtn{
+    width:100%;
+  }
+}
       `}</style>
 
       <div className="shell">
@@ -4543,24 +4154,19 @@ export default function Home() {
             {spotifyUser ? (
               <a
                 className="userPill"
-
                 href={
                   spotifyUser.url ||
                   "https://open.spotify.com"
                 }
-
                 target="_blank"
-
                 rel="noopener noreferrer"
               >
                 {spotifyUser.image ? (
                   <img
                     className="userAvatar"
-
                     src={
                       spotifyUser.image
                     }
-
                     alt=""
                   />
                 ) : (
@@ -4587,7 +4193,6 @@ export default function Home() {
             ) : (
               <a
                 href="/api/spotify/login"
-
                 className="connect"
               >
                 <Icon
@@ -4727,7 +4332,7 @@ export default function Home() {
                         `${Math.max(
                           34,
                           discovery *
-                            .72
+                            0.72
                         )}%`,
                     }}
                   />
@@ -4768,7 +4373,9 @@ export default function Home() {
 
               <form
                 className="formGrid"
-                onSubmit={addArtist}
+                onSubmit={
+                  addArtist
+                }
               >
                 <div className="field">
                   <label htmlFor="artist-search">
@@ -4777,13 +4384,9 @@ export default function Home() {
 
                   <input
                     id="artist-search"
-
                     className="input"
-
                     placeholder="Search an artist..."
-
                     value={input}
-
                     onChange={(
                       event
                     ) => {
@@ -4795,9 +4398,7 @@ export default function Home() {
                         null
                       );
                     }}
-
                     disabled={busy}
-
                     autoComplete="off"
                   />
 
@@ -4819,13 +4420,10 @@ export default function Home() {
                           ) => (
                             <button
                               type="button"
-
                               className="searchResult"
-
                               key={
                                 artist.id
                               }
-
                               onClick={() => {
                                 setInput(
                                   artist.name
@@ -4843,18 +4441,15 @@ export default function Home() {
                               {artist.image ? (
                                 <img
                                   className="resultArt artist"
-
                                   src={
                                     artist.image
                                   }
-
                                   alt=""
                                 />
                               ) : (
                                 <div className="resultArt artist resultFallback">
                                   <Icon
                                     name="music"
-
                                     size={17}
                                   />
                                 </div>
@@ -4885,15 +4480,11 @@ export default function Home() {
 
                   <input
                     id="song-search"
-
                     className="input"
-
                     placeholder="Search a song..."
-
                     value={
                       songInput
                     }
-
                     onChange={(
                       event
                     ) => {
@@ -4905,9 +4496,7 @@ export default function Home() {
                         null
                       );
                     }}
-
                     disabled={busy}
-
                     autoComplete="off"
                   />
 
@@ -4929,13 +4518,10 @@ export default function Home() {
                           ) => (
                             <button
                               type="button"
-
                               className="searchResult"
-
                               key={
                                 song.id
                               }
-
                               onClick={() => {
                                 setSongInput(
                                   song.name
@@ -4953,18 +4539,15 @@ export default function Home() {
                               {song.image ? (
                                 <img
                                   className="resultArt song"
-
                                   src={
                                     song.image
                                   }
-
                                   alt=""
                                 />
                               ) : (
                                 <div className="resultArt song resultFallback">
                                   <Icon
                                     name="music"
-
                                     size={17}
                                   />
                                 </div>
@@ -4992,9 +4575,7 @@ export default function Home() {
 
                 <button
                   type="submit"
-
                   className="addBtn"
-
                   disabled={busy}
                 >
                   <Icon
@@ -5030,7 +4611,6 @@ export default function Home() {
                       return (
                         <div
                           className="tasteCard"
-
                           key={
                             artist
                           }
@@ -5038,18 +4618,15 @@ export default function Home() {
                           {artistData?.image ? (
                             <img
                               className="tasteAvatar"
-
                               src={
                                 artistData.image
                               }
-
                               alt=""
                             />
                           ) : (
                             <div className="tasteAvatar tasteFallback">
                               <Icon
                                 name="music"
-
                                 size={16}
                               />
                             </div>
@@ -5071,20 +4648,16 @@ export default function Home() {
 
                           <button
                             type="button"
-
                             className="removeBtn"
-
                             onClick={() =>
                               removeArtist(
                                 artist
                               )
                             }
-
                             title="Remove artist"
                           >
                             <Icon
                               name="trash"
-
                               size={14}
                             />
                           </button>
@@ -5098,13 +4671,10 @@ export default function Home() {
                                 ) => (
                                   <button
                                     type="button"
-
                                     className="songSeed"
-
                                     key={
                                       song
                                     }
-
                                     onClick={() =>
                                       removeSong(
                                         artist,
@@ -5143,13 +4713,10 @@ export default function Home() {
 
                   <select
                     className="select"
-
                     value={
                       trackCount
                     }
-
                     disabled={busy}
-
                     onChange={(
                       event
                     ) => {
@@ -5176,7 +4743,6 @@ export default function Home() {
                           key={
                             count
                           }
-
                           value={
                             count
                           }
@@ -5211,21 +4777,14 @@ export default function Home() {
 
                 <input
                   className="range"
-
                   type="range"
-
                   min="0"
-
                   max="100"
-
                   step="5"
-
                   value={
                     discovery
                   }
-
                   disabled={busy}
-
                   onChange={(
                     event
                   ) => {
@@ -5256,55 +4815,124 @@ export default function Home() {
                 </div>
 
                 <div className="controlHint">
-                  Add artists you want completely removed from generated mixes.
+                  Search Spotify for artists you want completely removed from generated mixes.
                 </div>
 
                 <div className="excludeRow">
-                  <input
-                    className="input"
-
-                    placeholder="Artist name..."
-
-                    value={
-                      excludedInput
-                    }
-
-                    onChange={(
-                      event
-                    ) =>
-                      setExcludedInput(
-                        event.target.value
-                      )
-                    }
-
-                    onKeyDown={(
-                      event
-                    ) => {
-                      if (
-                        event.key ===
-                        "Enter"
-                      ) {
-                        event.preventDefault();
-
-                        addExcludedArtist();
+                  <div className="excludeSearchWrap">
+                    <input
+                      className="input"
+                      placeholder="Search an artist..."
+                      value={
+                        excludedInput
                       }
-                    }}
-                  />
+                      autoComplete="off"
+                      onChange={(
+                        event
+                      ) => {
+                        setExcludedInput(
+                          event.target.value
+                        );
+
+                        setSelectedExcludedArtist(
+                          null
+                        );
+                      }}
+                      onKeyDown={(
+                        event
+                      ) => {
+                        if (
+                          event.key ===
+                          "Enter"
+                        ) {
+                          event.preventDefault();
+
+                          addExcludedArtist();
+                        }
+                      }}
+                    />
+
+                    {searchingExcluded && (
+                      <div className="dropdown">
+                        <div className="searching">
+                          Searching artists...
+                        </div>
+                      </div>
+                    )}
+
+                    {!searchingExcluded &&
+                      excludedResults.length >
+                        0 && (
+                        <div className="dropdown">
+                          {excludedResults.map(
+                            (
+                              artist
+                            ) => (
+                              <button
+                                type="button"
+                                className="searchResult"
+                                key={
+                                  artist.id
+                                }
+                                onClick={() => {
+                                  setExcludedInput(
+                                    artist.name
+                                  );
+
+                                  setSelectedExcludedArtist(
+                                    artist
+                                  );
+
+                                  setExcludedResults(
+                                    []
+                                  );
+                                }}
+                              >
+                                {artist.image ? (
+                                  <img
+                                    className="resultArt artist"
+                                    src={
+                                      artist.image
+                                    }
+                                    alt=""
+                                  />
+                                ) : (
+                                  <div className="resultArt artist resultFallback">
+                                    <Icon
+                                      name="music"
+                                      size={17}
+                                    />
+                                  </div>
+                                )}
+
+                                <div className="resultText">
+                                  <div className="resultName">
+                                    {
+                                      artist.name
+                                    }
+                                  </div>
+
+                                  <div className="resultMeta">
+                                    Never recommend this artist
+                                  </div>
+                                </div>
+                              </button>
+                            )
+                          )}
+                        </div>
+                      )}
+                  </div>
 
                   <button
                     type="button"
-
                     className="miniBtn"
-
                     onClick={
                       addExcludedArtist
                     }
-
                     title="Exclude artist"
                   >
                     <Icon
                       name="ban"
-
                       size={17}
                     />
                   </button>
@@ -5319,13 +4947,10 @@ export default function Home() {
                       ) => (
                         <button
                           type="button"
-
                           className="excludeChip"
-
                           key={
                             artist
                           }
-
                           onClick={() =>
                             removeExcludedArtist(
                               artist
@@ -5342,11 +4967,8 @@ export default function Home() {
 
               <button
                 type="button"
-
                 className="generate"
-
                 disabled={busy}
-
                 onClick={() =>
                   findSongs(
                     false
@@ -5359,7 +4981,6 @@ export default function Home() {
                   <>
                     <Icon
                       name="sparkles"
-
                       size={18}
                     />
 
@@ -5370,9 +4991,7 @@ export default function Home() {
 
               <p
                 className="status"
-
                 role="status"
-
                 aria-live="polite"
               >
                 {message}
@@ -5440,9 +5059,7 @@ export default function Home() {
             >
               <button
                 type="button"
-
                 className="clearBtn"
-
                 onClick={
                   clearTasteProfile
                 }
@@ -5493,7 +5110,6 @@ export default function Home() {
                       ) => (
                         <span
                           className="genreTag"
-
                           key={
                             genre
                           }
@@ -5510,11 +5126,8 @@ export default function Home() {
                 <div className="resultsActions">
                   <button
                     type="button"
-
                     className="ghostBtn"
-
                     disabled={busy}
-
                     onClick={() =>
                       findSongs(
                         true
@@ -5523,7 +5136,6 @@ export default function Home() {
                   >
                     <Icon
                       name="refresh"
-
                       size={15}
                     />
 
@@ -5532,18 +5144,14 @@ export default function Home() {
 
                   <button
                     type="button"
-
                     className="ghostBtn"
-
                     disabled={busy}
-
                     onClick={
                       copyTracks
                     }
                   >
                     <Icon
                       name="copy"
-
                       size={15}
                     />
 
@@ -5552,18 +5160,14 @@ export default function Home() {
 
                   <button
                     type="button"
-
                     className="saveBtn"
-
                     disabled={busy}
-
                     onClick={
                       savePlaylist
                     }
                   >
                     <Icon
                       name="spotify"
-
                       size={15}
                     />
 
@@ -5610,7 +5214,6 @@ export default function Home() {
                   return (
                     <div
                       className="track"
-
                       key={
                         track.id
                       }
@@ -5627,18 +5230,15 @@ export default function Home() {
                       {track.image ? (
                         <img
                           className="cover"
-
                           src={
                             track.image
                           }
-
                           alt={`${track.title} album cover`}
                         />
                       ) : (
                         <div className="cover coverFallbackSmall">
                           <Icon
                             name="music"
-
                             size={18}
                           />
                         </div>
@@ -5667,52 +5267,42 @@ export default function Home() {
                       <div className="trackActions">
                         <button
                           type="button"
-
                           className={`feedbackBtn like ${
                             liked
                               ? "active"
                               : ""
                           }`}
-
                           onClick={() =>
                             toggleLike(
                               track.id
                             )
                           }
-
                           title="More like this"
-
                           aria-label={`More like ${track.title}`}
                         >
                           <Icon
                             name="up"
-
                             size={15}
                           />
                         </button>
 
                         <button
                           type="button"
-
                           className={`feedbackBtn dislike ${
                             disliked
                               ? "active"
                               : ""
                           }`}
-
                           onClick={() =>
                             toggleDislike(
                               track.id
                             )
                           }
-
                           title="Less like this"
-
                           aria-label={`Less like ${track.title}`}
                         >
                           <Icon
                             name="down"
-
                             size={15}
                           />
                         </button>
@@ -5720,13 +5310,10 @@ export default function Home() {
                         {track.url && (
                           <a
                             className="trackLink"
-
                             href={
                               track.url
                             }
-
                             target="_blank"
-
                             rel="noopener noreferrer"
                           >
                             Spotify
@@ -5742,20 +5329,16 @@ export default function Home() {
             {playlistUrl && (
               <a
                 className="playlistLink"
-
                 href={
                   playlistUrl
                 }
-
                 target="_blank"
-
                 rel="noopener noreferrer"
               >
                 Open saved playlist in Spotify
 
                 <Icon
                   name="arrow"
-
                   size={14}
                 />
               </a>
@@ -5785,13 +5368,10 @@ export default function Home() {
                 ) => (
                   <button
                     type="button"
-
                     className="historyCard"
-
                     key={
                       item.id
                     }
-
                     onClick={() =>
                       loadHistoryMix(
                         item

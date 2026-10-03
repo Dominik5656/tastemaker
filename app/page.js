@@ -337,18 +337,21 @@ function GameCover({
           ? "coverSmall"
           : "cover"
       }
-
       src={
         game.cover
       }
-
       alt={`${game.name} cover`}
     />
   );
 }
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState("discover");
+  const [
+    activeTab,
+    setActiveTab,
+  ] = useState(
+    "discover"
+  );
 
   const [
     query,
@@ -396,9 +399,24 @@ export default function Home() {
   ] = useState([]);
 
   const [
+    recommendationMeta,
+    setRecommendationMeta,
+  ] = useState(null);
+
+  const [
     discovery,
     setDiscovery,
   ] = useState(55);
+
+  const [
+    popularity,
+    setPopularity,
+  ] = useState(50);
+
+  const [
+    hiddenGems,
+    setHiddenGems,
+  ] = useState(false);
 
   const [
     count,
@@ -462,29 +480,50 @@ export default function Home() {
     setReady,
   ] = useState(false);
 
-  const [dealQuery, setDealQuery] = useState("");
-  const [dealResults, setDealResults] = useState([]);
-  const [dealLoading, setDealLoading] = useState(false);
-  const [dealMessage, setDealMessage] = useState("");
+  const [
+    dealQuery,
+    setDealQuery,
+  ] = useState("");
+
+  const [
+    dealResults,
+    setDealResults,
+  ] = useState([]);
+
+  const [
+    dealLoading,
+    setDealLoading,
+  ] = useState(false);
+
+  const [
+    dealMessage,
+    setDealMessage,
+  ] = useState("");
 
   const discoveryLabel =
     useMemo(() => {
       if (
-        discovery <= 25
+        discovery <= 20
       ) {
         return "Familiar";
       }
 
       if (
-        discovery <= 55
+        discovery <= 45
       ) {
-        return "Balanced";
+        return "Safe discovery";
       }
 
       if (
-        discovery <= 80
+        discovery <= 70
       ) {
         return "Explorer";
+      }
+
+      if (
+        discovery <= 90
+      ) {
+        return "Hidden paths";
       }
 
       return "Wild card";
@@ -493,25 +532,63 @@ export default function Home() {
   const discoveryHint =
     useMemo(() => {
       if (
-        discovery <= 25
+        discovery <= 20
       ) {
-        return "Stay close to games you already love.";
+        return "Stay very close to the games you already love.";
       }
 
       if (
-        discovery <= 55
+        discovery <= 45
       ) {
-        return "Mix obvious matches with fresh discoveries.";
+        return "Keep familiar DNA while introducing a few fresh connections.";
       }
 
       if (
-        discovery <= 80
+        discovery <= 70
       ) {
-        return "Reach further into connected genres and themes.";
+        return "Mix close matches with adventurous picks.";
       }
 
-      return "Push into games you probably would not find yourself.";
+      if (
+        discovery <= 90
+      ) {
+        return "Favor less obvious connections and different genres.";
+      }
+
+      return "Go far outside your usual genres while keeping quality and vibe in mind.";
     }, [discovery]);
+
+  const popularityLabel =
+    useMemo(() => {
+      if (
+        hiddenGems
+      ) {
+        return "Hidden gems";
+      }
+
+      if (
+        popularity <= 25
+      ) {
+        return "Mainstream";
+      }
+
+      if (
+        popularity <= 60
+      ) {
+        return "Balanced";
+      }
+
+      if (
+        popularity <= 85
+      ) {
+        return "Off the radar";
+      }
+
+      return "Deep cuts";
+    }, [
+      popularity,
+      hiddenGems,
+    ]);
 
   useEffect(() => {
     try {
@@ -563,6 +640,25 @@ export default function Home() {
         ) {
           setDiscovery(
             parsed.discovery
+          );
+        }
+
+        if (
+          Number.isFinite(
+            parsed.popularity
+          )
+        ) {
+          setPopularity(
+            parsed.popularity
+          );
+        }
+
+        if (
+          typeof parsed.hiddenGems ===
+          "boolean"
+        ) {
+          setHiddenGems(
+            parsed.hiddenGems
           );
         }
 
@@ -661,6 +757,8 @@ export default function Home() {
         blockedGames,
         vibes,
         discovery,
+        popularity,
+        hiddenGems,
         count,
         platform,
       })
@@ -671,6 +769,8 @@ export default function Home() {
     blockedGames,
     vibes,
     discovery,
+    popularity,
+    hiddenGems,
     count,
     platform,
   ]);
@@ -682,6 +782,7 @@ export default function Home() {
 
     localStorage.setItem(
       "tastemaker-games-history-v1",
+
       JSON.stringify(
         history
       )
@@ -698,6 +799,7 @@ export default function Home() {
 
     localStorage.setItem(
       "tastemaker-games-wishlist-v1",
+
       JSON.stringify(
         wishlist
       )
@@ -940,6 +1042,10 @@ export default function Home() {
   function resetResults() {
     setRecommendations(
       []
+    );
+
+    setRecommendationMeta(
+      null
     );
 
     setLikedIds([]);
@@ -1256,7 +1362,8 @@ export default function Home() {
 
   function rememberMix(
     name,
-    games
+    games,
+    meta = null
   ) {
     const entry = {
       id:
@@ -1266,13 +1373,25 @@ export default function Home() {
 
       name,
 
-      discovery,
+      discovery:
+        meta?.discovery ??
+        discovery,
+
+      popularity:
+        meta?.popularity ??
+        popularity,
+
+      hiddenGems:
+        meta?.hiddenGems ??
+        hiddenGems,
 
       platform,
 
       vibes,
 
       games,
+
+      meta,
 
       createdAt:
         Date.now(),
@@ -1308,6 +1427,21 @@ export default function Home() {
         discovery
     );
 
+    setPopularity(
+      item.popularity ??
+        popularity
+    );
+
+    setHiddenGems(
+      item.hiddenGems ??
+        false
+    );
+
+    setRecommendationMeta(
+      item.meta ||
+        null
+    );
+
     setPlatform(
       item.platform ||
         "all"
@@ -1325,7 +1459,9 @@ export default function Home() {
       `Loaded ${item.name}.`
     );
 
-    setActiveTab("discover");
+    setActiveTab(
+      "discover"
+    );
 
     window.scrollTo({
       top: 0,
@@ -1334,7 +1470,8 @@ export default function Home() {
   }
 
   async function generate(
-    regenerate = false
+    regenerate = false,
+    surprise = false
   ) {
     if (
       !favorites.length
@@ -1381,7 +1518,8 @@ export default function Home() {
                   ),
 
                 excludeIds:
-                  regenerate
+                  regenerate ||
+                  surprise
                     ? recommendations.map(
                         (
                           game
@@ -1390,9 +1528,21 @@ export default function Home() {
                       )
                     : [],
 
-                count,
+                count:
+                  surprise
+                    ? 1
+                    : count,
 
-                discovery,
+                discovery:
+                  surprise
+                    ? 100
+                    : discovery,
+
+                popularity,
+
+                hiddenGems,
+
+                surprise,
 
                 platform,
 
@@ -1423,6 +1573,11 @@ export default function Home() {
         games
       );
 
+      setRecommendationMeta(
+        data.meta ||
+          null
+      );
+
       setLikedIds([]);
       setDislikedIds([]);
 
@@ -1436,11 +1591,21 @@ export default function Home() {
         return;
       }
 
-      const name =
-        buildMixName(
-          discovery,
-          games
+      const usedDiscovery =
+        data.meta?.discovery ??
+        (
+          surprise
+            ? 100
+            : discovery
         );
+
+      const name =
+        surprise
+          ? "Surprise Pick"
+          : buildMixName(
+              usedDiscovery,
+              games
+            );
 
       setMixName(
         name
@@ -1448,11 +1613,15 @@ export default function Home() {
 
       rememberMix(
         name,
-        games
+        games,
+        data.meta ||
+          null
       );
 
       setMessage(
-        regenerate
+        surprise
+          ? `Surprise found: ${games[0]?.name || "a new game"}.`
+          : regenerate
           ? `Built a fresh list with ${games.length} games.`
           : `Found ${games.length} games for you.`
       );
@@ -1515,6 +1684,9 @@ export default function Home() {
     setBlockedGames([]);
     setVibes([]);
     setRecommendations([]);
+    setRecommendationMeta(
+      null
+    );
     setLikedIds([]);
     setDislikedIds([]);
 
@@ -1523,13 +1695,21 @@ export default function Home() {
     );
   }
 
-  async function searchDeals(event) {
+  async function searchDeals(
+    event
+  ) {
     event?.preventDefault?.();
 
-    const value = dealQuery.trim();
+    const value =
+      dealQuery.trim();
 
-    if (value.length < 2) {
-      setDealMessage("Type at least two characters.");
+    if (
+      value.length < 2
+    ) {
+      setDealMessage(
+        "Type at least two characters."
+      );
+
       return;
     }
 
@@ -1537,27 +1717,44 @@ export default function Home() {
     setDealMessage("");
 
     try {
-      const response = await fetch(
-        `/api/games/deals?q=${encodeURIComponent(value)}`
-      );
+      const response =
+        await fetch(
+          `/api/games/deals?q=${encodeURIComponent(
+            value
+          )}`
+        );
 
-      const data = await response.json();
+      const data =
+        await response.json();
 
-      if (!response.ok) {
+      if (
+        !response.ok
+      ) {
         throw new Error(
-          data.error || "Could not search game prices."
+          data.error ||
+            "Could not search game prices."
         );
       }
 
-      const games = data.games || [];
-      const pricedGames = games.filter((game) => game.bestDeal).length;
+      const games =
+        data.games || [];
 
-      setDealResults(games);
+      const pricedGames =
+        games.filter(
+          (game) =>
+            game.bestDeal
+        ).length;
+
+      setDealResults(
+        games
+      );
 
       setWishlist(
         (previous) =>
           previous.map(
-            (savedGame) => {
+            (
+              savedGame
+            ) => {
               const freshGame =
                 games.find(
                   (game) =>
@@ -1565,13 +1762,16 @@ export default function Home() {
                     savedGame.id
                 );
 
-              if (!freshGame) {
+              if (
+                !freshGame
+              ) {
                 return savedGame;
               }
 
               return {
                 ...savedGame,
                 ...freshGame,
+
                 wishlistedAt:
                   savedGame.wishlistedAt,
               };
@@ -1584,27 +1784,48 @@ export default function Home() {
           ? `${games.length} games found · ${pricedGames} with tracked PC prices`
           : "No games found."
       );
-    } catch (error) {
-      console.error("Deal search error:", error);
+    } catch (
+      error
+    ) {
+      console.error(
+        "Deal search error:",
+        error
+      );
+
       setDealResults([]);
+
       setDealMessage(
-        error.message || "Could not search game prices."
+        error.message ||
+          "Could not search game prices."
       );
     } finally {
       setDealLoading(false);
     }
   }
 
-  function openGameSearch(game) {
-    setDealQuery(game?.name || "");
+  function openGameSearch(
+    game
+  ) {
+    setDealQuery(
+      game?.name || ""
+    );
+
     setDealResults([]);
+
     setDealMessage(
       game?.name
         ? `Press Search to check current tracked prices for ${game.name}.`
         : ""
     );
-    setActiveTab("search");
-    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    setActiveTab(
+      "search"
+    );
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   }
 
   return (
@@ -2468,6 +2689,130 @@ export default function Home() {
           line-height: 1.5;
         }
 
+        .toggleRow {
+          margin-top: 12px;
+
+          display: flex;
+          align-items: center;
+          justify-content:
+            space-between;
+
+          gap: 14px;
+        }
+
+        .toggleText {
+          min-width: 0;
+        }
+
+        .toggleTitle {
+          font-size: 12px;
+          font-weight: 850;
+        }
+
+        .toggleHint {
+          margin-top: 4px;
+
+          color: var(--muted);
+
+          font-size: 10px;
+          line-height: 1.45;
+        }
+
+        .switch {
+          position: relative;
+
+          width: 46px;
+          height: 26px;
+
+          flex:
+            0 0 auto;
+
+          border:
+            1px solid
+            #323a5a;
+
+          border-radius:
+            999px;
+
+          background:
+            #111628;
+
+          cursor: pointer;
+        }
+
+        .switch::after {
+          content: "";
+
+          position: absolute;
+
+          top: 3px;
+          left: 3px;
+
+          width: 18px;
+          height: 18px;
+
+          border-radius:
+            50%;
+
+          background:
+            #7f89aa;
+
+          transition:
+            .18s ease;
+        }
+
+        .switch.active {
+          border-color:
+            rgba(69,213,255,.48);
+
+          background:
+            rgba(69,213,255,.12);
+        }
+
+        .switch.active::after {
+          transform:
+            translateX(20px);
+
+          background:
+            var(--lime);
+        }
+
+        .surpriseButton {
+          width: 100%;
+          min-height: 44px;
+
+          margin-top: 8px;
+
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          gap: 8px;
+
+          border:
+            1px solid
+            rgba(255,112,143,.34);
+
+          border-radius:
+            13px;
+
+          background:
+            rgba(255,112,143,.08);
+
+          color:
+            #ff9ab0;
+
+          font-size: 12px;
+          font-weight: 900;
+
+          cursor: pointer;
+        }
+
+        .surpriseButton:hover:not(:disabled) {
+          background:
+            rgba(255,112,143,.14);
+        }
+
         .select {
           height: 40px;
 
@@ -2662,7 +3007,7 @@ export default function Home() {
 
           grid-template-columns:
             repeat(
-              4,
+              5,
               minmax(0,1fr)
             );
 
@@ -2974,6 +3319,217 @@ export default function Home() {
 
           font-size: 12px;
           line-height: 1.5;
+        }
+
+        .insightGrid {
+          margin-top: 14px;
+
+          display: grid;
+
+          grid-template-columns:
+            minmax(0,1.15fr)
+            minmax(260px,.85fr);
+
+          gap: 10px;
+        }
+
+        .insightCard {
+          padding: 15px;
+
+          border:
+            1px solid
+            var(--line);
+
+          border-radius: 14px;
+
+          background:
+            #0b0e1a;
+        }
+
+        .insightTitle {
+          display: flex;
+          align-items: center;
+          justify-content:
+            space-between;
+
+          gap: 12px;
+
+          font-size: 12px;
+          font-weight: 900;
+        }
+
+        .insightSub {
+          margin-top: 5px;
+
+          color:
+            var(--muted);
+
+          font-size: 10px;
+          line-height: 1.5;
+        }
+
+        .fingerprintList {
+          margin-top: 12px;
+
+          display: grid;
+
+          gap: 8px;
+        }
+
+        .fingerprintRow {
+          display: grid;
+
+          grid-template-columns:
+            minmax(90px,.8fr)
+            minmax(110px,1.2fr)
+            36px;
+
+          align-items: center;
+
+          gap: 8px;
+        }
+
+        .fingerprintName {
+          overflow: hidden;
+
+          text-overflow:
+            ellipsis;
+
+          white-space:
+            nowrap;
+
+          font-size: 10px;
+          font-weight: 800;
+        }
+
+        .fingerprintBar {
+          height: 6px;
+
+          overflow: hidden;
+
+          border-radius:
+            999px;
+
+          background:
+            #20263d;
+        }
+
+        .fingerprintBar span {
+          display: block;
+
+          height: 100%;
+
+          border-radius:
+            inherit;
+
+          background:
+            linear-gradient(
+              90deg,
+              var(--purple),
+              var(--lime)
+            );
+        }
+
+        .fingerprintPercent {
+          color:
+            var(--muted);
+
+          font-size: 9px;
+          text-align: right;
+        }
+
+        .compositionGrid {
+          margin-top: 12px;
+
+          display: grid;
+
+          grid-template-columns:
+            repeat(
+              2,
+              minmax(0,1fr)
+            );
+
+          gap: 7px;
+        }
+
+        .compositionItem {
+          padding: 10px;
+
+          border:
+            1px solid
+            #252c46;
+
+          border-radius: 10px;
+
+          background:
+            #111628;
+        }
+
+        .compositionItem span {
+          color:
+            var(--muted);
+
+          font-size: 9px;
+        }
+
+        .compositionItem strong {
+          display: block;
+
+          margin-top: 3px;
+
+          font-size: 17px;
+        }
+
+        .tierBadge {
+          width: fit-content;
+
+          margin-top: 7px;
+
+          padding:
+            4px 6px;
+
+          border:
+            1px solid
+            #323a5a;
+
+          border-radius:
+            999px;
+
+          color:
+            #9da7c5;
+
+          font-size: 8px;
+          font-weight: 850;
+
+          text-transform:
+            uppercase;
+
+          letter-spacing:
+            .04em;
+        }
+
+        .tierBadge.close {
+          border-color:
+            rgba(69,213,255,.32);
+
+          color:
+            var(--lime);
+        }
+
+        .tierBadge.adventurous {
+          border-color:
+            rgba(255,173,107,.35);
+
+          color:
+            #ffc18b;
+        }
+
+        .tierBadge.wild {
+          border-color:
+            rgba(255,112,143,.35);
+
+          color:
+            #ff9ab0;
         }
 
         .history {
@@ -3737,8 +4293,7 @@ export default function Home() {
             1px solid
             var(--line);
 
-          border-radius:
-            7px;
+          border-radius: 7px;
 
           background:
             #101526;
@@ -3898,6 +4453,11 @@ export default function Home() {
           }
 
           .builder {
+            grid-template-columns:
+              1fr;
+          }
+
+          .insightGrid {
             grid-template-columns:
               1fr;
           }
@@ -4413,10 +4973,9 @@ export default function Home() {
             </h2>
 
             <p className="sectionCopy">
-  Add up to 30 favorite games. The more you add,
-  the better TasteMaker can understand your taste.
-</p>
-            
+              Add up to 30 favorite games. The more you add,
+              the better TasteMaker can understand your taste.
+            </p>
           </div>
 
           <div className="builder">
@@ -4726,6 +5285,107 @@ export default function Home() {
               <div className="control">
                 <div className="controlTop">
                   <div className="controlTitle">
+                    Popularity
+                  </div>
+
+                  <div className="controlValue">
+                    {popularity}% ·{" "}
+                    {
+                      popularityLabel
+                    }
+                  </div>
+                </div>
+
+                <div className="controlHint">
+                  Move toward Mainstream for famous games, or toward Hidden for lesser-known picks.
+                </div>
+
+                <input
+                  className="range"
+
+                  type="range"
+
+                  min="0"
+
+                  max="100"
+
+                  step="5"
+
+                  value={
+                    popularity
+                  }
+
+                  onChange={(
+                    event
+                  ) => {
+                    setPopularity(
+                      Number(
+                        event.target
+                          .value
+                      )
+                    );
+
+                    resetResults();
+                  }}
+                />
+
+                <div className="rangeLabels">
+                  <span>
+                    Mainstream
+                  </span>
+
+                  <span>
+                    Hidden
+                  </span>
+                </div>
+              </div>
+
+              <div className="control">
+                <div className="controlTitle">
+                  Hidden gems
+                </div>
+
+                <div className="toggleRow">
+                  <div className="toggleText">
+                    <div className="toggleTitle">
+                      Prioritize lesser-known games
+                    </div>
+
+                    <div className="toggleHint">
+                      Favors well-rated games with fewer ratings instead of only the biggest releases.
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+
+                    className={`switch ${
+                      hiddenGems
+                        ? "active"
+                        : ""
+                    }`}
+
+                    aria-pressed={
+                      hiddenGems
+                    }
+
+                    onClick={() => {
+                      setHiddenGems(
+                        (
+                          previous
+                        ) =>
+                          !previous
+                      );
+
+                      resetResults();
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className="control">
+                <div className="controlTop">
+                  <div className="controlTitle">
                     Platform
                   </div>
 
@@ -4956,6 +5616,7 @@ export default function Home() {
 
                 onClick={() =>
                   generate(
+                    false,
                     false
                   )
                 }
@@ -4968,6 +5629,31 @@ export default function Home() {
                 {loading
                   ? loadingText
                   : "Find my next games"}
+              </button>
+
+              <button
+                type="button"
+
+                className="surpriseButton"
+
+                disabled={
+                  loading ||
+                  !favorites.length
+                }
+
+                onClick={() =>
+                  generate(
+                    false,
+                    true
+                  )
+                }
+              >
+                <Icon
+                  name="sparkles"
+                  size={15}
+                />
+
+                Surprise me with one wild pick
               </button>
 
               <div
@@ -5026,6 +5712,18 @@ export default function Home() {
                 {discovery}%
               </strong>
             </div>
+
+            <div className="stat">
+              <span>
+                Popularity
+              </span>
+
+              <strong>
+                {hiddenGems
+                  ? "Gems"
+                  : `${popularity}%`}
+              </strong>
+            </div>
           </div>
 
           {favorites.length >
@@ -5068,7 +5766,9 @@ export default function Home() {
 
                 <div className="resultsMeta">
                   {recommendations.length} games ·{" "}
-                  {discovery}% discovery ·{" "}
+                  {recommendationMeta?.discovery ?? discovery}% discovery ·{" "}
+                  {recommendationMeta?.discoveryMode ?? discoveryLabel} ·{" "}
+                  {recommendationMeta?.popularityLabel ?? popularityLabel} ·{" "}
                   {
                     PLATFORMS.find(
                       (
@@ -5093,7 +5793,8 @@ export default function Home() {
 
                   onClick={() =>
                     generate(
-                      true
+                      true,
+                      false
                     )
                   }
                 >
@@ -5103,6 +5804,30 @@ export default function Home() {
                   />
 
                   New picks
+                </button>
+
+                <button
+                  type="button"
+
+                  className="action"
+
+                  disabled={
+                    loading
+                  }
+
+                  onClick={() =>
+                    generate(
+                      false,
+                      true
+                    )
+                  }
+                >
+                  <Icon
+                    name="sparkles"
+                    size={15}
+                  />
+
+                  Surprise me
                 </button>
 
                 <button
@@ -5129,8 +5854,125 @@ export default function Home() {
               <strong>
                 New picks
               </strong>
-              . TasteMaker will use that feedback when it builds the next list.
+              . TasteMaker now uses those signals more strongly, including the genres and themes behind the games.
             </div>
+
+            {recommendationMeta && (
+              <div className="insightGrid">
+                <div className="insightCard">
+                  <div className="insightTitle">
+                    <span>
+                      Taste fingerprint
+                    </span>
+
+                    <span className="controlValue">
+                      {recommendationMeta.seedGames?.length || favorites.length}{" "}
+                      taste seeds
+                    </span>
+                  </div>
+
+                  <div className="insightSub">
+                    Your strongest genre signals from favorites and positive feedback.
+                  </div>
+
+                  <div className="fingerprintList">
+                    {(recommendationMeta.tasteFingerprint?.genres || []).map(
+                      (
+                        item
+                      ) => (
+                        <div
+                          className="fingerprintRow"
+
+                          key={
+                            item.name
+                          }
+                        >
+                          <div className="fingerprintName">
+                            {
+                              item.name
+                            }
+                          </div>
+
+                          <div className="fingerprintBar">
+                            <span
+                              style={{
+                                width:
+                                  `${Math.min(
+                                    100,
+                                    item.percent
+                                  )}%`,
+                              }}
+                            />
+                          </div>
+
+                          <div className="fingerprintPercent">
+                            {item.percent}%
+                          </div>
+                        </div>
+                      )
+                    )}
+                  </div>
+                </div>
+
+                <div className="insightCard">
+                  <div className="insightTitle">
+                    <span>
+                      Discovery mix
+                    </span>
+
+                    <span className="controlValue">
+                      {recommendationMeta.discoveryMode || discoveryLabel}
+                    </span>
+                  </div>
+
+                  <div className="insightSub">
+                    The final list is deliberately mixed instead of simply taking the highest-scoring games.
+                  </div>
+
+                  <div className="compositionGrid">
+                    <div className="compositionItem">
+                      <span>
+                        Close matches
+                      </span>
+
+                      <strong>
+                        {recommendationMeta.composition?.close ?? 0}
+                      </strong>
+                    </div>
+
+                    <div className="compositionItem">
+                      <span>
+                        Connected
+                      </span>
+
+                      <strong>
+                        {recommendationMeta.composition?.connected ?? 0}
+                      </strong>
+                    </div>
+
+                    <div className="compositionItem">
+                      <span>
+                        Adventurous
+                      </span>
+
+                      <strong>
+                        {recommendationMeta.composition?.adventurous ?? 0}
+                      </strong>
+                    </div>
+
+                    <div className="compositionItem">
+                      <span>
+                        Wild cards
+                      </span>
+
+                      <strong>
+                        {recommendationMeta.composition?.wild ?? 0}
+                      </strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="gameGrid">
               {recommendations.map(
@@ -5167,6 +6009,23 @@ export default function Home() {
                             game.reason
                           }
                         </div>
+
+                        {game.discoveryTier && (
+                          <div
+                            className={`tierBadge ${game.discoveryTier}`}
+                          >
+                            {game.discoveryTier ===
+                            "close"
+                              ? "Close match"
+                              : game.discoveryTier ===
+                                "connected"
+                              ? "Connected"
+                              : game.discoveryTier ===
+                                "adventurous"
+                              ? "Adventurous"
+                              : "Wild card"}
+                          </div>
+                        )}
 
                         <h3 className="gameName">
                           {

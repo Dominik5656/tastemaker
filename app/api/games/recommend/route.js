@@ -166,16 +166,45 @@ function randomFromSeed(
   return (
     (
       t ^
-      (t >>> 14)
+        (t >>> 14)
     ) >>>
     0
   ) /
     4294967296;
 }
 
+function clamp(
+  value,
+  min,
+  max,
+  fallback
+) {
+  const number =
+    Number(
+      value
+    );
+
+  if (
+    !Number.isFinite(
+      number
+    )
+  ) {
+    return fallback;
+  }
+
+  return Math.min(
+    max,
+    Math.max(
+      min,
+      number
+    )
+  );
+}
+
 function mapGame(
   game,
-  reason
+  reason,
+  tier
 ) {
   return {
     id:
@@ -187,7 +216,8 @@ function mapGame(
 
     cover:
       coverUrl(
-        game.cover?.image_id
+        game.cover
+          ?.image_id
       ),
 
     year:
@@ -222,6 +252,17 @@ function mapGame(
           platform.name
       ),
 
+    franchises:
+      (
+        game.franchises ||
+        []
+      ).map(
+        (
+          franchise
+        ) =>
+          franchise.name
+      ),
+
     rating:
       Math.round(
         game.total_rating ||
@@ -245,6 +286,10 @@ function mapGame(
     reason:
       reason ||
       "Taste match",
+
+    discoveryTier:
+      tier ||
+      "connected",
   };
 }
 
@@ -291,12 +336,17 @@ async function getAccessToken() {
     await fetch(
       `https://id.twitch.tv/oauth2/token?${params.toString()}`,
       {
-        method: "POST",
-        cache: "no-store",
+        method:
+          "POST",
+
+        cache:
+          "no-store",
       }
     );
 
-  if (!response.ok) {
+  if (
+    !response.ok
+  ) {
     throw new Error(
       "IGDB authentication failed."
     );
@@ -310,8 +360,10 @@ async function getAccessToken() {
 
   tokenExpiresAt =
     Date.now() +
-    (data.expires_in ||
-      3600) *
+    (
+      data.expires_in ||
+      3600
+    ) *
       1000;
 
   return cachedToken;
@@ -349,14 +401,17 @@ async function igdbRequest(
             "text/plain",
         },
 
-        body: query,
+        body:
+          query,
 
         cache:
           "no-store",
       }
     );
 
-  if (!response.ok) {
+  if (
+    !response.ok
+  ) {
     const text =
       await response.text();
 
@@ -380,7 +435,8 @@ function platformMatches(
 ) {
   if (
     !filter ||
-    filter === "all"
+    filter ===
+      "all"
   ) {
     return true;
   }
@@ -391,7 +447,9 @@ function platformMatches(
       []
     )
       .map(
-        (platform) =>
+        (
+          platform
+        ) =>
           normalize(
             platform.name
           )
@@ -399,7 +457,8 @@ function platformMatches(
       .join(" ");
 
   if (
-    filter === "pc"
+    filter ===
+    "pc"
   ) {
     return (
       platformText.includes(
@@ -427,7 +486,8 @@ function platformMatches(
   }
 
   if (
-    filter === "xbox"
+    filter ===
+    "xbox"
   ) {
     return platformText.includes(
       "xbox"
@@ -435,7 +495,8 @@ function platformMatches(
   }
 
   if (
-    filter === "switch"
+    filter ===
+    "switch"
   ) {
     return platformText.includes(
       "switch"
@@ -457,19 +518,25 @@ function getVibeMatch(
 
   const text =
     [
-      ...(game.genres ||
-        []).map(
+      ...(
+        game.genres ||
+        []
+      ).map(
         (item) =>
           item.name
       ),
 
-      ...(game.themes ||
-        []).map(
+      ...(
+        game.themes ||
+        []
+      ).map(
         (item) =>
           item.name
       ),
     ]
-      .map(normalize)
+      .map(
+        normalize
+      )
       .join(" ");
 
   for (
@@ -483,7 +550,9 @@ function getVibeMatch(
 
     if (
       keywords.some(
-        (keyword) =>
+        (
+          keyword
+        ) =>
           text.includes(
             normalize(
               keyword
@@ -496,6 +565,761 @@ function getVibeMatch(
   }
 
   return null;
+}
+
+function getDiscoveryMode(
+  discovery
+) {
+  if (
+    discovery <= 20
+  ) {
+    return "Familiar";
+  }
+
+  if (
+    discovery <= 45
+  ) {
+    return "Safe discovery";
+  }
+
+  if (
+    discovery <= 70
+  ) {
+    return "Explorer";
+  }
+
+  if (
+    discovery <= 90
+  ) {
+    return "Hidden paths";
+  }
+
+  return "Wild card";
+}
+
+function getPopularityLabel(
+  popularity,
+  hiddenGems
+) {
+  if (hiddenGems) {
+    return "Hidden gems";
+  }
+
+  if (
+    popularity <= 25
+  ) {
+    return "Mainstream";
+  }
+
+  if (
+    popularity <= 60
+  ) {
+    return "Balanced";
+  }
+
+  if (
+    popularity <= 85
+  ) {
+    return "Off the radar";
+  }
+
+  return "Deep cuts";
+}
+
+function allocateComposition(
+  count,
+  discovery,
+  surprise
+) {
+  if (surprise) {
+    return {
+      close: 0,
+      connected: 0,
+      adventurous: 0,
+      wild: 1,
+    };
+  }
+
+  let ratios;
+
+  if (
+    discovery <= 20
+  ) {
+    ratios = {
+      close:
+        0.75,
+
+      connected:
+        0.2,
+
+      adventurous:
+        0.05,
+
+      wild:
+        0,
+    };
+  } else if (
+    discovery <= 45
+  ) {
+    ratios = {
+      close:
+        0.55,
+
+      connected:
+        0.3,
+
+      adventurous:
+        0.1,
+
+      wild:
+        0.05,
+    };
+  } else if (
+    discovery <= 70
+  ) {
+    ratios = {
+      close:
+        0.3,
+
+      connected:
+        0.35,
+
+      adventurous:
+        0.25,
+
+      wild:
+        0.1,
+    };
+  } else if (
+    discovery <= 90
+  ) {
+    ratios = {
+      close:
+        0.15,
+
+      connected:
+        0.25,
+
+      adventurous:
+        0.35,
+
+      wild:
+        0.25,
+    };
+  } else {
+    ratios = {
+      close:
+        0.05,
+
+      connected:
+        0.15,
+
+      adventurous:
+        0.35,
+
+      wild:
+        0.45,
+    };
+  }
+
+  const keys = [
+    "close",
+    "connected",
+    "adventurous",
+    "wild",
+  ];
+
+  const exact =
+    keys.map(
+      (key) => ({
+        key,
+
+        value:
+          ratios[key] *
+          count,
+      })
+    );
+
+  const result =
+    Object.fromEntries(
+      keys.map(
+        (key) => [
+          key,
+          0,
+        ]
+      )
+    );
+
+  let used = 0;
+
+  for (
+    const item of
+    exact
+  ) {
+    const floor =
+      Math.floor(
+        item.value
+      );
+
+    result[
+      item.key
+    ] = floor;
+
+    used +=
+      floor;
+  }
+
+  exact
+    .sort(
+      (a, b) =>
+        (
+          b.value %
+          1
+        ) -
+        (
+          a.value %
+          1
+        )
+    )
+    .slice(
+      0,
+      count - used
+    )
+    .forEach(
+      (item) => {
+        result[
+          item.key
+        ] += 1;
+      }
+    );
+
+  return result;
+}
+
+function idSet(
+  items = []
+) {
+  return new Set(
+    items
+      .map(
+        (item) =>
+          item.id
+      )
+      .filter(
+        Number.isFinite
+      )
+  );
+}
+
+function overlapRatio(
+  aSet,
+  bSet
+) {
+  if (
+    !aSet.size ||
+    !bSet.size
+  ) {
+    return 0;
+  }
+
+  let intersection =
+    0;
+
+  for (
+    const value of
+    aSet
+  ) {
+    if (
+      bSet.has(
+        value
+      )
+    ) {
+      intersection++;
+    }
+  }
+
+  return (
+    intersection /
+    Math.max(
+      1,
+      Math.min(
+        aSet.size,
+        bSet.size
+      )
+    )
+  );
+}
+
+function gamesSimilarity(
+  a,
+  b
+) {
+  const franchiseA =
+    new Set(
+      (
+        a.franchises ||
+        []
+      )
+        .map(
+          (item) =>
+            normalize(
+              item.name ||
+                item.id ||
+                ""
+            )
+        )
+        .filter(Boolean)
+    );
+
+  const franchiseB =
+    new Set(
+      (
+        b.franchises ||
+        []
+      )
+        .map(
+          (item) =>
+            normalize(
+              item.name ||
+                item.id ||
+                ""
+            )
+        )
+        .filter(Boolean)
+    );
+
+  for (
+    const key of
+    franchiseA
+  ) {
+    if (
+      franchiseB.has(
+        key
+      )
+    ) {
+      return 1.25;
+    }
+  }
+
+  const genreSimilarity =
+    overlapRatio(
+      idSet(
+        a.genres || []
+      ),
+
+      idSet(
+        b.genres || []
+      )
+    );
+
+  const themeSimilarity =
+    overlapRatio(
+      idSet(
+        a.themes || []
+      ),
+
+      idSet(
+        b.themes || []
+      )
+    );
+
+  return (
+    genreSimilarity *
+      0.58 +
+    themeSimilarity *
+      0.42
+  );
+}
+
+function buildTasteFingerprint(
+  positiveGames,
+  seedIds,
+  likedIds
+) {
+  const genreMap =
+    new Map();
+
+  const themeMap =
+    new Map();
+
+  for (
+    const game of
+    positiveGames
+  ) {
+    const weight =
+      likedIds.includes(
+        game.id
+      )
+        ? 5
+        : seedIds.includes(
+            game.id
+          )
+        ? 3
+        : 2;
+
+    for (
+      const genre of
+      game.genres || []
+    ) {
+      const current =
+        genreMap.get(
+          genre.id
+        ) || {
+          name:
+            genre.name,
+
+          weight: 0,
+        };
+
+      current.weight +=
+        weight;
+
+      genreMap.set(
+        genre.id,
+        current
+      );
+    }
+
+    for (
+      const theme of
+      game.themes || []
+    ) {
+      if (
+        theme.id === 42
+      ) {
+        continue;
+      }
+
+      const current =
+        themeMap.get(
+          theme.id
+        ) || {
+          name:
+            theme.name,
+
+          weight: 0,
+        };
+
+      current.weight +=
+        weight;
+
+      themeMap.set(
+        theme.id,
+        current
+      );
+    }
+  }
+
+  function finish(
+    map,
+    limit
+  ) {
+    const values =
+      [
+        ...map.values(),
+      ].sort(
+        (a, b) =>
+          b.weight -
+          a.weight
+      );
+
+    const total =
+      values.reduce(
+        (
+          sum,
+          item
+        ) =>
+          sum +
+          item.weight,
+        0
+      ) || 1;
+
+    return values
+      .slice(
+        0,
+        limit
+      )
+      .map(
+        (item) => ({
+          name:
+            item.name,
+
+          percent:
+            Math.max(
+              1,
+              Math.round(
+                (
+                  item.weight /
+                  total
+                ) *
+                  100
+              )
+            ),
+        })
+      );
+  }
+
+  return {
+    genres:
+      finish(
+        genreMap,
+        6
+      ),
+
+    themes:
+      finish(
+        themeMap,
+        5
+      ),
+  };
+}
+
+function chooseTier({
+  similarPositiveSeed,
+  genreMatches,
+  themeMatches,
+}) {
+  const matchCount =
+    genreMatches +
+    themeMatches;
+
+  if (
+    similarPositiveSeed ||
+    (
+      genreMatches >= 2 &&
+      themeMatches >= 1
+    )
+  ) {
+    return "close";
+  }
+
+  if (
+    matchCount >= 2
+  ) {
+    return "connected";
+  }
+
+  if (
+    matchCount === 1
+  ) {
+    return "adventurous";
+  }
+
+  return "wild";
+}
+
+function selectDiverse(
+  ranked,
+  count,
+  targets,
+  discoveryFactor,
+  surprise
+) {
+  const selected = [];
+  const used =
+    new Set();
+
+  function diversityAdjustedScore(
+    item
+  ) {
+    if (
+      !selected.length
+    ) {
+      return item.score;
+    }
+
+    let biggestSimilarity =
+      0;
+
+    for (
+      const picked of
+      selected
+    ) {
+      biggestSimilarity =
+        Math.max(
+          biggestSimilarity,
+
+          gamesSimilarity(
+            item.game,
+            picked.game
+          )
+        );
+    }
+
+    const penaltyStrength =
+      7 +
+      discoveryFactor *
+        15;
+
+    return (
+      item.score -
+      biggestSimilarity *
+        penaltyStrength
+    );
+  }
+
+  function pickOne(
+    pool
+  ) {
+    let best = null;
+
+    let bestScore =
+      -Infinity;
+
+    for (
+      const item of
+      pool
+    ) {
+      if (
+        used.has(
+          item.game.id
+        )
+      ) {
+        continue;
+      }
+
+      const adjusted =
+        diversityAdjustedScore(
+          item
+        );
+
+      if (
+        adjusted >
+        bestScore
+      ) {
+        best =
+          item;
+
+        bestScore =
+          adjusted;
+      }
+    }
+
+    if (best) {
+      used.add(
+        best.game.id
+      );
+
+      selected.push(
+        best
+      );
+    }
+
+    return best;
+  }
+
+  if (surprise) {
+    const surprisePool =
+      ranked.filter(
+        (item) =>
+          item.tier ===
+          "wild"
+      );
+
+    pickOne(
+      surprisePool.length
+        ? surprisePool
+        : ranked
+    );
+
+    return selected.slice(
+      0,
+      1
+    );
+  }
+
+  const order =
+    discoveryFactor >=
+    0.7
+      ? [
+          "wild",
+          "adventurous",
+          "connected",
+          "close",
+        ]
+      : [
+          "close",
+          "connected",
+          "adventurous",
+          "wild",
+        ];
+
+  for (
+    const tier of
+    order
+  ) {
+    const tierPool =
+      ranked.filter(
+        (item) =>
+          item.tier ===
+          tier
+      );
+
+    for (
+      let index = 0;
+      index <
+      (
+        targets[tier] ||
+        0
+      );
+      index++
+    ) {
+      if (
+        !pickOne(
+          tierPool
+        )
+      ) {
+        break;
+      }
+    }
+  }
+
+  while (
+    selected.length <
+    count
+  ) {
+    if (
+      !pickOne(
+        ranked
+      )
+    ) {
+      break;
+    }
+  }
+
+  return selected.slice(
+    0,
+    count
+  );
+}
+
+function countComposition(
+  items
+) {
+  const result = {
+    close: 0,
+    connected: 0,
+    adventurous: 0,
+    wild: 0,
+  };
+
+  for (
+    const item of
+    items
+  ) {
+    if (
+      result[
+        item.tier
+      ] !==
+      undefined
+    ) {
+      result[
+        item.tier
+      ] += 1;
+    }
+  }
+
+  return result;
 }
 
 export async function POST(
@@ -554,26 +1378,36 @@ export async function POST(
     Array.isArray(
       body.likedIds
     )
-      ? body.likedIds
-          .map(Number)
-          .filter(
-            Number.isFinite
-          )
-          .slice(
-            0,
-            12
-          )
+      ? [
+          ...new Set(
+            body.likedIds
+              .map(Number)
+              .filter(
+                Number.isFinite
+              )
+          ),
+        ].slice(
+          0,
+          20
+        )
       : [];
 
   const dislikedIds =
     Array.isArray(
       body.dislikedIds
     )
-      ? body.dislikedIds
-          .map(Number)
-          .filter(
-            Number.isFinite
-          )
+      ? [
+          ...new Set(
+            body.dislikedIds
+              .map(Number)
+              .filter(
+                Number.isFinite
+              )
+          ),
+        ].slice(
+          0,
+          20
+        )
       : [];
 
   const blockedIds =
@@ -584,6 +1418,10 @@ export async function POST(
           .map(Number)
           .filter(
             Number.isFinite
+          )
+          .slice(
+            0,
+            50
           )
       : [];
 
@@ -596,40 +1434,65 @@ export async function POST(
           .filter(
             Number.isFinite
           )
+          .slice(
+            0,
+            100
+          )
       : [];
 
-  const count =
-    Math.min(
-      20,
-      Math.max(
-        6,
-        Number(
-          body.count
-        ) || 12
-      )
-    );
+  const surprise =
+    body.surprise ===
+    true;
 
-  const discoveryValue =
-    Number(
-      body.discovery
-    );
+  const count =
+    surprise
+      ? 1
+      : Math.min(
+          20,
+          Math.max(
+            6,
+            Number(
+              body.count
+            ) || 12
+          )
+        );
 
   const discovery =
-    Number.isFinite(
-      discoveryValue
-    )
-      ? Math.min(
+    surprise
+      ? 100
+      : clamp(
+          body.discovery,
+          0,
           100,
-          Math.max(
+          55
+        );
+
+  const popularity =
+    surprise
+      ? Math.max(
+          70,
+
+          clamp(
+            body.popularity,
             0,
-            discoveryValue
+            100,
+            50
           )
         )
-      : 55;
+      : clamp(
+          body.popularity,
+          0,
+          100,
+          50
+        );
+
+  const hiddenGems =
+    body.hiddenGems ===
+    true;
 
   const platform =
     typeof body.platform ===
-      "string"
+    "string"
       ? body.platform
       : "all";
 
@@ -664,15 +1527,17 @@ export async function POST(
         ...new Set([
           ...seedIds,
           ...likedIds,
+          ...dislikedIds,
         ]),
       ].slice(
         0,
-        20
+        60
       );
 
     const seedGames =
       await igdbRequest(
         "games",
+
         `
           fields
             name,
@@ -681,6 +1546,7 @@ export async function POST(
             genres.name,
             themes.name,
             platforms.name,
+            franchises.name,
             total_rating,
             total_rating_count,
             rating,
@@ -695,7 +1561,7 @@ export async function POST(
             )})
             & themes != (42);
 
-          limit 30;
+          limit 60;
         `
       );
 
@@ -721,42 +1587,97 @@ export async function POST(
           )
       );
 
+    const likedSeeds =
+      seedGames.filter(
+        (game) =>
+          likedIds.includes(
+            game.id
+          )
+      );
+
+    const negativeSeeds =
+      seedGames.filter(
+        (game) =>
+          dislikedIds.includes(
+            game.id
+          )
+      );
+
+    const positiveSeeds =
+      seedGames.filter(
+        (game) =>
+          (
+            seedIds.includes(
+              game.id
+            ) ||
+            likedIds.includes(
+              game.id
+            )
+          ) &&
+          !dislikedIds.includes(
+            game.id
+          )
+      );
+
     const genreWeights =
       new Map();
 
     const themeWeights =
       new Map();
 
+    const dislikedGenreWeights =
+      new Map();
+
+    const dislikedThemeWeights =
+      new Map();
+
     for (
       const game of
       seedGames
     ) {
-      const weight =
+      const isDisliked =
+        dislikedIds.includes(
+          game.id
+        );
+
+      const positiveWeight =
         likedIds.includes(
           game.id
         )
-          ? 4
+          ? 5
           : 3;
+
+      const negativeWeight =
+        5;
 
       for (
         const genre of
-        game.genres ||
-        []
+        game.genres || []
       ) {
-        genreWeights.set(
+        const map =
+          isDisliked
+            ? dislikedGenreWeights
+            : genreWeights;
+
+        map.set(
           genre.id,
+
           (
-            genreWeights.get(
+            map.get(
               genre.id
             ) || 0
-          ) + weight
+          ) +
+            (
+              isDisliked
+                ? negativeWeight
+                : positiveWeight
+            )
         );
       }
 
       for (
         const theme of
-        game.themes ||
-        []
+        game.themes || []
       ) {
         if (
           theme.id === 42
@@ -764,21 +1685,39 @@ export async function POST(
           continue;
         }
 
-        themeWeights.set(
+        const map =
+          isDisliked
+            ? dislikedThemeWeights
+            : themeWeights;
+
+        map.set(
           theme.id,
+
           (
-            themeWeights.get(
+            map.get(
               theme.id
             ) || 0
-          ) + weight
+          ) +
+            (
+              isDisliked
+                ? negativeWeight
+                : positiveWeight
+            )
         );
       }
     }
 
+    const tasteFingerprint =
+      buildTasteFingerprint(
+        positiveSeeds,
+        seedIds,
+        likedIds
+      );
+
     const similarIds =
       [
         ...new Set(
-          primarySeeds.flatMap(
+          positiveSeeds.flatMap(
             (game) =>
               game.similar_games ||
               []
@@ -786,7 +1725,7 @@ export async function POST(
         ),
       ].slice(
         0,
-        100
+        150
       );
 
     const candidates =
@@ -798,7 +1737,7 @@ export async function POST(
     ) {
       for (
         const game of
-        games
+        games || []
       ) {
         if (
           !game?.id
@@ -839,6 +1778,7 @@ export async function POST(
       const similarGames =
         await igdbRequest(
           "games",
+
           `
             fields
               name,
@@ -847,6 +1787,7 @@ export async function POST(
               genres.name,
               themes.name,
               platforms.name,
+              franchises.name,
               total_rating,
               total_rating_count,
               rating,
@@ -861,7 +1802,7 @@ export async function POST(
               & version_parent = null
               & themes != (42);
 
-            limit 100;
+            limit 150;
           `
         );
 
@@ -873,19 +1814,39 @@ export async function POST(
 
     const genreIds =
       [
-        ...genreWeights.keys(),
-      ].slice(
-        0,
-        8
-      );
+        ...genreWeights.entries(),
+      ]
+        .sort(
+          (a, b) =>
+            b[1] -
+            a[1]
+        )
+        .map(
+          ([id]) =>
+            id
+        )
+        .slice(
+          0,
+          10
+        );
 
     const themeIds =
       [
-        ...themeWeights.keys(),
-      ].slice(
-        0,
-        8
-      );
+        ...themeWeights.entries(),
+      ]
+        .sort(
+          (a, b) =>
+            b[1] -
+            a[1]
+        )
+        .map(
+          ([id]) =>
+            id
+        )
+        .slice(
+          0,
+          10
+        );
 
     const conditions = [];
 
@@ -913,13 +1874,15 @@ export async function POST(
       conditions.length
     ) {
       const minimumVotes =
-        discovery >= 75
+        discovery >= 75 ||
+        popularity >= 65
           ? 2
           : 5;
 
       const discoveryGames =
         await igdbRequest(
           "games",
+
           `
             fields
               name,
@@ -928,6 +1891,7 @@ export async function POST(
               genres.name,
               themes.name,
               platforms.name,
+              franchises.name,
               total_rating,
               total_rating_count,
               rating,
@@ -945,47 +1909,56 @@ export async function POST(
 
             sort total_rating_count desc;
 
-            limit 100;
+            limit 150;
           `
         );
 
-            addCandidates(
+      addCandidates(
         discoveryGames,
         "discovery"
       );
-
     }
 
-    /*
-      Add a much wider candidate pool when Discovery is high.
-
-      The normal discovery search intentionally looks inside the
-      genres/themes the user already likes. That is useful at lower
-      Discovery values, but at 100% it makes the same games keep
-      winning.
-
-      Wild candidates give high Discovery genuinely different games
-      while still keeping rating, platform and vibe quality checks.
-    */
     if (
-      discovery >= 35
+      discovery >= 30 ||
+      hiddenGems ||
+      popularity >= 45 ||
+      surprise
     ) {
-      const wildMinimumVotes =
-        discovery >= 80
+      const broadMinimumVotes =
+        hiddenGems ||
+        popularity >= 70
           ? 3
-          : 8;
+          : 5;
 
-      const avoidGenres =
-        discovery >= 70 &&
-        genreIds.length
-          ? `& genres != (${genreIds.join(
-              ","
-            )})`
+      const hiddenUpperBound =
+        hiddenGems
+          ? "& total_rating_count <= 500"
+          : popularity >=
+            80
+          ? "& total_rating_count <= 900"
           : "";
 
-      const wildGames =
+      const offsetBucket =
+        Math.floor(
+          randomFromSeed(
+            `${nonce}-pool`
+          ) *
+            4
+        );
+
+      const offset =
+        discovery >= 75 &&
+        !hiddenGems &&
+        popularity < 70
+          ? offsetBucket *
+            75
+          : 0;
+
+      const explorerGames =
         await igdbRequest(
           "games",
+
           `
             fields
               name,
@@ -994,6 +1967,7 @@ export async function POST(
               genres.name,
               themes.name,
               platforms.name,
+              franchises.name,
               total_rating,
               total_rating_count,
               rating,
@@ -1004,18 +1978,23 @@ export async function POST(
             where
               version_parent = null
               & themes != (42)
-              & total_rating_count >= ${wildMinimumVotes}
-              ${avoidGenres};
+              & total_rating_count >= ${broadMinimumVotes}
+              ${hiddenUpperBound};
 
             sort total_rating desc;
 
             limit 150;
+
+            offset ${offset};
           `
         );
 
       addCandidates(
-        wildGames,
-        "wild"
+        explorerGames,
+
+        hiddenGems
+          ? "hidden"
+          : "wild"
       );
     }
 
@@ -1031,6 +2010,22 @@ export async function POST(
     const discoveryFactor =
       discovery /
       100;
+
+    const familiarity =
+      1 -
+      discoveryFactor;
+
+    const popularityFactor =
+      popularity /
+      100;
+
+    const obscurityFactor =
+      hiddenGems
+        ? Math.max(
+            0.82,
+            popularityFactor
+          )
+        : popularityFactor;
 
     const ranked =
       [
@@ -1057,15 +2052,46 @@ export async function POST(
             let themeScore =
               0;
 
+            let negativeGenreScore =
+              0;
+
+            let negativeThemeScore =
+              0;
+
+            let genreMatches =
+              0;
+
+            let themeMatches =
+              0;
+
             for (
               const genre of
               game.genres ||
               []
             ) {
-              genreScore +=
+              const positive =
                 genreWeights.get(
                   genre.id
                 ) || 0;
+
+              const negative =
+                dislikedGenreWeights.get(
+                  genre.id
+                ) || 0;
+
+              genreScore +=
+                positive;
+
+              negativeGenreScore +=
+                negative;
+
+              if (
+                positive >
+                0
+              ) {
+                genreMatches +=
+                  1;
+              }
             }
 
             for (
@@ -1073,14 +2099,44 @@ export async function POST(
               game.themes ||
               []
             ) {
-              themeScore +=
+              const positive =
                 themeWeights.get(
                   theme.id
                 ) || 0;
+
+              const negative =
+                dislikedThemeWeights.get(
+                  theme.id
+                ) || 0;
+
+              themeScore +=
+                positive;
+
+              negativeThemeScore +=
+                negative;
+
+              if (
+                positive >
+                0
+              ) {
+                themeMatches +=
+                  1;
+              }
             }
 
-            const similarSeed =
-              primarySeeds.find(
+            const similarPositiveSeed =
+              positiveSeeds.find(
+                (seed) =>
+                  (
+                    seed.similar_games ||
+                    []
+                  ).includes(
+                    game.id
+                  )
+              );
+
+            const similarNegativeSeed =
+              negativeSeeds.find(
                 (seed) =>
                   (
                     seed.similar_games ||
@@ -1106,122 +2162,182 @@ export async function POST(
               game.rating_count ||
               0;
 
-                        /*
-              0% Discovery:
-              strongly reward games close to the user's taste.
-
-              100% Discovery:
-              heavily reduce genre/theme similarity and reward
-              genuinely different high-quality games.
-            */
-
-            const familiarity =
-              1 -
-              discoveryFactor;
+            const overlap =
+              genreScore +
+              themeScore;
 
             const cappedGenreScore =
               Math.min(
                 genreScore,
-                12
+                14
               );
 
             const cappedThemeScore =
               Math.min(
                 themeScore,
-                12
+                14
               );
 
-            const overlap =
-              genreScore +
-              themeScore;
+            const tier =
+              chooseTier({
+                similarPositiveSeed,
+                genreMatches,
+                themeMatches,
+              });
 
             let score = 0;
 
-            /*
-              Familiarity matters enormously near 0%,
-              but very little near 100%.
-
-              Capping the values is important now that users
-              can add many favorite games.
-            */
             score +=
               cappedGenreScore *
               (
-                0.35 +
+                0.25 +
                 familiarity *
-                  3.65
+                  3.9
               );
 
             score +=
               cappedThemeScore *
               (
-                0.4 +
+                0.3 +
                 familiarity *
-                  4
+                  4.2
               );
 
-            /*
-              Direct IGDB similar-game relationships should
-              dominate Familiar mode, but barely matter in
-              Wild Card mode.
-            */
             if (
-              similarSeed
+              similarPositiveSeed
             ) {
+              const likedBonus =
+                likedIds.includes(
+                  similarPositiveSeed.id
+                )
+                  ? 5
+                  : 0;
+
               score +=
                 2 +
                 familiarity *
-                  18;
+                  18 +
+                likedBonus;
             }
 
-            /*
-              Requested vibes still matter at every
-              Discovery level.
-            */
             if (
               vibeMatch
             ) {
               score += 8;
             }
 
-            /*
-              Keep some quality control so 100% Discovery
-              does not simply mean random garbage.
-            */
-            score +=
+            score -=
               Math.min(
-                rating / 20,
-                5
+                negativeGenreScore,
+                14
+              ) *
+              1.15;
+
+            score -=
+              Math.min(
+                negativeThemeScore,
+                14
+              ) *
+              1.35;
+
+            if (
+              similarNegativeSeed
+            ) {
+              score -= 18;
+            }
+
+            const qualityScore =
+              Math.min(
+                rating /
+                  18,
+                5.5
               );
 
             score +=
+              qualityScore;
+
+            const mainstreamStrength =
               Math.min(
                 Math.log10(
                   ratingCount +
                     1
-                ) *
-                  1.5,
-                5
+                ) /
+                  3.2,
+                1
               );
 
-            /*
-              Normal discovery candidates get a small boost.
-            */
+            score +=
+              mainstreamStrength *
+              (
+                1 -
+                obscurityFactor
+              ) *
+              9;
+
+            if (
+              ratingCount >= 5 &&
+              ratingCount <=
+                600
+            ) {
+              const hiddenQuality =
+                Math.max(
+                  0,
+                  (
+                    rating -
+                    62
+                  ) /
+                    38
+                );
+
+              const rarity =
+                1 -
+                Math.min(
+                  Math.log10(
+                    ratingCount +
+                      1
+                  ) /
+                    3,
+                  1
+                );
+
+              score +=
+                obscurityFactor *
+                (
+                  4 +
+                  hiddenQuality *
+                    7 +
+                  rarity *
+                    5
+                );
+            }
+
+            if (
+              hiddenGems &&
+              rating >= 70 &&
+              ratingCount >= 5 &&
+              ratingCount <=
+                500
+            ) {
+              score += 9;
+            }
+
+            if (
+              ratingCount < 3
+            ) {
+              score -= 5;
+            }
+
             if (
               game.sources.has(
                 "discovery"
               )
             ) {
               score +=
-                2 +
+                1.5 +
                 discoveryFactor *
-                  3;
+                  2.5;
             }
 
-            /*
-              Wild candidates become much more valuable
-              as the slider moves toward 100%.
-            */
             if (
               game.sources.has(
                 "wild"
@@ -1229,46 +2345,62 @@ export async function POST(
             ) {
               score +=
                 discoveryFactor *
-                  16;
+                13;
             }
 
-            /*
-              At higher Discovery levels, actively reward games
-              with little or no overlap with the existing profile.
-
-              Games that are extremely similar actually receive
-              a penalty near 100%.
-            */
             if (
-              discovery >= 55
+              game.sources.has(
+                "hidden"
+              )
+            ) {
+              score +=
+                obscurityFactor *
+                12;
+            }
+
+            if (
+              discovery >= 50
             ) {
               if (
-                overlap === 0
+                tier ===
+                "wild"
               ) {
                 score +=
                   discoveryFactor *
                     18;
               } else if (
-                overlap <= 5
+                tier ===
+                "adventurous"
               ) {
                 score +=
                   discoveryFactor *
-                    9;
+                    10;
+              } else if (
+                tier ===
+                "connected"
+              ) {
+                score +=
+                  discoveryFactor *
+                    3;
               } else {
                 score -=
+                  discoveryFactor *
                   Math.min(
                     overlap,
                     20
                   ) *
-                  discoveryFactor *
-                  0.75;
+                  0.55;
               }
             }
 
-            /*
-              Higher Discovery also allows more variation
-              between repeated generations.
-            */
+            if (
+              surprise &&
+              tier ===
+                "wild"
+            ) {
+              score += 30;
+            }
+
             score +=
               randomFromSeed(
                 `${nonce}-${game.id}`
@@ -1276,77 +2408,119 @@ export async function POST(
               (
                 2 +
                 discoveryFactor *
-                  12
+                  11 +
+                (
+                  surprise
+                    ? 10
+                    : 0
+                )
               );
 
             let reason =
               "Taste match";
 
+            const matchingGenre =
+              (
+                game.genres ||
+                []
+              ).find(
+                (genre) =>
+                  genreWeights.has(
+                    genre.id
+                  )
+              );
+
+            const matchingTheme =
+              (
+                game.themes ||
+                []
+              ).find(
+                (theme) =>
+                  themeWeights.has(
+                    theme.id
+                  )
+              );
+
             if (
-              vibeMatch
+              tier ===
+                "wild" &&
+              discovery >= 75
             ) {
-              const vibeName =
+              if (
                 vibeMatch
-                  .replace(
+              ) {
+                reason =
+                  `Wild card · ${vibeMatch.replace(
                     "-",
                     " "
-                  );
-
-              reason =
-                `${vibeName} vibe`;
+                  )} vibe`;
+              } else if (
+                (
+                  game.sources.has(
+                    "hidden"
+                  ) ||
+                  hiddenGems
+                ) &&
+                rating >= 70 &&
+                ratingCount <=
+                  500
+              ) {
+                reason =
+                  "Hidden gem outside your usual genres";
+              } else {
+                reason =
+                  "Outside your usual genres";
+              }
             } else if (
-              similarSeed
+              (
+                game.sources.has(
+                  "hidden"
+                ) ||
+                hiddenGems
+              ) &&
+              rating >= 70 &&
+              ratingCount <=
+                500
             ) {
               reason =
-                `Similar to ${similarSeed.name}`;
-            } else {
-              const matchingGenre =
-                (
-                  game.genres ||
-                  []
-                ).find(
-                  (genre) =>
-                    genreWeights.has(
-                      genre.id
-                    )
-                );
-
-              const matchingTheme =
-                (
-                  game.themes ||
-                  []
-                ).find(
-                  (theme) =>
-                    themeWeights.has(
-                      theme.id
-                    )
-                );
-
-              if (
-                matchingTheme
-              ) {
-                reason =
-                  `${matchingTheme.name} connection`;
-              } else if (
-                matchingGenre
-              ) {
-                reason =
-                  `${matchingGenre.name} match`;
-              } else if (
-                discovery >=
-                70
-              ) {
-                reason =
-                  "Wild-card pick";
-              }
+                "Hidden gem with strong ratings";
+            } else if (
+              similarPositiveSeed
+            ) {
+              reason =
+                `Similar to ${similarPositiveSeed.name}`;
+            } else if (
+              matchingTheme
+            ) {
+              reason =
+                `Shares ${matchingTheme.name} themes with your taste`;
+            } else if (
+              matchingGenre &&
+              tier ===
+                "adventurous"
+            ) {
+              reason =
+                `A different take on ${matchingGenre.name}`;
+            } else if (
+              matchingGenre
+            ) {
+              reason =
+                `${matchingGenre.name} connection`;
+            } else if (
+              vibeMatch
+            ) {
+              reason =
+                `${vibeMatch.replace(
+                  "-",
+                  " "
+                )} vibe`;
             }
 
             return {
               game,
-
               score,
-
               reason,
+              tier,
             };
           }
         )
@@ -1354,22 +2528,41 @@ export async function POST(
           (a, b) =>
             b.score -
             a.score
-        )
-        .slice(
-          0,
-          count
         );
 
+    const targets =
+      allocateComposition(
+        count,
+        discovery,
+        surprise
+      );
+
+    const selected =
+      selectDiverse(
+        ranked,
+        count,
+        targets,
+        discoveryFactor,
+        surprise
+      );
+
     const games =
-      ranked.map(
+      selected.map(
         ({
           game,
           reason,
+          tier,
         }) =>
           mapGame(
             game,
-            reason
+            reason,
+            tier
           )
+      );
+
+    const composition =
+      countComposition(
+        selected
       );
 
     return Response.json(
@@ -1379,8 +2572,31 @@ export async function POST(
         meta: {
           discovery,
 
+          discoveryMode:
+            getDiscoveryMode(
+              discovery
+            ),
+
+          popularity,
+
+          popularityLabel:
+            getPopularityLabel(
+              popularity,
+              hiddenGems
+            ),
+
+          hiddenGems,
+
+          surprise,
+
           seedGames:
             primarySeeds.map(
+              (game) =>
+                game.name
+            ),
+
+          likedSeedGames:
+            likedSeeds.map(
               (game) =>
                 game.name
             ),
@@ -1397,6 +2613,13 @@ export async function POST(
               0 ||
             dislikedIds.length >
               0,
+
+          tasteFingerprint,
+
+          composition,
+
+          requestedComposition:
+            targets,
         },
       },
       {

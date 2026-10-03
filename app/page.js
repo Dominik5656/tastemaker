@@ -1,94 +1,187 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
-const relatedArtists = {
-  "frank ocean": ["Steve Lacy", "Daniel Caesar"],
-  "steve lacy": ["Frank Ocean", "Daniel Caesar"],
-  "daniel caesar": ["Frank Ocean", "Steve Lacy"],
-};
-
-function normalize(text) {
+function normalize(
+  text = ""
+) {
   return text
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9\s]/g, "")
-    .replace(/\s+/g, " ")
+    .replace(
+      /[\u0300-\u036f]/g,
+      ""
+    )
+    .replace(
+      /[^a-z0-9\s]/g,
+      ""
+    )
+    .replace(
+      /\s+/g,
+      " "
+    )
     .trim();
 }
 
-function distance(a, b) {
-  const matrix = Array.from(
-    { length: b.length + 1 },
-    () => Array(a.length + 1).fill(0)
-  );
+function distance(
+  a,
+  b
+) {
+  const matrix =
+    Array.from(
+      {
+        length:
+          b.length + 1,
+      },
+      () =>
+        Array(
+          a.length + 1
+        ).fill(0)
+    );
 
-  for (let i = 0; i <= a.length; i++) matrix[0][i] = i;
-  for (let j = 0; j <= b.length; j++) matrix[j][0] = j;
+  for (
+    let i = 0;
+    i <= a.length;
+    i++
+  ) {
+    matrix[0][i] = i;
+  }
 
-  for (let j = 1; j <= b.length; j++) {
-    for (let i = 1; i <= a.length; i++) {
-      if (a[i - 1] === b[j - 1]) {
-        matrix[j][i] = matrix[j - 1][i - 1];
+  for (
+    let j = 0;
+    j <= b.length;
+    j++
+  ) {
+    matrix[j][0] = j;
+  }
+
+  for (
+    let j = 1;
+    j <= b.length;
+    j++
+  ) {
+    for (
+      let i = 1;
+      i <= a.length;
+      i++
+    ) {
+      if (
+        a[i - 1] ===
+        b[j - 1]
+      ) {
+        matrix[j][i] =
+          matrix[j - 1][
+            i - 1
+          ];
       } else {
-        matrix[j][i] = Math.min(
-          matrix[j - 1][i] + 1,
-          matrix[j][i - 1] + 1,
-          matrix[j - 1][i - 1] + 1
-        );
+        matrix[j][i] =
+          Math.min(
+            matrix[j - 1][
+              i
+            ] + 1,
+
+            matrix[j][
+              i - 1
+            ] + 1,
+
+            matrix[j - 1][
+              i - 1
+            ] + 1
+          );
       }
     }
   }
 
-  return matrix[b.length][a.length];
+  return matrix[
+    b.length
+  ][a.length];
 }
 
-function Icon({ name, size = 18 }) {
+function Icon({
+  name,
+  size = 18,
+}) {
   const common = {
     width: size,
     height: size,
-    viewBox: "0 0 24 24",
+    viewBox:
+      "0 0 24 24",
     fill: "none",
-    stroke: "currentColor",
+    stroke:
+      "currentColor",
     strokeWidth: 1.9,
-    strokeLinecap: "round",
-    strokeLinejoin: "round",
-    "aria-hidden": true,
+    strokeLinecap:
+      "round",
+    strokeLinejoin:
+      "round",
+
+    "aria-hidden":
+      true,
   };
 
-  if (name === "sparkles") {
+  if (
+    name ===
+    "sparkles"
+  ) {
     return (
       <svg {...common}>
         <path d="M12 3l1.15 3.3L16.5 7.5l-3.35 1.2L12 12l-1.15-3.3L7.5 7.5l3.35-1.2L12 3Z" />
+
         <path d="M18.5 13.5l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7.7-2Z" />
+
         <path d="M5.5 14.5l.85 2.35 2.35.85-2.35.85L5.5 21l-.85-2.45-2.35-.85 2.35-.85L5.5 14.5Z" />
       </svg>
     );
   }
 
-  if (name === "music") {
+  if (
+    name === "music"
+  ) {
     return (
       <svg {...common}>
         <path d="M9 18V5l11-2v13" />
-        <circle cx="6" cy="18" r="3" />
-        <circle cx="17" cy="16" r="3" />
+        <circle
+          cx="6"
+          cy="18"
+          r="3"
+        />
+        <circle
+          cx="17"
+          cy="16"
+          r="3"
+        />
       </svg>
     );
   }
 
-  if (name === "spotify") {
+  if (
+    name ===
+    "spotify"
+  ) {
     return (
       <svg {...common}>
-        <circle cx="12" cy="12" r="9" />
+        <circle
+          cx="12"
+          cy="12"
+          r="9"
+        />
+
         <path d="M7.3 9.8c3.3-1 6.8-.8 9.8.7" />
+
         <path d="M7.9 12.7c2.7-.75 5.7-.55 8.2.65" />
+
         <path d="M8.5 15.4c2.15-.55 4.4-.4 6.4.5" />
       </svg>
     );
   }
 
-  if (name === "plus") {
+  if (
+    name === "plus"
+  ) {
     return (
       <svg {...common}>
         <path d="M12 5v14M5 12h14" />
@@ -96,7 +189,9 @@ function Icon({ name, size = 18 }) {
     );
   }
 
-  if (name === "arrow") {
+  if (
+    name === "arrow"
+  ) {
     return (
       <svg {...common}>
         <path d="M5 12h14" />
@@ -105,16 +200,27 @@ function Icon({ name, size = 18 }) {
     );
   }
 
-  if (name === "copy") {
+  if (
+    name === "copy"
+  ) {
     return (
       <svg {...common}>
-        <rect x="8" y="8" width="11" height="11" rx="2" />
+        <rect
+          x="8"
+          y="8"
+          width="11"
+          height="11"
+          rx="2"
+        />
+
         <path d="M5 16H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v1" />
       </svg>
     );
   }
 
-  if (name === "trash") {
+  if (
+    name === "trash"
+  ) {
     return (
       <svg {...common}>
         <path d="M4 7h16" />
@@ -125,161 +231,773 @@ function Icon({ name, size = 18 }) {
     );
   }
 
+  if (
+    name === "refresh"
+  ) {
+    return (
+      <svg {...common}>
+        <path d="M20 7v5h-5" />
+        <path d="M4 17v-5h5" />
+        <path d="M6.1 9A7 7 0 0 1 18.7 7.7L20 12" />
+        <path d="M17.9 15A7 7 0 0 1 5.3 16.3L4 12" />
+      </svg>
+    );
+  }
+
+  if (
+    name === "check"
+  ) {
+    return (
+      <svg {...common}>
+        <path d="m5 12 4 4L19 6" />
+      </svg>
+    );
+  }
+
   return null;
 }
 
+function sourceLabel(
+  source
+) {
+  if (
+    source === "close"
+  ) {
+    return "Close match";
+  }
+
+  if (
+    source ===
+    "collaborator"
+  ) {
+    return "Connected artist";
+  }
+
+  if (
+    source === "genre"
+  ) {
+    return "Genre discovery";
+  }
+
+  if (
+    source ===
+    "spotify-taste"
+  ) {
+    return "Your Spotify taste";
+  }
+
+  return "Discovery";
+}
+
 export default function Home() {
-  const [input, setInput] = useState("");
-  const [songInput, setSongInput] = useState("");
+  const [
+    input,
+    setInput,
+  ] =
+    useState("");
 
-  const [favoriteSongs, setFavoriteSongs] = useState({});
-  const [favorites, setFavorites] = useState([]);
+  const [
+    songInput,
+    setSongInput,
+  ] =
+    useState("");
 
-  const [artistResults, setArtistResults] = useState([]);
-  const [searchingArtists, setSearchingArtists] = useState(false);
-  const [selectedArtist, setSelectedArtist] = useState(null);
-  const [favoriteArtistData, setFavoriteArtistData] = useState({});
+  const [
+    favorites,
+    setFavorites,
+  ] =
+    useState([]);
 
-  const [songResults, setSongResults] = useState([]);
-  const [searchingSongs, setSearchingSongs] = useState(false);
-  const [selectedSong, setSelectedSong] = useState(null);
+  const [
+    favoriteSongs,
+    setFavoriteSongs,
+  ] =
+    useState({});
 
-  const [tracks, setTracks] = useState([]);
-  const [trackCount, setTrackCount] = useState(10);
+  const [
+    favoriteArtistData,
+    setFavoriteArtistData,
+  ] =
+    useState({});
 
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const [
+    artistResults,
+    setArtistResults,
+  ] =
+    useState([]);
 
-  const [message, setMessage] = useState("");
-  const [playlistUrl, setPlaylistUrl] = useState("");
+  const [
+    searchingArtists,
+    setSearchingArtists,
+  ] =
+    useState(false);
 
-  const busy = loading || saving;
+  const [
+    selectedArtist,
+    setSelectedArtist,
+  ] =
+    useState(null);
 
-  const favoriteSongCount = useMemo(
-    () =>
-      Object.values(favoriteSongs).reduce(
-        (total, songs) => total + songs.length,
-        0
-      ),
-    [favoriteSongs]
-  );
+  const [
+    songResults,
+    setSongResults,
+  ] =
+    useState([]);
+
+  const [
+    searchingSongs,
+    setSearchingSongs,
+  ] =
+    useState(false);
+
+  const [
+    selectedSong,
+    setSelectedSong,
+  ] =
+    useState(null);
+
+  const [
+    tracks,
+    setTracks,
+  ] =
+    useState([]);
+
+  const [
+    trackCount,
+    setTrackCount,
+  ] =
+    useState(15);
+
+  const [
+    discovery,
+    setDiscovery,
+  ] =
+    useState(55);
+
+  const [
+    mixMeta,
+    setMixMeta,
+  ] =
+    useState(null);
+
+  const [
+    loading,
+    setLoading,
+  ] =
+    useState(false);
+
+  const [
+    loadingStage,
+    setLoadingStage,
+  ] =
+    useState("");
+
+  const [
+    saving,
+    setSaving,
+  ] =
+    useState(false);
+
+  const [
+    message,
+    setMessage,
+  ] =
+    useState("");
+
+  const [
+    playlistUrl,
+    setPlaylistUrl,
+  ] =
+    useState("");
+
+  const [
+    spotifyUser,
+    setSpotifyUser,
+  ] =
+    useState(null);
+
+  const [
+    profileLoaded,
+    setProfileLoaded,
+  ] =
+    useState(false);
+
+  const busy =
+    loading || saving;
+
+  const favoriteSongCount =
+    useMemo(
+      () =>
+        Object.values(
+          favoriteSongs
+        ).reduce(
+          (
+            total,
+            songs
+          ) =>
+            total +
+            (
+              Array.isArray(
+                songs
+              )
+                ? songs.length
+                : 0
+            ),
+
+          0
+        ),
+
+      [favoriteSongs]
+    );
+
+  const discoveryLabel =
+    useMemo(
+      () => {
+        if (
+          discovery <= 25
+        ) {
+          return "Familiar";
+        }
+
+        if (
+          discovery <= 55
+        ) {
+          return "Balanced";
+        }
+
+        if (
+          discovery <= 80
+        ) {
+          return "Explorer";
+        }
+
+        return "Wild card";
+      },
+      [discovery]
+    );
+
+  const discoveryHint =
+    useMemo(
+      () => {
+        if (
+          discovery <= 25
+        ) {
+          return "Mostly close to the artists you added.";
+        }
+
+        if (
+          discovery <= 55
+        ) {
+          return "A mix of familiar names and connected artists.";
+        }
+
+        if (
+          discovery <= 80
+        ) {
+          return "More collaborators, genres and unexpected picks.";
+        }
+
+        return "Push far outside the obvious choices.";
+      },
+      [discovery]
+    );
 
   useEffect(() => {
-    const query = input.trim();
+    try {
+      const saved =
+        localStorage.getItem(
+          "tastemaker-profile-v3"
+        );
 
-    if (query.length < 2) {
-      setArtistResults([]);
-      setSearchingArtists(false);
+      if (saved) {
+        const parsed =
+          JSON.parse(
+            saved
+          );
+
+        if (
+          Array.isArray(
+            parsed.favorites
+          )
+        ) {
+          setFavorites(
+            parsed.favorites
+          );
+        }
+
+        if (
+          parsed.favoriteSongs &&
+          typeof parsed.favoriteSongs ===
+            "object"
+        ) {
+          setFavoriteSongs(
+            parsed.favoriteSongs
+          );
+        }
+
+        if (
+          parsed.favoriteArtistData &&
+          typeof parsed.favoriteArtistData ===
+            "object"
+        ) {
+          setFavoriteArtistData(
+            parsed.favoriteArtistData
+          );
+        }
+
+        if (
+          Number.isFinite(
+            parsed.trackCount
+          )
+        ) {
+          setTrackCount(
+            parsed.trackCount
+          );
+        }
+
+        if (
+          Number.isFinite(
+            parsed.discovery
+          )
+        ) {
+          setDiscovery(
+            parsed.discovery
+          );
+        }
+      }
+    } catch (error) {
+      console.warn(
+        "Could not restore TasteMaker profile:",
+        error
+      );
+    } finally {
+      setProfileLoaded(
+        true
+      );
+    }
+  }, []);
+
+  useEffect(() => {
+    if (
+      !profileLoaded
+    ) {
+      return;
+    }
+
+    localStorage.setItem(
+      "tastemaker-profile-v3",
+
+      JSON.stringify({
+        favorites,
+        favoriteSongs,
+        favoriteArtistData,
+        trackCount,
+        discovery,
+      })
+    );
+  }, [
+    profileLoaded,
+    favorites,
+    favoriteSongs,
+    favoriteArtistData,
+    trackCount,
+    discovery,
+  ]);
+
+  useEffect(() => {
+    let cancelled =
+      false;
+
+    async function loadSpotifyUser() {
+      try {
+        const response =
+          await fetch(
+            "/api/spotify/me",
+            {
+              cache:
+                "no-store",
+            }
+          );
+
+        const data =
+          await response.json();
+
+        if (!cancelled) {
+          setSpotifyUser(
+            data.connected
+              ? data.user
+              : null
+          );
+        }
+      } catch {
+        if (!cancelled) {
+          setSpotifyUser(
+            null
+          );
+        }
+      }
+    }
+
+    const params =
+      new URLSearchParams(
+        window.location.search
+      );
+
+    const spotifyStatus =
+      params.get(
+        "spotify"
+      );
+
+    if (
+      spotifyStatus ===
+      "connected"
+    ) {
+      setMessage(
+        "Spotify connected. Your TasteMaker mix can now use your Spotify taste too."
+      );
+    } else if (
+      spotifyStatus ===
+      "verification_failed"
+    ) {
+      setMessage(
+        "Spotify login verification failed. Try Connect Spotify again from this site."
+      );
+    } else if (
+      spotifyStatus ===
+      "token_error"
+    ) {
+      setMessage(
+        "Spotify could not finish the login. Try connecting again."
+      );
+    } else if (
+      spotifyStatus ===
+      "denied"
+    ) {
+      setMessage(
+        "Spotify connection was cancelled."
+      );
+    }
+
+    if (spotifyStatus) {
+      window.history.replaceState(
+        {},
+        "",
+        window.location.pathname
+      );
+    }
+
+    loadSpotifyUser();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    const query =
+      input.trim();
+
+    if (
+      query.length < 2
+    ) {
+      setArtistResults(
+        []
+      );
+
+      setSearchingArtists(
+        false
+      );
+
       return;
     }
 
     if (
       selectedArtist &&
-      normalize(selectedArtist.name) === normalize(query)
+      normalize(
+        selectedArtist.name
+      ) ===
+        normalize(
+          query
+        )
     ) {
-      setArtistResults([]);
-      setSearchingArtists(false);
+      setArtistResults(
+        []
+      );
+
+      setSearchingArtists(
+        false
+      );
+
       return;
     }
 
-    const controller = new AbortController();
+    const controller =
+      new AbortController();
 
-    const timer = setTimeout(async () => {
-      try {
-        setSearchingArtists(true);
+    const timer =
+      setTimeout(
+        async () => {
+          try {
+            setSearchingArtists(
+              true
+            );
 
-        const response = await fetch(
-          `/api/search-artists?q=${encodeURIComponent(query)}`,
-          { signal: controller.signal }
-        );
+            const response =
+              await fetch(
+                `/api/search-artists?q=${encodeURIComponent(
+                  query
+                )}`,
 
-        const data = await response.json();
+                {
+                  signal:
+                    controller.signal,
+                }
+              );
 
-        if (!response.ok) {
-          throw new Error(data.error || "Artist search failed.");
-        }
+            const data =
+              await response.json();
 
-        setArtistResults(data.artists || []);
-      } catch (error) {
-        if (error.name !== "AbortError") {
-          console.error(error);
-          setArtistResults([]);
-        }
-      } finally {
-        if (!controller.signal.aborted) {
-          setSearchingArtists(false);
-        }
-      }
-    }, 300);
+            if (
+              !response.ok
+            ) {
+              throw new Error(
+                data.error ||
+                  "Artist search failed."
+              );
+            }
+
+            setArtistResults(
+              data.artists ||
+                []
+            );
+          } catch (
+            error
+          ) {
+            if (
+              error.name !==
+              "AbortError"
+            ) {
+              console.error(
+                error
+              );
+
+              setArtistResults(
+                []
+              );
+            }
+          } finally {
+            if (
+              !controller
+                .signal
+                .aborted
+            ) {
+              setSearchingArtists(
+                false
+              );
+            }
+          }
+        },
+        280
+      );
 
     return () => {
-      clearTimeout(timer);
+      clearTimeout(
+        timer
+      );
+
       controller.abort();
     };
-  }, [input, selectedArtist]);
+  }, [
+    input,
+    selectedArtist,
+  ]);
 
   useEffect(() => {
-    const query = songInput.trim();
+    const query =
+      songInput.trim();
 
-    if (query.length < 2) {
-      setSongResults([]);
-      setSearchingSongs(false);
+    if (
+      query.length < 2
+    ) {
+      setSongResults(
+        []
+      );
+
+      setSearchingSongs(
+        false
+      );
+
       return;
     }
 
     if (
       selectedSong &&
-      normalize(selectedSong.name) === normalize(query)
+      normalize(
+        selectedSong.name
+      ) ===
+        normalize(
+          query
+        )
     ) {
-      setSongResults([]);
-      setSearchingSongs(false);
+      setSongResults(
+        []
+      );
+
+      setSearchingSongs(
+        false
+      );
+
       return;
     }
 
-    const controller = new AbortController();
+    const controller =
+      new AbortController();
 
-    const timer = setTimeout(async () => {
-      try {
-        setSearchingSongs(true);
+    const timer =
+      setTimeout(
+        async () => {
+          try {
+            setSearchingSongs(
+              true
+            );
 
-        const artistName = selectedArtist?.name || input.trim();
-        const params = new URLSearchParams({ q: query });
+            const artistName =
+              selectedArtist
+                ?.name ||
+              input.trim();
 
-        if (artistName) params.set("artist", artistName);
+            const params =
+              new URLSearchParams({
+                q: query,
+              });
 
-        const response = await fetch(
-          `/api/search-songs?${params.toString()}`,
-          { signal: controller.signal }
-        );
+            if (
+              artistName
+            ) {
+              params.set(
+                "artist",
+                artistName
+              );
+            }
 
-        const data = await response.json();
+            const response =
+              await fetch(
+                `/api/search-songs?${params.toString()}`,
 
-        if (!response.ok) {
-          throw new Error(data.error || "Song search failed.");
-        }
+                {
+                  signal:
+                    controller.signal,
+                }
+              );
 
-        setSongResults(data.songs || []);
-      } catch (error) {
-        if (error.name !== "AbortError") {
-          console.error(error);
-          setSongResults([]);
-        }
-      } finally {
-        if (!controller.signal.aborted) {
-          setSearchingSongs(false);
-        }
-      }
-    }, 300);
+            const data =
+              await response.json();
+
+            if (
+              !response.ok
+            ) {
+              throw new Error(
+                data.error ||
+                  "Song search failed."
+              );
+            }
+
+            setSongResults(
+              data.songs ||
+                []
+            );
+          } catch (
+            error
+          ) {
+            if (
+              error.name !==
+              "AbortError"
+            ) {
+              console.error(
+                error
+              );
+
+              setSongResults(
+                []
+              );
+            }
+          } finally {
+            if (
+              !controller
+                .signal
+                .aborted
+            ) {
+              setSearchingSongs(
+                false
+              );
+            }
+          }
+        },
+        280
+      );
 
     return () => {
-      clearTimeout(timer);
+      clearTimeout(
+        timer
+      );
+
       controller.abort();
     };
-  }, [songInput, selectedArtist, input, selectedSong]);
+  }, [
+    songInput,
+    selectedArtist,
+    input,
+    selectedSong,
+  ]);
+
+  useEffect(() => {
+    if (!loading) {
+      setLoadingStage(
+        ""
+      );
+
+      return;
+    }
+
+    const stages = [
+      "Reading your taste...",
+      "Finding connected artists...",
+      "Digging past the obvious picks...",
+      "Building your mix...",
+    ];
+
+    let index = 0;
+
+    setLoadingStage(
+      stages[0]
+    );
+
+    const timer =
+      setInterval(
+        () => {
+          index =
+            Math.min(
+              index + 1,
+              stages.length -
+                1
+            );
+
+          setLoadingStage(
+            stages[index]
+          );
+        },
+        900
+      );
+
+    return () =>
+      clearInterval(
+        timer
+      );
+  }, [loading]);
 
   function clearResults() {
     setTracks([]);
-    setMessage("");
+    setMixMeta(null);
     setPlaylistUrl("");
   }
 
@@ -288,177 +1006,284 @@ export default function Home() {
     songTitle,
     artistData = null
   ) {
-    setFavorites((previous) => {
-      const alreadyExists = previous.some(
-        (artist) =>
-          normalize(artist) === normalize(artistName)
-      );
+    setFavorites(
+      (previous) => {
+        const exists =
+          previous.some(
+            (artist) =>
+              normalize(
+                artist
+              ) ===
+              normalize(
+                artistName
+              )
+          );
 
-      if (alreadyExists) return previous;
-
-      return [...previous, artistName];
-    });
+        return exists
+          ? previous
+          : [
+              ...previous,
+              artistName,
+            ];
+      }
+    );
 
     if (artistData) {
-      setFavoriteArtistData((previous) => ({
-        ...previous,
-        [normalize(artistName)]: artistData,
-      }));
+      setFavoriteArtistData(
+        (previous) => ({
+          ...previous,
+
+          [normalize(
+            artistName
+          )]:
+            artistData,
+        })
+      );
     }
 
     if (songTitle) {
-      setFavoriteSongs((previous) => {
-        const key = normalize(artistName);
-        const existingSongs = previous[key] || [];
+      setFavoriteSongs(
+        (previous) => {
+          const key =
+            normalize(
+              artistName
+            );
 
-        const alreadyExists = existingSongs.some(
-          (song) =>
-            normalize(song) === normalize(songTitle)
-        );
+          const existing =
+            Array.isArray(
+              previous[
+                key
+              ]
+            )
+              ? previous[
+                  key
+                ]
+              : [];
 
-        if (alreadyExists) return previous;
+          const exists =
+            existing.some(
+              (song) =>
+                normalize(
+                  song
+                ) ===
+                normalize(
+                  songTitle
+                )
+            );
 
-        return {
-          ...previous,
-          [key]: [...existingSongs, songTitle],
-        };
-      });
+          if (exists) {
+            return previous;
+          }
+
+          return {
+            ...previous,
+
+            [key]: [
+              ...existing,
+              songTitle,
+            ],
+          };
+        }
+      );
     }
 
     setInput("");
     setSongInput("");
-    setSelectedArtist(null);
-    setSelectedSong(null);
-    setArtistResults([]);
-    setSongResults([]);
+
+    setSelectedArtist(
+      null
+    );
+
+    setSelectedSong(
+      null
+    );
+
+    setArtistResults(
+      []
+    );
+
+    setSongResults(
+      []
+    );
+
+    setMessage("");
+
     clearResults();
   }
 
-  async function addArtist(event) {
+  async function addArtist(
+    event
+  ) {
     event.preventDefault();
 
-    if (busy) return;
+    if (busy) {
+      return;
+    }
 
-    const typedArtist = input.trim();
-    const typedSong = songInput.trim();
+    const typedArtist =
+      input.trim();
 
-    if (!typedArtist) {
-      setMessage("Enter an artist name first.");
+    const typedSong =
+      songInput.trim();
+
+    const songTitle =
+      selectedSong &&
+      normalize(
+        selectedSong.name
+      ) ===
+        normalize(
+          typedSong
+        )
+        ? selectedSong.name
+        : typedSong;
+
+    if (
+      !typedArtist
+    ) {
+      setMessage(
+        "Enter an artist name first."
+      );
+
       return;
     }
 
     if (
       selectedArtist &&
-      normalize(selectedArtist.name) ===
-        normalize(typedArtist)
+      normalize(
+        selectedArtist.name
+      ) ===
+        normalize(
+          typedArtist
+        )
     ) {
       saveArtistAndSong(
         selectedArtist.name,
-        typedSong,
+
+        songTitle,
+
         selectedArtist
       );
+
       return;
     }
 
     try {
-      const response = await fetch(
-        `/api/search-artists?q=${encodeURIComponent(
-          typedArtist
-        )}`
-      );
+      const response =
+        await fetch(
+          `/api/search-artists?q=${encodeURIComponent(
+            typedArtist
+          )}`
+        );
 
-      if (!response.ok) {
+      if (
+        !response.ok
+      ) {
         saveArtistAndSong(
           typedArtist,
-          typedSong
+          songTitle
         );
+
         return;
       }
 
-      const data = await response.json();
-      const spotifyArtists = data.artists || [];
+      const data =
+        await response.json();
 
-      if (spotifyArtists.length === 0) {
+      const spotifyArtists =
+        data.artists ||
+        [];
+
+      if (
+        !spotifyArtists.length
+      ) {
         saveArtistAndSong(
           typedArtist,
-          typedSong
+          songTitle
         );
+
         return;
       }
 
       const normalizedInput =
-        normalize(typedArtist);
+        normalize(
+          typedArtist
+        );
 
       const exactMatch =
         spotifyArtists.find(
           (artist) =>
-            normalize(artist.name) ===
+            normalize(
+              artist.name
+            ) ===
             normalizedInput
         );
 
       if (exactMatch) {
         saveArtistAndSong(
           exactMatch.name,
-          typedSong,
+
+          songTitle,
+
           exactMatch
         );
+
         return;
       }
 
-      const rankedArtists =
+      const ranked =
         spotifyArtists
-          .map((artist) => {
-            const normalizedArtist =
-              normalize(artist.name);
+          .map(
+            (artist) => {
+              const artistName =
+                normalize(
+                  artist.name
+                );
 
-            const editDistance =
-              distance(
-                normalizedInput,
-                normalizedArtist
-              );
+              const editDistance =
+                distance(
+                  normalizedInput,
+                  artistName
+                );
 
-            const maxLength =
-              Math.max(
-                normalizedInput.length,
-                normalizedArtist.length
-              );
+              const maxLength =
+                Math.max(
+                  normalizedInput.length,
 
-            const similarity =
-              maxLength === 0
-                ? 0
-                : 1 -
+                  artistName.length,
+
+                  1
+                );
+
+              return {
+                ...artist,
+
+                similarity:
+                  1 -
                   editDistance /
-                    maxLength;
+                    maxLength,
 
-            return {
-              ...artist,
-              similarity,
-              editDistance,
-            };
-          })
-          .sort((a, b) => {
-            if (
-              b.similarity !==
-              a.similarity
-            ) {
-              return (
-                b.similarity -
-                a.similarity
-              );
+                editDistance,
+              };
             }
-
-            return (
+          )
+          .sort(
+            (
+              a,
+              b
+            ) =>
+              b.similarity -
+                a.similarity ||
               a.editDistance -
-              b.editDistance
-            );
-          });
+                b.editDistance
+          );
 
       const bestMatch =
-        rankedArtists[0];
+        ranked[0];
 
       if (
         bestMatch &&
-        bestMatch.similarity >= 0.55
+        bestMatch.similarity >=
+          0.55
       ) {
         const confirmed =
           window.confirm(
@@ -468,7 +1293,9 @@ export default function Home() {
         if (confirmed) {
           saveArtistAndSong(
             bestMatch.name,
-            typedSong,
+
+            songTitle,
+
             bestMatch
           );
 
@@ -478,7 +1305,7 @@ export default function Home() {
 
       saveArtistAndSong(
         typedArtist,
-        typedSong
+        songTitle
       );
     } catch (error) {
       console.error(
@@ -488,7 +1315,7 @@ export default function Home() {
 
       saveArtistAndSong(
         typedArtist,
-        typedSong
+        songTitle
       );
     }
   }
@@ -497,50 +1324,61 @@ export default function Home() {
     artist,
     title
   ) {
-    setFavoriteSongs((previous) => {
-      const updated = {
-        ...previous,
-      };
+    setFavoriteSongs(
+      (previous) => {
+        const key =
+          normalize(
+            artist
+          );
 
-      if (title === undefined) {
-        delete updated[
-          normalize(artist)
-        ];
-      } else {
-        updated[normalize(artist)] = (
-          updated[
-            normalize(artist)
-          ] || []
-        ).filter(
-          (song) =>
-            normalize(song) !==
-            normalize(title)
-        );
+        const updated = {
+          ...previous,
+        };
+
+        updated[key] =
+          (
+            updated[key] ||
+            []
+          ).filter(
+            (song) =>
+              normalize(
+                song
+              ) !==
+              normalize(
+                title
+              )
+          );
 
         if (
-          updated[
-            normalize(artist)
-          ].length === 0
+          !updated[key]
+            .length
         ) {
           delete updated[
-            normalize(artist)
+            key
           ];
         }
-      }
 
-      return updated;
-    });
+        return updated;
+      }
+    );
 
     clearResults();
   }
 
-  function removeArtist(artist) {
-    setFavorites((previous) =>
-      previous.filter(
-        (name) =>
-          normalize(name) !==
-          normalize(artist)
-      )
+  function removeArtist(
+    artist
+  ) {
+    setFavorites(
+      (previous) =>
+        previous.filter(
+          (name) =>
+            normalize(
+              name
+            ) !==
+            normalize(
+              artist
+            )
+        )
     );
 
     setFavoriteArtistData(
@@ -550,216 +1388,198 @@ export default function Home() {
         };
 
         delete updated[
-          normalize(artist)
+          normalize(
+            artist
+          )
         ];
 
         return updated;
       }
     );
 
-    removeSong(artist);
+    setFavoriteSongs(
+      (previous) => {
+        const updated = {
+          ...previous,
+        };
+
+        delete updated[
+          normalize(
+            artist
+          )
+        ];
+
+        return updated;
+      }
+    );
+
+    clearResults();
   }
 
-  async function findSongs() {
-    if (!favorites.length) {
+  function clearTasteProfile() {
+    if (
+      !window.confirm(
+        "Clear your saved TasteMaker profile?"
+      )
+    ) {
+      return;
+    }
+
+    setFavorites([]);
+
+    setFavoriteSongs(
+      {}
+    );
+
+    setFavoriteArtistData(
+      {}
+    );
+
+    setTracks([]);
+
+    setMixMeta(null);
+
+    setPlaylistUrl("");
+
+    setMessage(
+      "Taste profile cleared."
+    );
+  }
+
+  async function findSongs(
+    regenerate = false
+  ) {
+    if (
+      !favorites.length
+    ) {
       setMessage(
         "Add at least one artist first."
       );
+
       return;
     }
 
     setLoading(true);
-    clearResults();
+
+    setMessage("");
+
+    setPlaylistUrl("");
 
     try {
-      async function search(query) {
-        const response =
-          await fetch(
-            `/api/spotify?q=${encodeURIComponent(
-              query
-            )}`
-          );
+      const response =
+        await fetch(
+          "/api/spotify",
+          {
+            method: "POST",
 
-        const data =
-          await response.json();
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
 
-        if (!response.ok) {
-          throw new Error(
-            data.error ||
-              "Spotify search failed."
-          );
-        }
+            body:
+              JSON.stringify({
+                artists:
+                  favorites,
 
-        return data.tracks || [];
-      }
+                favoriteSongs,
 
-      const found = [];
-      const missing = [];
-      const artistsToSearch =
-        new Map();
+                count:
+                  trackCount,
 
-      for (const artist of favorites) {
-        artistsToSearch.set(
-          normalize(artist),
-          artist
-        );
+                discovery,
 
-        for (
-          const title of
-          favoriteSongs[
-            normalize(artist)
-          ] || []
-        ) {
-          const cleanArtist =
-            artist.replace(
-              /"/g,
-              ""
-            );
+                nonce:
+                  `${Date.now()}-${Math.random()}`,
 
-          const cleanTitle =
-            title.replace(
-              /"/g,
-              ""
-            );
-
-          const results =
-            await search(
-              `track:"${cleanTitle}" artist:"${cleanArtist}"`
-            );
-
-          const match =
-            results.find(
-              (track) =>
-                normalize(
-                  track.title
-                ) ===
-                normalize(title)
-            );
-
-          if (match) {
-            found.push(match);
-          } else {
-            missing.push(
-              `${artist} — ${title}`
-            );
+                excludeIds:
+                  regenerate
+                    ? tracks.map(
+                        (
+                          track
+                        ) =>
+                          track.id
+                      )
+                    : [],
+              }),
           }
-        }
-      }
+        );
 
-      for (const artist of favorites) {
-        for (
-          const similar of
-          relatedArtists[
-            normalize(artist)
-          ] || []
-        ) {
-          artistsToSearch.set(
-            normalize(similar),
-            similar
-          );
-        }
-      }
+      const data =
+        await response.json();
 
-      const batches = [];
-
-      for (
-        const artist of
-        artistsToSearch.values()
+      if (
+        !response.ok
       ) {
-        batches.push(
-          await search(
-            `artist:"${artist.replace(
-              /"/g,
-              ""
-            )}"`
-          )
+        throw new Error(
+          data.error ||
+            "Recommendation search failed."
         );
       }
 
-      const longest =
-        Math.max(
-          0,
-          ...batches.map(
-            (batch) =>
-              batch.length
-          )
-        );
+      setTracks(
+        data.tracks ||
+          []
+      );
 
-      for (
-        let index = 0;
-        index < longest;
-        index++
+      setMixMeta(
+        data.meta ||
+          null
+      );
+
+      if (
+        !data.tracks
+          ?.length
       ) {
-        for (
-          const batch of
-          batches
-        ) {
-          if (batch[index]) {
-            found.push(
-              batch[index]
-            );
-          }
-        }
-      }
-
-      const unique = [
-        ...new Map(
-          found.map(
-            (track) => [
-              track.id,
-              track,
-            ]
-          )
-        ).values(),
-      ];
-
-      const selected =
-        unique.slice(
-          0,
-          trackCount
+        setMessage(
+          "No mix came back this time. Try another artist or discovery level."
         );
-
-      setTracks(selected);
-
-      let text =
-        selected.length <
-        trackCount
-          ? `Found ${selected.length} unique songs. You requested ${trackCount}.`
-          : `Your playlist contains ${selected.length} songs.`;
-
-      if (missing.length) {
-        text +=
-          ` Favorite songs not matched: ${missing.join(
-            "; "
-          )}.`;
+      } else if (
+        regenerate
+      ) {
+        setMessage(
+          `Fresh mix generated with ${data.tracks.length} songs.`
+        );
+      } else {
+        setMessage(
+          `Built a ${data.tracks.length}-song mix around your taste.`
+        );
       }
-
-      setMessage(text);
     } catch (error) {
-      console.error(error);
+      console.error(
+        error
+      );
 
       setMessage(
         error.message ||
-          "Search failed. Please try again."
+          "Could not build your playlist."
       );
     } finally {
-      setLoading(false);
+      setLoading(
+        false
+      );
     }
   }
 
   async function copyTracks() {
     try {
-      await navigator.clipboard.writeText(
-        tracks
-          .map(
-            (track) =>
-              `${track.artist} — ${track.title}`
-          )
-          .join("\n")
-      );
+      await navigator
+        .clipboard
+        .writeText(
+          tracks
+            .map(
+              (
+                track
+              ) =>
+                `${track.artist} — ${track.title}`
+            )
+            .join(
+              "\n"
+            )
+        );
 
       setMessage(
-        "Track list copied!"
+        "Track list copied."
       );
     } catch {
       setMessage(
@@ -777,6 +1597,7 @@ export default function Home() {
     }
 
     setSaving(true);
+
     setPlaylistUrl("");
 
     setMessage(
@@ -795,28 +1616,44 @@ export default function Home() {
                 "application/json",
             },
 
-            body: JSON.stringify({
-              name:
-                "TasteMaker Playlist",
+            body:
+              JSON.stringify({
+                name:
+                  `TasteMaker ${discoveryLabel} Mix`,
 
-              uris: tracks.map(
-                (track) =>
-                  track.uri
-              ),
-            }),
+                uris:
+                  tracks.map(
+                    (
+                      track
+                    ) =>
+                      track.uri
+                  ),
+              }),
           }
         );
 
       const data =
         await response.json();
 
-      if (data.playlistUrl) {
+      if (
+        data.playlistUrl
+      ) {
         setPlaylistUrl(
           data.playlistUrl
         );
       }
 
-      if (!response.ok) {
+      if (
+        !response.ok
+      ) {
+        if (
+          data.needsLogin
+        ) {
+          setSpotifyUser(
+            null
+          );
+        }
+
         setMessage(
           data.error ||
             "Could not save the playlist."
@@ -826,16 +1663,25 @@ export default function Home() {
       }
 
       setMessage(
-        `Saved ${data.added} songs to Spotify!`
+        `Saved ${data.added} songs to Spotify.`
       );
     } catch {
       setMessage(
         "Saving could not be confirmed."
       );
     } finally {
-      setSaving(false);
+      setSaving(
+        false
+      );
     }
   }
+
+  const heroCover =
+    tracks.find(
+      (track) =>
+        track.image
+    )?.image ||
+    null;
 
   return (
     <main className="tm">
@@ -850,12 +1696,12 @@ export default function Home() {
 
         html {
           scroll-behavior: smooth;
-          background: #060806;
+          background: #050705;
         }
 
         body {
           margin: 0;
-          background: #060806;
+          background: #050705;
         }
 
         button,
@@ -870,48 +1716,85 @@ export default function Home() {
         }
 
         .tm {
-          --bg: #060806;
-          --surface: rgba(12, 16, 13, 0.72);
-          --surface-2: rgba(15, 20, 16, 0.92);
-          --surface-3: rgba(255, 255, 255, 0.035);
-          --line: rgba(255, 255, 255, 0.08);
-          --line-strong: rgba(255, 255, 255, 0.13);
-          --text: #f7faf8;
-          --muted: #8e9a92;
-          --dim: #667168;
-          --green: #7cf29d;
-          --green-2: #43df76;
-          --green-3: #1db954;
-          --green-soft: rgba(88, 239, 129, 0.1);
+          --bg: #050705;
+          --surface: rgba(11, 15, 12, .78);
+          --surface2: rgba(15, 20, 16, .92);
+          --line: rgba(255,255,255,.075);
+          --line2: rgba(255,255,255,.12);
+          --text: #f5f8f6;
+          --muted: #89958d;
+          --dim: #5d6861;
+          --green: #6af08e;
+          --green2: #35d96a;
 
           min-height: 100vh;
           overflow-x: hidden;
           position: relative;
+
           color: var(--text);
+
           background:
-            radial-gradient(circle at 15% 0%, rgba(76, 255, 129, 0.13), transparent 30%),
-            radial-gradient(circle at 95% 17%, rgba(26, 199, 89, 0.11), transparent 27%),
-            radial-gradient(circle at 50% 100%, rgba(59, 232, 109, 0.06), transparent 35%),
-            linear-gradient(180deg, #071008 0%, #060806 38%, #040504 100%);
-          font-family: Inter, ui-sans-serif, system-ui, -apple-system,
-            BlinkMacSystemFont, "Segoe UI", sans-serif;
+            radial-gradient(
+              circle at 18% -5%,
+              rgba(87,255,139,.15),
+              transparent 31%
+            ),
+            radial-gradient(
+              circle at 100% 18%,
+              rgba(31,185,82,.12),
+              transparent 27%
+            ),
+            radial-gradient(
+              circle at 52% 100%,
+              rgba(52,221,104,.07),
+              transparent 38%
+            ),
+            linear-gradient(
+              180deg,
+              #071008 0%,
+              #050705 45%,
+              #030403 100%
+            );
+
+          font-family:
+            Inter,
+            ui-sans-serif,
+            system-ui,
+            -apple-system,
+            BlinkMacSystemFont,
+            "Segoe UI",
+            sans-serif;
         }
 
         .tm::before {
           content: "";
           position: fixed;
           inset: 0;
+
           pointer-events: none;
+
           z-index: 0;
+
           background-image:
-            linear-gradient(rgba(255,255,255,0.014) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,0.014) 1px, transparent 1px);
-          background-size: 54px 54px;
-          mask-image: linear-gradient(
-            to bottom,
-            black,
-            transparent 82%
-          );
+            linear-gradient(
+              rgba(255,255,255,.012) 1px,
+              transparent 1px
+            ),
+            linear-gradient(
+              90deg,
+              rgba(255,255,255,.012) 1px,
+              transparent 1px
+            );
+
+          background-size:
+            56px 56px;
+
+          mask-image:
+            linear-gradient(
+              to bottom,
+              #000,
+              transparent 84%
+            );
         }
 
         .ambient {
@@ -923,52 +1806,93 @@ export default function Home() {
 
         .blob {
           position: absolute;
+
           border-radius: 999px;
-          filter: blur(90px);
-          opacity: 0.46;
-          animation: floatBlob 15s ease-in-out infinite;
+
+          filter:
+            blur(95px);
+
+          opacity: .42;
+
+          animation:
+            float 16s
+            ease-in-out
+            infinite;
         }
 
         .blob.one {
-          width: 360px;
-          height: 360px;
+          width: 380px;
+          height: 380px;
+
           top: 120px;
-          left: -120px;
+          left: -170px;
+
           background:
-            rgba(77, 255, 130, 0.18);
+            rgba(
+              78,
+              245,
+              125,
+              .18
+            );
         }
 
         .blob.two {
-          width: 330px;
-          height: 330px;
-          top: 580px;
-          right: -140px;
+          width: 360px;
+          height: 360px;
+
+          top: 620px;
+          right: -180px;
+
           background:
-            rgba(32, 200, 91, 0.14);
-          animation-delay: -6s;
+            rgba(
+              34,
+              202,
+              91,
+              .13
+            );
+
+          animation-delay:
+            -6s;
         }
 
         .blob.three {
-          width: 260px;
-          height: 260px;
-          top: 1100px;
-          left: 36%;
+          width: 280px;
+          height: 280px;
+
+          top: 1260px;
+          left: 38%;
+
           background:
-            rgba(87, 239, 132, 0.08);
-          animation-delay: -11s;
+            rgba(
+              93,
+              240,
+              135,
+              .08
+            );
+
+          animation-delay:
+            -10s;
         }
 
-        @keyframes floatBlob {
+        @keyframes float {
           0%,
           100% {
             transform:
-              translate3d(0,0,0)
+              translate3d(
+                0,
+                0,
+                0
+              )
               scale(1);
           }
 
           50% {
             transform:
-              translate3d(0,32px,0)
+              translate3d(
+                0,
+                34px,
+                0
+              )
               scale(1.08);
           }
         }
@@ -977,20 +1901,21 @@ export default function Home() {
           width:
             min(
               1180px,
-              calc(100% - 28px)
+              calc(
+                100% - 28px
+              )
             );
 
           margin:
             0 auto;
 
           padding:
-            18px 0 70px;
+            16px 0 70px;
 
           position:
             relative;
 
-          z-index:
-            1;
+          z-index: 1;
         }
 
         .nav {
@@ -998,10 +1923,17 @@ export default function Home() {
             sticky;
 
           top:
-            14px;
+            12px;
 
           z-index:
             300;
+
+          min-height:
+            68px;
+
+          padding:
+            10px 11px
+            10px 18px;
 
           display:
             flex;
@@ -1013,14 +1945,7 @@ export default function Home() {
             space-between;
 
           gap:
-            18px;
-
-          min-height:
-            68px;
-
-          padding:
-            10px 12px
-            10px 18px;
+            14px;
 
           border:
             1px solid
@@ -1034,48 +1959,37 @@ export default function Home() {
               7,
               10,
               8,
-              0.64
+              .66
             );
 
           backdrop-filter:
-            blur(22px)
+            blur(24px)
             saturate(140%);
 
           box-shadow:
-            0 20px 60px
-              rgba(0,0,0,0.25),
-            inset 0 1px 0
-              rgba(
-                255,
-                255,
-                255,
-                0.025
-              );
-        }
-
-        .brand {
-          display:
-            flex;
-
-          align-items:
-            center;
-
-          gap:
-            12px;
-
-          min-width:
-            0;
+            0 20px 65px
+            rgba(
+              0,
+              0,
+              0,
+              .28
+            ),
+            inset
+            0 1px 0
+            rgba(
+              255,
+              255,
+              255,
+              .025
+            );
         }
 
         .brand img {
           width:
-            175px;
+            170px;
 
           max-width:
             42vw;
-
-          height:
-            auto;
 
           display:
             block;
@@ -1089,7 +2003,10 @@ export default function Home() {
             center;
 
           gap:
-            10px;
+            9px;
+
+          min-width:
+            0;
         }
 
         .modePill {
@@ -1100,16 +2017,13 @@ export default function Home() {
             center;
 
           gap:
-            8px;
+            7px;
 
           min-height:
             40px;
 
           padding:
-            0 13px;
-
-          border-radius:
-            999px;
+            0 12px;
 
           border:
             1px solid
@@ -1117,28 +2031,31 @@ export default function Home() {
               255,
               255,
               255,
-              0.07
+              .06
             );
+
+          border-radius:
+            999px;
+
+          color:
+            #8e9a92;
 
           background:
             rgba(
               255,
               255,
               255,
-              0.028
+              .025
             );
 
-          color:
-            #96a39a;
-
           font-size:
-            11px;
+            10px;
 
           font-weight:
-            800;
+            850;
 
           letter-spacing:
-            .08em;
+            .09em;
 
           text-transform:
             uppercase;
@@ -1161,16 +2078,20 @@ export default function Home() {
             var(--green);
 
           box-shadow:
-            0 0 16px
+            0 0 15px
             rgba(
-              124,
-              242,
-              157,
-              0.95
+              106,
+              240,
+              142,
+              .9
             );
         }
 
-        .connect {
+        .connect,
+        .userPill {
+          min-height:
+            43px;
+
           display:
             inline-flex;
 
@@ -1181,16 +2102,26 @@ export default function Home() {
             center;
 
           gap:
-            8px;
-
-          min-height:
-            42px;
-
-          padding:
-            0 16px;
+            9px;
 
           border-radius:
             999px;
+
+          text-decoration:
+            none;
+
+          transition:
+            transform
+            .16s ease,
+            filter
+            .16s ease,
+            background
+            .16s ease;
+        }
+
+        .connect {
+          padding:
+            0 16px;
 
           color:
             #061008;
@@ -1198,16 +2129,13 @@ export default function Home() {
           background:
             linear-gradient(
               135deg,
-              #8cf7a7 0%,
-              #51e17d 46%,
-              #29c960 100%
+              #95f9ad,
+              #55e47f 48%,
+              #2dca63
             );
 
-          text-decoration:
-            none;
-
           font-size:
-            12px;
+            11px;
 
           font-weight:
             950;
@@ -1215,47 +2143,153 @@ export default function Home() {
           box-shadow:
             0 12px 34px
             rgba(
-              48,
-              220,
-              104,
-              0.18
+              47,
+              213,
+              97,
+              .18
             );
-
-          transition:
-            transform .16s ease,
-            filter .16s ease,
-            box-shadow .16s ease;
         }
 
-        .connect:hover {
+        .connect:hover,
+        .userPill:hover {
           transform:
-            translateY(-2px);
-
-          filter:
-            brightness(1.04);
-
-          box-shadow:
-            0 16px 40px
-            rgba(
-              48,
-              220,
-              104,
-              0.24
+            translateY(
+              -2px
             );
+        }
+
+        .userPill {
+          max-width:
+            220px;
+
+          justify-content:
+            flex-start;
+
+          padding:
+            5px 12px
+            5px 5px;
+
+          border:
+            1px solid
+            rgba(
+              106,
+              240,
+              142,
+              .12
+            );
+
+          background:
+            rgba(
+              106,
+              240,
+              142,
+              .055
+            );
+
+          color:
+            #e8f7ec;
+        }
+
+        .userAvatar {
+          width:
+            33px;
+
+          height:
+            33px;
+
+          border-radius:
+            50%;
+
+          object-fit:
+            cover;
+
+          background:
+            #172019;
+
+          border:
+            1px solid
+            rgba(
+              255,
+              255,
+              255,
+              .08
+            );
+        }
+
+        .userAvatarFallback {
+          display:
+            grid;
+
+          place-items:
+            center;
+
+          color:
+            var(--green);
+
+          flex:
+            0 0 auto;
+        }
+
+        .userText {
+          min-width:
+            0;
+
+          display:
+            flex;
+
+          flex-direction:
+            column;
+
+          line-height:
+            1.05;
+        }
+
+        .userText strong {
+          overflow:
+            hidden;
+
+          text-overflow:
+            ellipsis;
+
+          white-space:
+            nowrap;
+
+          font-size:
+            11px;
+
+          font-weight:
+            900;
+        }
+
+        .userText small {
+          margin-top:
+            4px;
+
+          color:
+            #72db8e;
+
+          font-size:
+            8px;
+
+          font-weight:
+            800;
+
+          text-transform:
+            uppercase;
+
+          letter-spacing:
+            .07em;
         }
 
         .hero {
-          position:
-            relative;
-
           padding:
-            104px 0 66px;
+            102px 0 62px;
 
           text-align:
             center;
         }
 
-        .heroTopline {
+        .eyebrow {
           display:
             inline-flex;
 
@@ -1268,53 +2302,53 @@ export default function Home() {
           padding:
             9px 13px;
 
-          border-radius:
-            999px;
-
           border:
             1px solid
             rgba(
-              124,
-              242,
-              157,
-              0.15
+              106,
+              240,
+              142,
+              .14
             );
+
+          border-radius:
+            999px;
 
           background:
             rgba(
-              124,
-              242,
-              157,
-              0.055
+              106,
+              240,
+              142,
+              .05
             );
 
           color:
             #9bf5b4;
 
           font-size:
-            11px;
+            10px;
 
           font-weight:
             900;
 
           letter-spacing:
-            .12em;
+            .13em;
 
           text-transform:
             uppercase;
         }
 
         .hero h1 {
+          max-width:
+            1020px;
+
           margin:
             24px auto 0;
 
-          max-width:
-            980px;
-
           font-size:
             clamp(
-              56px,
-              8.7vw,
+              55px,
+              8.8vw,
               112px
             );
 
@@ -1322,7 +2356,7 @@ export default function Home() {
             .88;
 
           letter-spacing:
-            -.072em;
+            -.073em;
 
           font-weight:
             950;
@@ -1331,14 +2365,14 @@ export default function Home() {
             balance;
         }
 
-        .hero h1 .accent {
+        .accent {
           background:
             linear-gradient(
               135deg,
-              #d1ffdb 0%,
-              #8bf5aa 28%,
-              #58e687 56%,
-              #27c95f 100%
+              #d8ffe1 0%,
+              #8df6aa 30%,
+              #57e683 58%,
+              #27c95f
             );
 
           -webkit-background-clip:
@@ -1352,12 +2386,13 @@ export default function Home() {
 
           filter:
             drop-shadow(
-              0 10px 28px
+              0 10px
+              28px
               rgba(
                 55,
                 220,
                 103,
-                0.14
+                .14
               )
             );
         }
@@ -1365,15 +2400,15 @@ export default function Home() {
         .hero p {
           width:
             min(
-              700px,
+              720px,
               100%
             );
 
           margin:
-            28px auto 0;
+            27px auto 0;
 
           color:
-            #929f96;
+            #8d9991;
 
           font-size:
             clamp(
@@ -1383,7 +2418,7 @@ export default function Home() {
             );
 
           line-height:
-            1.75;
+            1.72;
 
           text-wrap:
             balance;
@@ -1400,13 +2435,19 @@ export default function Home() {
             wrap;
 
           gap:
-            9px;
+            8px;
 
           margin-top:
-            28px;
+            27px;
         }
 
         .heroChip {
+          min-height:
+            34px;
+
+          padding:
+            0 11px;
+
           display:
             inline-flex;
 
@@ -1416,37 +2457,31 @@ export default function Home() {
           gap:
             7px;
 
-          min-height:
-            34px;
-
-          padding:
-            0 11px;
-
-          border-radius:
-            999px;
-
           border:
             1px solid
             rgba(
               255,
               255,
               255,
-              0.055
+              .05
             );
+
+          border-radius:
+            999px;
 
           background:
             rgba(
               255,
               255,
               255,
-              0.024
+              .02
             );
 
           color:
-            #78847c;
+            #748077;
 
           font-size:
-            11px;
+            10px;
 
           font-weight:
             750;
@@ -1461,7 +2496,7 @@ export default function Home() {
               0,
               1fr
             )
-            310px;
+            318px;
 
           gap:
             18px;
@@ -1485,20 +2520,20 @@ export default function Home() {
                 255,
                 255,
                 255,
-                0.038
+                .036
               ),
               rgba(
                 255,
                 255,
                 255,
-                0.01
+                .009
               )
             ),
             rgba(
               9,
               13,
               10,
-              0.78
+              .8
             );
 
           box-shadow:
@@ -1507,7 +2542,7 @@ export default function Home() {
               0,
               0,
               0,
-              0.34
+              .34
             ),
             inset
             0 1px 0
@@ -1515,7 +2550,7 @@ export default function Home() {
               255,
               255,
               255,
-              0.025
+              .025
             );
 
           backdrop-filter:
@@ -1527,14 +2562,14 @@ export default function Home() {
           position:
             relative;
 
+          z-index:
+            5;
+
           padding:
             30px;
 
           overflow:
             visible;
-
-          z-index:
-            5;
         }
 
         .builder::before {
@@ -1551,10 +2586,10 @@ export default function Home() {
             230px;
 
           top:
-            -115px;
+            -120px;
 
           right:
-            -90px;
+            -100px;
 
           border-radius:
             50%;
@@ -1564,11 +2599,11 @@ export default function Home() {
               81,
               226,
               123,
-              0.08
+              .075
             );
 
           filter:
-            blur(55px);
+            blur(58px);
 
           pointer-events:
             none;
@@ -1588,13 +2623,13 @@ export default function Home() {
             #70e992;
 
           font-size:
-            10px;
+            9px;
 
           font-weight:
             950;
 
           letter-spacing:
-            .14em;
+            .15em;
 
           text-transform:
             uppercase;
@@ -1602,7 +2637,7 @@ export default function Home() {
 
         .sectionTitle {
           margin:
-            8px 0 0;
+            9px 0 0;
 
           color:
             #f8fbf9;
@@ -1611,31 +2646,31 @@ export default function Home() {
             clamp(
               28px,
               4vw,
-              38px
+              39px
             );
 
           line-height:
-            1.04;
+            1.03;
 
           letter-spacing:
-            -.045em;
+            -.046em;
 
           font-weight:
             950;
         }
 
         .sectionCopy {
+          max-width:
+            650px;
+
           margin:
             10px 0 0;
 
-          max-width:
-            640px;
-
           color:
-            #7f8c83;
+            #7c8980;
 
           font-size:
-            13px;
+            12px;
 
           line-height:
             1.7;
@@ -1643,7 +2678,7 @@ export default function Home() {
 
         .formGrid {
           margin-top:
-            28px;
+            27px;
 
           display:
             grid;
@@ -1679,19 +2714,20 @@ export default function Home() {
             block;
 
           margin:
-            0 0 8px 2px;
+            0 0 8px
+            2px;
 
           color:
             #98a49c;
 
           font-size:
-            10px;
+            9px;
 
           font-weight:
             850;
 
           letter-spacing:
-            .09em;
+            .1em;
 
           text-transform:
             uppercase;
@@ -1713,7 +2749,7 @@ export default function Home() {
               255,
               255,
               255,
-              0.075
+              .075
             );
 
           border-radius:
@@ -1727,14 +2763,14 @@ export default function Home() {
               4,
               7,
               5,
-              0.72
+              .74
             );
 
           color:
             #f6faf7;
 
           font-size:
-            14px;
+            13px;
 
           font-weight:
             650;
@@ -1745,16 +2781,16 @@ export default function Home() {
 
         .input::placeholder {
           color:
-            #515b54;
+            #505a53;
         }
 
         .input:focus {
           border-color:
             rgba(
-              124,
-              242,
-              157,
-              0.43
+              106,
+              240,
+              142,
+              .4
             );
 
           background:
@@ -1762,7 +2798,7 @@ export default function Home() {
               5,
               9,
               6,
-              0.93
+              .95
             );
 
           box-shadow:
@@ -1771,7 +2807,7 @@ export default function Home() {
               91,
               232,
               132,
-              0.075
+              .07
             );
         }
 
@@ -1795,7 +2831,7 @@ export default function Home() {
             8px;
 
           border:
-            none;
+            0;
 
           border-radius:
             16px;
@@ -1807,7 +2843,7 @@ export default function Home() {
             #09100b;
 
           font-size:
-            13px;
+            12px;
 
           font-weight:
             950;
@@ -1824,7 +2860,9 @@ export default function Home() {
 
         .addBtn:hover:not(:disabled) {
           transform:
-            translateY(-2px);
+            translateY(
+              -2px
+            );
 
           background:
             #fff;
@@ -1841,7 +2879,9 @@ export default function Home() {
             0;
 
           top:
-            calc(100% + 8px);
+            calc(
+              100% + 8px
+            );
 
           z-index:
             700;
@@ -1858,7 +2898,7 @@ export default function Home() {
               255,
               255,
               255,
-              0.09
+              .09
             );
 
           border-radius:
@@ -1869,7 +2909,7 @@ export default function Home() {
               8,
               11,
               9,
-              0.98
+              .985
             );
 
           box-shadow:
@@ -1878,7 +2918,7 @@ export default function Home() {
               0,
               0,
               0,
-              0.52
+              .52
             );
 
           backdrop-filter:
@@ -1893,7 +2933,7 @@ export default function Home() {
             #7d8981;
 
           font-size:
-            12px;
+            11px;
 
           font-weight:
             750;
@@ -1903,6 +2943,9 @@ export default function Home() {
           width:
             100%;
 
+          padding:
+            10px 12px;
+
           display:
             flex;
 
@@ -1910,13 +2953,10 @@ export default function Home() {
             center;
 
           gap:
-            12px;
-
-          padding:
-            11px 12px;
+            11px;
 
           border:
-            none;
+            0;
 
           border-bottom:
             1px solid
@@ -1924,7 +2964,7 @@ export default function Home() {
               255,
               255,
               255,
-              0.045
+              .043
             );
 
           background:
@@ -1946,16 +2986,16 @@ export default function Home() {
 
         .searchResult:last-child {
           border-bottom:
-            none;
+            0;
         }
 
         .searchResult:hover {
           background:
             rgba(
-              124,
-              242,
-              157,
-              0.055
+              106,
+              240,
+              142,
+              .05
             );
         }
 
@@ -1978,7 +3018,7 @@ export default function Home() {
               255,
               255,
               255,
-              0.065
+              .06
             );
 
           background:
@@ -2012,14 +3052,14 @@ export default function Home() {
         }
 
         .resultName {
+          color:
+            #f3f7f4;
+
           font-size:
-            13px;
+            12px;
 
           font-weight:
             850;
-
-          color:
-            #f3f7f4;
 
           white-space:
             nowrap;
@@ -2036,10 +3076,10 @@ export default function Home() {
             4px;
 
           color:
-            #69756d;
+            #68746c;
 
           font-size:
-            11px;
+            10px;
 
           white-space:
             nowrap;
@@ -2053,7 +3093,7 @@ export default function Home() {
 
         .tasteGrid {
           margin-top:
-            22px;
+            21px;
 
           display:
             grid;
@@ -2072,20 +3112,28 @@ export default function Home() {
         }
 
         .tasteCard {
+          min-width:
+            0;
+
+          padding:
+            11px;
+
           display:
-            flex;
+            grid;
+
+          grid-template-columns:
+            auto
+            minmax(
+              0,
+              1fr
+            )
+            auto;
 
           align-items:
             center;
 
           gap:
-            12px;
-
-          min-width:
-            0;
-
-          padding:
-            11px 12px;
+            11px;
 
           border:
             1px solid
@@ -2093,7 +3141,7 @@ export default function Home() {
               255,
               255,
               255,
-              0.052
+              .05
             );
 
           border-radius:
@@ -2104,33 +3152,33 @@ export default function Home() {
               255,
               255,
               255,
-              0.022
+              .02
             );
 
           transition:
-            border-color .15s ease,
-            background .15s ease,
-            transform .15s ease;
+            .15s ease;
         }
 
         .tasteCard:hover {
           transform:
-            translateY(-1px);
+            translateY(
+              -1px
+            );
 
           border-color:
             rgba(
-              124,
-              242,
-              157,
-              0.14
+              106,
+              240,
+              142,
+              .13
             );
 
           background:
             rgba(
-              124,
-              242,
-              157,
-              0.028
+              106,
+              240,
+              142,
+              .026
             );
         }
 
@@ -2140,9 +3188,6 @@ export default function Home() {
 
           height:
             44px;
-
-          flex:
-            0 0 auto;
 
           border-radius:
             50%;
@@ -2156,7 +3201,7 @@ export default function Home() {
               255,
               255,
               255,
-              0.06
+              .06
             );
 
           background:
@@ -2177,9 +3222,6 @@ export default function Home() {
         .tasteText {
           min-width:
             0;
-
-          flex:
-            1;
         }
 
         .tasteArtist {
@@ -2187,7 +3229,7 @@ export default function Home() {
             #f1f6f2;
 
           font-size:
-            13px;
+            12px;
 
           font-weight:
             900;
@@ -2202,15 +3244,69 @@ export default function Home() {
             ellipsis;
         }
 
-        .tasteSong {
+        .seedText {
           margin-top:
             4px;
 
           color:
-            #6d7971;
+            #647068;
 
           font-size:
-            11px;
+            9px;
+        }
+
+        .songSeeds {
+          grid-column:
+            2 / 4;
+
+          display:
+            flex;
+
+          flex-wrap:
+            wrap;
+
+          gap:
+            5px;
+
+          margin-top:
+            -2px;
+        }
+
+        .songSeed {
+          max-width:
+            100%;
+
+          padding:
+            5px 8px;
+
+          border:
+            1px solid
+            rgba(
+              106,
+              240,
+              142,
+              .08
+            );
+
+          border-radius:
+            999px;
+
+          background:
+            rgba(
+              106,
+              240,
+              142,
+              .03
+            );
+
+          color:
+            #829187;
+
+          font-size:
+            9px;
+
+          cursor:
+            pointer;
 
           white-space:
             nowrap;
@@ -2222,21 +3318,31 @@ export default function Home() {
             ellipsis;
         }
 
+        .songSeed:hover {
+          color:
+            #c8f7d4;
+
+          border-color:
+            rgba(
+              106,
+              240,
+              142,
+              .18
+            );
+        }
+
         .removeBtn {
           width:
-            31px;
+            30px;
 
           height:
-            31px;
+            30px;
 
           display:
             grid;
 
           place-items:
             center;
-
-          flex:
-            0 0 auto;
 
           border:
             1px solid
@@ -2249,13 +3355,10 @@ export default function Home() {
             transparent;
 
           color:
-            #5e6962;
+            #59645d;
 
           cursor:
             pointer;
-
-          transition:
-            .14s ease;
         }
 
         .removeBtn:hover {
@@ -2267,7 +3370,7 @@ export default function Home() {
               255,
               255,
               255,
-              0.04
+              .04
             );
 
           border-color:
@@ -2275,11 +3378,11 @@ export default function Home() {
               255,
               255,
               255,
-              0.06
+              .06
             );
         }
 
-        .controls {
+        .settings {
           margin-top:
             22px;
 
@@ -2292,9 +3395,17 @@ export default function Home() {
               255,
               255,
               255,
-              0.055
+              .052
             );
 
+          display:
+            grid;
+
+          gap:
+            18px;
+        }
+
+        .settingRow {
           display:
             flex;
 
@@ -2305,10 +3416,7 @@ export default function Home() {
             space-between;
 
           gap:
-            14px;
-
-          flex-wrap:
-            wrap;
+            16px;
         }
 
         .controlLabel {
@@ -2316,21 +3424,27 @@ export default function Home() {
             #eaf0eb;
 
           font-size:
-            12px;
+            11px;
 
           font-weight:
             850;
         }
 
         .controlHint {
+          max-width:
+            450px;
+
           margin-top:
             4px;
 
           color:
-            #616d65;
+            #606b63;
 
           font-size:
-            10px;
+            9px;
+
+          line-height:
+            1.45;
         }
 
         .select {
@@ -2338,7 +3452,8 @@ export default function Home() {
             42px;
 
           padding:
-            0 34px 0 13px;
+            0 34px
+            0 13px;
 
           border:
             1px solid
@@ -2346,14 +3461,14 @@ export default function Home() {
               255,
               255,
               255,
-              0.07
+              .07
             );
 
           border-radius:
             12px;
 
           outline:
-            none;
+            0;
 
           background:
             #0a0e0b;
@@ -2362,13 +3477,92 @@ export default function Home() {
             #edf2ee;
 
           font-size:
-            12px;
+            11px;
 
           font-weight:
             800;
 
           cursor:
             pointer;
+        }
+
+        .sliderWrap {
+          width:
+            min(
+              330px,
+              48%
+            );
+
+          min-width:
+            230px;
+        }
+
+        .sliderTop {
+          display:
+            flex;
+
+          align-items:
+            center;
+
+          justify-content:
+            space-between;
+
+          gap:
+            10px;
+
+          margin-bottom:
+            8px;
+
+          color:
+            #7d8981;
+
+          font-size:
+            9px;
+        }
+
+        .sliderTop strong {
+          color:
+            #aef7c0;
+
+          font-size:
+            10px;
+        }
+
+        .range {
+          width:
+            100%;
+
+          accent-color:
+            #55e47f;
+
+          cursor:
+            pointer;
+        }
+
+        .rangeLabels {
+          display:
+            flex;
+
+          justify-content:
+            space-between;
+
+          margin-top:
+            6px;
+
+          color:
+            #4f5a52;
+
+          font-size:
+            8px;
+
+          font-weight:
+            800;
+
+          text-transform:
+            uppercase;
+
+          letter-spacing:
+            .06em;
         }
 
         .generate {
@@ -2394,7 +3588,7 @@ export default function Home() {
             10px;
 
           border:
-            none;
+            0;
 
           border-radius:
             17px;
@@ -2402,8 +3596,8 @@ export default function Home() {
           background:
             linear-gradient(
               135deg,
-              #92f8aa 0%,
-              #59e683 44%,
+              #96f9ad 0%,
+              #59e684 45%,
               #2fd168 100%
             );
 
@@ -2411,7 +3605,7 @@ export default function Home() {
             #061008;
 
           font-size:
-            14px;
+            13px;
 
           font-weight:
             950;
@@ -2425,7 +3619,7 @@ export default function Home() {
               42,
               207,
               95,
-              0.17
+              .17
             );
 
           transition:
@@ -2434,7 +3628,9 @@ export default function Home() {
 
         .generate:hover:not(:disabled) {
           transform:
-            translateY(-2px);
+            translateY(
+              -2px
+            );
 
           filter:
             brightness(
@@ -2447,25 +3643,25 @@ export default function Home() {
               42,
               207,
               95,
-              0.22
+              .22
             );
         }
 
         .status {
           min-height:
-            20px;
+            18px;
 
           margin:
-            13px 0 0;
+            12px 0 0;
 
           text-align:
             center;
 
           color:
-            #7c8980;
+            #78857c;
 
           font-size:
-            11px;
+            10px;
 
           line-height:
             1.55;
@@ -2476,7 +3672,7 @@ export default function Home() {
             sticky;
 
           top:
-            100px;
+            98px;
 
           padding:
             22px;
@@ -2507,10 +3703,10 @@ export default function Home() {
             9px 0 0;
 
           color:
-            #748078;
+            #717d75;
 
           font-size:
-            11px;
+            10px;
 
           line-height:
             1.62;
@@ -2518,7 +3714,7 @@ export default function Home() {
 
         .stats {
           margin-top:
-            20px;
+            19px;
 
           display:
             grid;
@@ -2528,6 +3724,9 @@ export default function Home() {
         }
 
         .stat {
+          padding:
+            12px 13px;
+
           display:
             flex;
 
@@ -2540,16 +3739,13 @@ export default function Home() {
           gap:
             12px;
 
-          padding:
-            13px 14px;
-
           border:
             1px solid
             rgba(
               255,
               255,
               255,
-              0.048
+              .047
             );
 
           border-radius:
@@ -2560,22 +3756,22 @@ export default function Home() {
               255,
               255,
               255,
-              0.018
+              .017
             );
         }
 
-        .stat span:first-child {
+        .stat span {
           color:
-            #6f7b73;
+            #6d7971;
 
           font-size:
-            10px;
+            9px;
 
           font-weight:
             800;
 
           letter-spacing:
-            .04em;
+            .05em;
 
           text-transform:
             uppercase;
@@ -2586,7 +3782,7 @@ export default function Home() {
             #f6faf7;
 
           font-size:
-            18px;
+            17px;
 
           font-weight:
             950;
@@ -2597,29 +3793,29 @@ export default function Home() {
 
         .connectCard {
           margin-top:
-            17px;
+            16px;
 
           padding:
             14px;
 
-          border-radius:
-            15px;
-
           border:
             1px solid
             rgba(
-              124,
-              242,
-              157,
-              0.09
+              106,
+              240,
+              142,
+              .09
             );
+
+          border-radius:
+            15px;
 
           background:
             rgba(
-              124,
-              242,
-              157,
-              0.035
+              106,
+              240,
+              142,
+              .032
             );
         }
 
@@ -2637,7 +3833,7 @@ export default function Home() {
             #c8f9d4;
 
           font-size:
-            11px;
+            10px;
 
           font-weight:
             900;
@@ -2648,13 +3844,64 @@ export default function Home() {
             7px;
 
           color:
-            #718077;
+            #6e7b72;
 
           font-size:
-            10px;
+            9px;
 
           line-height:
             1.55;
+        }
+
+        .clearBtn {
+          width:
+            100%;
+
+          margin-top:
+            12px;
+
+          padding:
+            9px 10px;
+
+          border:
+            1px solid
+            rgba(
+              255,
+              255,
+              255,
+              .05
+            );
+
+          border-radius:
+            11px;
+
+          background:
+            transparent;
+
+          color:
+            #5d6861;
+
+          font-size:
+            9px;
+
+          font-weight:
+            800;
+
+          cursor:
+            pointer;
+        }
+
+        .clearBtn:hover {
+          color:
+            #cbd4cd;
+
+          background:
+            rgba(
+              255,
+              255,
+              255,
+              .025
+            );
         }
 
         .results {
@@ -2668,24 +3915,84 @@ export default function Home() {
             hidden;
         }
 
-        .resultsHeader {
+        .playlistHero {
           display:
-            flex;
+            grid;
 
-          align-items:
-            flex-end;
-
-          justify-content:
-            space-between;
+          grid-template-columns:
+            150px
+            minmax(
+              0,
+              1fr
+            );
 
           gap:
-            16px;
+            22px;
 
-          flex-wrap:
-            wrap;
+          align-items:
+            end;
 
-          margin-bottom:
-            18px;
+          padding-bottom:
+            22px;
+
+          border-bottom:
+            1px solid
+            rgba(
+              255,
+              255,
+              255,
+              .05
+            );
+        }
+
+        .playlistCover {
+          width:
+            150px;
+
+          aspect-ratio:
+            1;
+
+          border-radius:
+            22px;
+
+          object-fit:
+            cover;
+
+          background:
+            linear-gradient(
+              145deg,
+              #16351f,
+              #08110b
+            );
+
+          border:
+            1px solid
+            rgba(
+              255,
+              255,
+              255,
+              .07
+            );
+
+          box-shadow:
+            0 24px 60px
+            rgba(
+              0,
+              0,
+              0,
+              .35
+            );
+        }
+
+        .playlistCoverFallback {
+          display:
+            grid;
+
+          place-items:
+            center;
+
+          color:
+            #72e994;
         }
 
         .resultsTitle {
@@ -2694,22 +4001,90 @@ export default function Home() {
 
           font-size:
             clamp(
-              29px,
-              4vw,
-              42px
+              34px,
+              5vw,
+              58px
             );
 
           line-height:
-            .98;
+            .94;
 
           letter-spacing:
-            -.052em;
+            -.058em;
 
           font-weight:
             950;
         }
 
+        .mixMeta {
+          margin-top:
+            10px;
+
+          color:
+            #718077;
+
+          font-size:
+            10px;
+
+          line-height:
+            1.55;
+        }
+
+        .genreTags {
+          margin-top:
+            12px;
+
+          display:
+            flex;
+
+          flex-wrap:
+            wrap;
+
+          gap:
+            6px;
+        }
+
+        .genreTag {
+          padding:
+            6px 8px;
+
+          border:
+            1px solid
+            rgba(
+              106,
+              240,
+              142,
+              .08
+            );
+
+          border-radius:
+            999px;
+
+          background:
+            rgba(
+              106,
+              240,
+              142,
+              .026
+            );
+
+          color:
+            #76c98b;
+
+          font-size:
+            8px;
+
+          font-weight:
+            800;
+
+          text-transform:
+            capitalize;
+        }
+
         .resultsActions {
+          margin-top:
+            16px;
+
           display:
             flex;
 
@@ -2744,7 +4119,7 @@ export default function Home() {
             12px;
 
           font-size:
-            11px;
+            10px;
 
           font-weight:
             900;
@@ -2763,7 +4138,7 @@ export default function Home() {
               255,
               255,
               255,
-              0.065
+              .065
             );
 
           background:
@@ -2771,7 +4146,7 @@ export default function Home() {
               255,
               255,
               255,
-              0.025
+              .025
             );
 
           color:
@@ -2784,13 +4159,18 @@ export default function Home() {
               255,
               255,
               255,
-              0.05
+              .05
+            );
+
+          transform:
+            translateY(
+              -1px
             );
         }
 
         .saveBtn {
           border:
-            none;
+            0;
 
           background:
             linear-gradient(
@@ -2805,10 +4185,15 @@ export default function Home() {
 
         .saveBtn:hover:not(:disabled) {
           transform:
-            translateY(-1px);
+            translateY(
+              -1px
+            );
         }
 
         .trackList {
+          margin-top:
+            17px;
+
           display:
             grid;
 
@@ -2817,10 +4202,14 @@ export default function Home() {
         }
 
         .track {
+          padding:
+            8px 9px;
+
           display:
             grid;
 
           grid-template-columns:
+            28px
             auto
             minmax(
               0,
@@ -2832,10 +4221,7 @@ export default function Home() {
             center;
 
           gap:
-            13px;
-
-          padding:
-            9px 10px;
+            11px;
 
           border:
             1px solid
@@ -2843,18 +4229,18 @@ export default function Home() {
               255,
               255,
               255,
-              0.045
+              .043
             );
 
           border-radius:
-            16px;
+            15px;
 
           background:
             rgba(
               255,
               255,
               255,
-              0.018
+              .017
             );
 
           transition:
@@ -2863,34 +4249,50 @@ export default function Home() {
 
         .track:hover {
           transform:
-            translateX(3px);
+            translateX(
+              3px
+            );
 
           border-color:
             rgba(
-              124,
-              242,
-              157,
-              0.12
+              106,
+              240,
+              142,
+              .11
             );
 
           background:
             rgba(
-              124,
-              242,
-              157,
-              0.026
+              106,
+              240,
+              142,
+              .024
             );
+        }
+
+        .trackNumber {
+          color:
+            #566159;
+
+          font-size:
+            9px;
+
+          text-align:
+            center;
+
+          font-variant-numeric:
+            tabular-nums;
         }
 
         .cover {
           width:
-            60px;
+            54px;
 
           height:
-            60px;
+            54px;
 
           border-radius:
-            12px;
+            11px;
 
           object-fit:
             cover;
@@ -2901,20 +4303,11 @@ export default function Home() {
               255,
               255,
               255,
-              0.06
+              .055
             );
 
           background:
             #141a16;
-
-          box-shadow:
-            0 9px 22px
-            rgba(
-              0,
-              0,
-              0,
-              0.2
-            );
         }
 
         .coverFallback {
@@ -2928,7 +4321,7 @@ export default function Home() {
             var(--green);
 
           font-size:
-            12px;
+            9px;
 
           font-weight:
             950;
@@ -2947,7 +4340,7 @@ export default function Home() {
             #f4f8f5;
 
           font-size:
-            13px;
+            12px;
 
           font-weight:
             900;
@@ -2967,10 +4360,10 @@ export default function Home() {
             4px 0 0;
 
           color:
-            #6e7a72;
+            #6b776f;
 
           font-size:
-            11px;
+            10px;
 
           white-space:
             nowrap;
@@ -2982,12 +4375,29 @@ export default function Home() {
             ellipsis;
         }
 
+        .sourceBadge {
+          display:
+            inline-block;
+
+          margin-top:
+            5px;
+
+          color:
+            #5f986f;
+
+          font-size:
+            8px;
+
+          font-weight:
+            800;
+        }
+
         .trackLink {
           min-height:
-            34px;
+            33px;
 
           padding:
-            0 11px;
+            0 10px;
 
           display:
             inline-flex;
@@ -3001,31 +4411,31 @@ export default function Home() {
           gap:
             6px;
 
-          border-radius:
-            10px;
-
           border:
             1px solid
             rgba(
-              124,
-              242,
-              157,
-              0.1
+              106,
+              240,
+              142,
+              .09
             );
+
+          border-radius:
+            10px;
 
           background:
             rgba(
-              124,
-              242,
-              157,
-              0.03
+              106,
+              240,
+              142,
+              .028
             );
 
           color:
-            #77e997;
+            #75e796;
 
           font-size:
-            10px;
+            9px;
 
           font-weight:
             850;
@@ -3048,13 +4458,13 @@ export default function Home() {
             7px;
 
           margin-top:
-            15px;
+            14px;
 
           color:
             #7bed9c;
 
           font-size:
-            11px;
+            10px;
 
           font-weight:
             900;
@@ -3071,10 +4481,10 @@ export default function Home() {
             center;
 
           color:
-            #465049;
+            #455048;
 
           font-size:
-            10px;
+            9px;
 
           line-height:
             1.7;
@@ -3098,7 +4508,10 @@ export default function Home() {
             wait;
         }
 
-        @media (max-width: 930px) {
+        @media (
+          max-width:
+            930px
+        ) {
           .workspace {
             grid-template-columns:
               1fr;
@@ -3124,7 +4537,10 @@ export default function Home() {
           }
         }
 
-        @media (max-width: 740px) {
+        @media (
+          max-width:
+            740px
+        ) {
           .shell {
             width:
               min(
@@ -3153,7 +4569,7 @@ export default function Home() {
 
           .brand img {
             width:
-              145px;
+              142px;
           }
 
           .modePill {
@@ -3169,18 +4585,24 @@ export default function Home() {
               0 12px;
 
             font-size:
-              10px;
+              9px;
+          }
+
+          .userPill {
+            max-width:
+              170px;
           }
 
           .hero {
             padding:
-              74px 4px 42px;
+              72px 4px
+              42px;
           }
 
           .hero h1 {
             font-size:
               clamp(
-                50px,
+                49px,
                 15vw,
                 78px
               );
@@ -3210,13 +4632,53 @@ export default function Home() {
               1fr;
           }
 
+          .settingRow {
+            align-items:
+              flex-start;
+
+            flex-direction:
+              column;
+          }
+
+          .sliderWrap {
+            width:
+              100%;
+
+            min-width:
+              0;
+          }
+
           .stats {
             grid-template-columns:
               1fr;
           }
 
+          .playlistHero {
+            grid-template-columns:
+              105px
+              minmax(
+                0,
+                1fr
+              );
+
+            gap:
+              15px;
+
+            align-items:
+              center;
+          }
+
+          .playlistCover {
+            width:
+              105px;
+
+            border-radius:
+              17px;
+          }
+
           .track {
             grid-template-columns:
+              22px
               auto
               minmax(
                 0,
@@ -3226,34 +4688,60 @@ export default function Home() {
 
           .trackLink {
             grid-column:
-              1 / -1;
+              2 / -1;
 
             width:
               100%;
           }
         }
 
-        @media (max-width: 430px) {
+        @media (
+          max-width:
+            460px
+        ) {
           .brand img {
             width:
-              128px;
+              124px;
           }
 
-          .connect {
-            padding:
-              0 10px;
+          .userText small {
+            display:
+              none;
+          }
+
+          .userPill {
+            max-width:
+              135px;
+
+            padding-right:
+              9px;
           }
 
           .connect span:last-child {
             display:
               none;
           }
+
+          .playlistHero {
+            grid-template-columns:
+              1fr;
+
+            align-items:
+              start;
+          }
+
+          .playlistCover {
+            width:
+              118px;
+          }
         }
       `}</style>
 
       <div className="ambient">
         <div className="blob one" />
+
         <div className="blob two" />
+
         <div className="blob three" />
       </div>
 
@@ -3270,51 +4758,102 @@ export default function Home() {
             <div className="modePill">
               <span className="liveDot" />
 
-              Live discovery
+              Smart discovery
             </div>
 
-            <a
-              href="/api/spotify/login"
-              className="connect"
-            >
-              <Icon
-                name="spotify"
-                size={16}
-              />
+            {spotifyUser ? (
+              <a
+                className="userPill"
 
-              <span>
-                Connect Spotify
-              </span>
-            </a>
+                href={
+                  spotifyUser.url ||
+                  "https://open.spotify.com"
+                }
+
+                target="_blank"
+
+                rel="noopener noreferrer"
+
+                title="Open Spotify profile"
+              >
+                {spotifyUser.image ? (
+                  <img
+                    className="userAvatar"
+
+                    src={
+                      spotifyUser.image
+                    }
+
+                    alt=""
+                  />
+                ) : (
+                  <span className="userAvatar userAvatarFallback">
+                    <Icon
+                      name="spotify"
+                      size={16}
+                    />
+                  </span>
+                )}
+
+                <span className="userText">
+                  <strong>
+                    {
+                      spotifyUser.displayName
+                    }
+                  </strong>
+
+                  <small>
+                    Spotify connected
+                  </small>
+                </span>
+              </a>
+            ) : (
+              <a
+                href="/api/spotify/login"
+
+                className="connect"
+              >
+                <Icon
+                  name="spotify"
+                  size={16}
+                />
+
+                <span>
+                  Connect Spotify
+                </span>
+              </a>
+            )}
           </div>
         </nav>
 
         <section className="hero">
-          <div className="heroTopline">
+          <div className="eyebrow">
             <Icon
               name="sparkles"
               size={14}
             />
 
-            Your taste, upgraded
+            Your taste, pushed further
           </div>
 
           <h1>
-            Music discovery
+            Find music that feels
 
             <br />
 
             <span className="accent">
-              without the noise.
+              like you found it first.
             </span>
           </h1>
 
           <p>
-            Add the artists and songs
-            you already love.
-            TasteMaker turns that into
-            a clean, personal mix built
-            around your actual taste.
+            Add what you already love,
+            choose how adventurous you
+            want to be, and TasteMaker
+            builds a fresh mix from
+            artists, collaborators,
+            genres and your connected
+            Spotify taste.
           </p>
 
           <div className="heroChips">
@@ -3333,16 +4872,16 @@ export default function Home() {
                 size={13}
               />
 
-              Taste-based discovery
+              Dynamic discovery engine
             </span>
 
             <span className="heroChip">
               <Icon
-                name="spotify"
+                name="refresh"
                 size={13}
               />
 
-              Save straight to Spotify
+              Regenerate anytime
             </span>
           </div>
         </section>
@@ -3356,20 +4895,23 @@ export default function Home() {
             </div>
 
             <h2 className="sectionTitle">
-              Build your profile.
+              Start with what you love.
             </h2>
 
             <p className="sectionCopy">
-              Add an artist,
-              optionally pair them
-              with a favorite song,
-              then generate a playlist
-              around your taste.
+              Add artists and optional
+              favorite songs. Your profile
+              is saved on this device, so
+              refreshing the page no longer
+              wipes everything out.
             </p>
 
             <form
               className="formGrid"
-              onSubmit={addArtist}
+
+              onSubmit={
+                addArtist
+              }
             >
               <div className="field">
                 <label htmlFor="artist-search">
@@ -3378,11 +4920,20 @@ export default function Home() {
 
                 <input
                   id="artist-search"
+
                   className="input"
+
                   aria-label="Favorite artist"
+
                   placeholder="Search an artist..."
-                  value={input}
-                  onChange={(event) => {
+
+                  value={
+                    input
+                  }
+
+                  onChange={(
+                    event
+                  ) => {
                     setInput(
                       event.target.value
                     );
@@ -3391,7 +4942,11 @@ export default function Home() {
                       null
                     );
                   }}
-                  disabled={busy}
+
+                  disabled={
+                    busy
+                  }
+
                   autoComplete="off"
                 />
 
@@ -3408,13 +4963,18 @@ export default function Home() {
                     0 && (
                     <div className="dropdown">
                       {artistResults.map(
-                        (artist) => (
+                        (
+                          artist
+                        ) => (
                           <button
                             type="button"
+
                             className="searchResult"
+
                             key={
                               artist.id
                             }
+
                             onClick={() => {
                               setInput(
                                 artist.name
@@ -3432,15 +4992,18 @@ export default function Home() {
                             {artist.image ? (
                               <img
                                 className="resultArt artist"
+
                                 src={
                                   artist.image
                                 }
+
                                 alt=""
                               />
                             ) : (
                               <div className="resultArt artist resultFallback">
                                 <Icon
                                   name="music"
+
                                   size={17}
                                 />
                               </div>
@@ -3471,11 +5034,20 @@ export default function Home() {
 
                 <input
                   id="song-search"
+
                   className="input"
+
                   aria-label="Favorite song"
+
                   placeholder="Search a song..."
-                  value={songInput}
-                  onChange={(event) => {
+
+                  value={
+                    songInput
+                  }
+
+                  onChange={(
+                    event
+                  ) => {
                     setSongInput(
                       event.target.value
                     );
@@ -3484,7 +5056,11 @@ export default function Home() {
                       null
                     );
                   }}
-                  disabled={busy}
+
+                  disabled={
+                    busy
+                  }
+
                   autoComplete="off"
                 />
 
@@ -3501,13 +5077,18 @@ export default function Home() {
                     0 && (
                     <div className="dropdown">
                       {songResults.map(
-                        (song) => (
+                        (
+                          song
+                        ) => (
                           <button
                             type="button"
+
                             className="searchResult"
+
                             key={
                               song.id
                             }
+
                             onClick={() => {
                               setSongInput(
                                 song.name
@@ -3525,15 +5106,18 @@ export default function Home() {
                             {song.image ? (
                               <img
                                 className="resultArt song"
+
                                 src={
                                   song.image
                                 }
+
                                 alt=""
                               />
                             ) : (
                               <div className="resultArt song resultFallback">
                                 <Icon
                                   name="music"
+
                                   size={17}
                                 />
                               </div>
@@ -3561,8 +5145,12 @@ export default function Home() {
 
               <button
                 type="submit"
+
                 className="addBtn"
-                disabled={busy}
+
+                disabled={
+                  busy
+                }
               >
                 <Icon
                   name="plus"
@@ -3577,7 +5165,9 @@ export default function Home() {
               0 && (
               <div className="tasteGrid">
                 {favorites.map(
-                  (artist) => {
+                  (
+                    artist
+                  ) => {
                     const songs =
                       favoriteSongs[
                         normalize(
@@ -3595,6 +5185,7 @@ export default function Home() {
                     return (
                       <div
                         className="tasteCard"
+
                         key={
                           artist
                         }
@@ -3602,15 +5193,18 @@ export default function Home() {
                         {artistData?.image ? (
                           <img
                             className="tasteAvatar"
+
                             src={
                               artistData.image
                             }
+
                             alt=""
                           />
                         ) : (
                           <div className="tasteAvatar tasteFallback">
                             <Icon
                               name="music"
+
                               size={16}
                             />
                           </div>
@@ -3623,35 +5217,70 @@ export default function Home() {
                             }
                           </div>
 
-                          <div className="tasteSong">
-                            {songs.length >
-                            0
-                              ? songs.join(
-                                  ", "
-                                )
-                              : "Artist added"}
+                          <div className="seedText">
+                            {songs.length
+                              ? `${songs.length} song seed${songs.length > 1 ? "s" : ""}`
+                              : "Artist seed"}
                           </div>
                         </div>
 
                         <button
                           type="button"
+
                           className="removeBtn"
+
                           disabled={
                             busy
                           }
+
                           onClick={() =>
                             removeArtist(
                               artist
                             )
                           }
+
                           title="Remove artist"
+
                           aria-label={`Remove ${artist}`}
                         >
                           <Icon
                             name="trash"
+
                             size={14}
                           />
                         </button>
+
+                        {songs.length >
+                          0 && (
+                          <div className="songSeeds">
+                            {songs.map(
+                              (
+                                song
+                              ) => (
+                                <button
+                                  type="button"
+
+                                  className="songSeed"
+
+                                  key={
+                                    song
+                                  }
+
+                                  onClick={() =>
+                                    removeSong(
+                                      artist,
+                                      song
+                                    )
+                                  }
+
+                                  title="Remove song seed"
+                                >
+                                  {song} ×
+                                </button>
+                              )
+                            )}
+                          </div>
+                        )}
                       </div>
                     );
                   }
@@ -3659,65 +5288,165 @@ export default function Home() {
               </div>
             )}
 
-            <div className="controls">
-              <div>
-                <div className="controlLabel">
-                  Playlist length
+            <div className="settings">
+              <div className="settingRow">
+                <div>
+                  <div className="controlLabel">
+                    Playlist length
+                  </div>
+
+                  <div className="controlHint">
+                    How many tracks should
+                    TasteMaker build?
+                  </div>
                 </div>
 
-                <div className="controlHint">
-                  Choose how deep you
-                  want the mix to go.
-                </div>
+                <select
+                  className="select"
+
+                  value={
+                    trackCount
+                  }
+
+                  disabled={
+                    busy
+                  }
+
+                  onChange={(
+                    event
+                  ) => {
+                    setTrackCount(
+                      Number(
+                        event.target.value
+                      )
+                    );
+
+                    clearResults();
+                  }}
+                >
+                  {[
+                    10,
+                    15,
+                    20,
+                    25,
+                    30,
+                  ].map(
+                    (
+                      count
+                    ) => (
+                      <option
+                        key={
+                          count
+                        }
+
+                        value={
+                          count
+                        }
+                      >
+                        {count} songs
+                      </option>
+                    )
+                  )}
+                </select>
               </div>
 
-              <select
-                className="select"
-                value={trackCount}
-                disabled={busy}
-                onChange={(event) => {
-                  setTrackCount(
-                    Number(
-                      event.target
-                        .value
-                    )
-                  );
+              <div className="settingRow">
+                <div>
+                  <div className="controlLabel">
+                    Discovery level
+                  </div>
 
-                  clearResults();
-                }}
-              >
-                {[
-                  10,
-                  15,
-                  20,
-                  25,
-                  30,
-                ].map(
-                  (count) => (
-                    <option
-                      key={count}
-                      value={count}
-                    >
-                      {count} songs
-                    </option>
-                  )
-                )}
-              </select>
+                  <div className="controlHint">
+                    {
+                      discoveryHint
+                    }
+                  </div>
+                </div>
+
+                <div className="sliderWrap">
+                  <div className="sliderTop">
+                    <span>
+                      {discovery}%
+                    </span>
+
+                    <strong>
+                      {
+                        discoveryLabel
+                      }
+                    </strong>
+                  </div>
+
+                  <input
+                    className="range"
+
+                    type="range"
+
+                    min="0"
+
+                    max="100"
+
+                    step="5"
+
+                    value={
+                      discovery
+                    }
+
+                    disabled={
+                      busy
+                    }
+
+                    onChange={(
+                      event
+                    ) => {
+                      setDiscovery(
+                        Number(
+                          event.target.value
+                        )
+                      );
+
+                      clearResults();
+                    }}
+                  />
+
+                  <div className="rangeLabels">
+                    <span>
+                      Safe
+                    </span>
+
+                    <span>
+                      Adventurous
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <button
               type="button"
+
               className="generate"
-              disabled={busy}
-              onClick={findSongs}
+
+              disabled={
+                busy
+              }
+
+              onClick={() =>
+                findSongs(
+                  false
+                )
+              }
             >
               {loading ? (
                 <>
-                  Building your mix...
+                  {
+                    loadingStage
+                  }
                 </>
               ) : (
                 <>
-                  Generate playlist
+                  Generate{" "}
+                  {discoveryLabel.toLowerCase()}{" "}
+                  mix
 
                   <Icon
                     name="arrow"
@@ -3729,7 +5458,9 @@ export default function Home() {
 
             <p
               className="status"
+
               role="status"
+
               aria-live="polite"
             >
               {message}
@@ -3746,9 +5477,11 @@ export default function Home() {
             </h3>
 
             <p>
-              Every artist and favorite
-              song shapes what
-              TasteMaker builds for you.
+              TasteMaker now pulls from
+              your seed artists,
+              collaborators, genre signals
+              and, when connected, your
+              Spotify listening taste.
             </p>
 
             <div className="stats">
@@ -3758,27 +5491,31 @@ export default function Home() {
                 </span>
 
                 <strong>
-                  {favorites.length}
+                  {
+                    favorites.length
+                  }
                 </strong>
               </div>
 
               <div className="stat">
                 <span>
-                  Favorite songs
+                  Song seeds
                 </span>
 
                 <strong>
-                  {favoriteSongCount}
+                  {
+                    favoriteSongCount
+                  }
                 </strong>
               </div>
 
               <div className="stat">
                 <span>
-                  Target tracks
+                  Discovery
                 </span>
 
                 <strong>
-                  {trackCount}
+                  {discovery}%
                 </strong>
               </div>
             </div>
@@ -3786,69 +5523,177 @@ export default function Home() {
             <div className="connectCard">
               <div className="connectCardTitle">
                 <Icon
-                  name="spotify"
-                  size={15}
+                  name={
+                    spotifyUser
+                      ? "check"
+                      : "spotify"
+                  }
+
+                  size={14}
                 />
 
-                Spotify ready
+                {spotifyUser
+                  ? "Spotify connected"
+                  : "Spotify optional"}
               </div>
 
               <div className="connectCardText">
-                Discovery works without
-                login. Connect Spotify
-                when you want to save
-                the finished playlist.
+                {spotifyUser
+                  ? `Connected as ${spotifyUser.displayName}. Higher discovery levels can also use your Spotify top artists.`
+                  : "You can generate mixes without signing in. Connect Spotify to save playlists and add another taste signal."}
               </div>
             </div>
+
+            {favorites.length >
+              0 && (
+              <button
+                type="button"
+
+                className="clearBtn"
+
+                onClick={
+                  clearTasteProfile
+                }
+              >
+                Clear saved taste profile
+              </button>
+            )}
           </aside>
         </div>
 
         {tracks.length >
           0 && (
           <section className="glass results">
-            <div className="resultsHeader">
+            <div className="playlistHero">
+              {heroCover ? (
+                <img
+                  className="playlistCover"
+
+                  src={
+                    heroCover
+                  }
+
+                  alt="Album artwork from the mix"
+                />
+              ) : (
+                <div className="playlistCover playlistCoverFallback">
+                  <Icon
+                    name="music"
+
+                    size={34}
+                  />
+                </div>
+              )}
+
               <div>
                 <div className="sectionLabel">
-                  Your playlist
+                  TasteMaker mix
                 </div>
 
                 <h2 className="resultsTitle">
-                  TasteMaker Mix
+                  {discoveryLabel} Mix
                 </h2>
-              </div>
 
-              <div className="resultsActions">
-                <button
-                  type="button"
-                  className="ghostBtn"
-                  disabled={busy}
-                  onClick={copyTracks}
-                >
-                  <Icon
-                    name="copy"
-                    size={14}
-                  />
+                <div className="mixMeta">
+                  {tracks.length} tracks ·{" "}
+                  {discovery}% discovery
 
-                  Copy songs
-                </button>
+                  {mixMeta?.connectedTasteUsed
+                    ? " · personalized with your Spotify taste"
+                    : ""}
+                </div>
 
-                <button
-                  type="button"
-                  className="saveBtn"
-                  disabled={busy}
-                  onClick={
-                    savePlaylist
-                  }
-                >
-                  <Icon
-                    name="spotify"
-                    size={14}
-                  />
+                {mixMeta?.usedGenres?.length >
+                  0 && (
+                  <div className="genreTags">
+                    {mixMeta.usedGenres.map(
+                      (
+                        genre
+                      ) => (
+                        <span
+                          className="genreTag"
 
-                  {saving
-                    ? "Saving..."
-                    : "Save to Spotify"}
-                </button>
+                          key={
+                            genre
+                          }
+                        >
+                          {
+                            genre
+                          }
+                        </span>
+                      )
+                    )}
+                  </div>
+                )}
+
+                <div className="resultsActions">
+                  <button
+                    type="button"
+
+                    className="ghostBtn"
+
+                    disabled={
+                      busy
+                    }
+
+                    onClick={() =>
+                      findSongs(
+                        true
+                      )
+                    }
+                  >
+                    <Icon
+                      name="refresh"
+                      size={14}
+                    />
+
+                    Make another mix
+                  </button>
+
+                  <button
+                    type="button"
+
+                    className="ghostBtn"
+
+                    disabled={
+                      busy
+                    }
+
+                    onClick={
+                      copyTracks
+                    }
+                  >
+                    <Icon
+                      name="copy"
+                      size={14}
+                    />
+
+                    Copy songs
+                  </button>
+
+                  <button
+                    type="button"
+
+                    className="saveBtn"
+
+                    disabled={
+                      busy
+                    }
+
+                    onClick={
+                      savePlaylist
+                    }
+                  >
+                    <Icon
+                      name="spotify"
+                      size={14}
+                    />
+
+                    {saving
+                      ? "Saving..."
+                      : "Save to Spotify"}
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -3860,26 +5705,33 @@ export default function Home() {
                 ) => (
                   <div
                     className="track"
+
                     key={
                       track.id
                     }
                   >
+                    <div className="trackNumber">
+                      {String(
+                        index + 1
+                      ).padStart(
+                        2,
+                        "0"
+                      )}
+                    </div>
+
                     {track.image ? (
                       <img
                         className="cover"
+
                         src={
                           track.image
                         }
+
                         alt={`${track.title} album cover`}
                       />
                     ) : (
                       <div className="cover coverFallback">
-                        {String(
-                          index + 1
-                        ).padStart(
-                          2,
-                          "0"
-                        )}
+                        {index + 1}
                       </div>
                     )}
 
@@ -3895,22 +5747,32 @@ export default function Home() {
                           track.artist
                         }
                       </p>
+
+                      <span className="sourceBadge">
+                        {sourceLabel(
+                          track.source
+                        )}
+                      </span>
                     </div>
 
                     {track.url && (
                       <a
                         className="trackLink"
+
                         href={
                           track.url
                         }
+
                         target="_blank"
+
                         rel="noopener noreferrer"
                       >
                         Spotify
 
                         <Icon
                           name="arrow"
-                          size={12}
+
+                          size={11}
                         />
                       </a>
                     )}
@@ -3922,14 +5784,17 @@ export default function Home() {
             {playlistUrl && (
               <a
                 className="playlistLink"
+
                 href={
                   playlistUrl
                 }
+
                 target="_blank"
+
                 rel="noopener noreferrer"
               >
-                Open saved playlist
-                in Spotify
+                Open saved playlist in
+                Spotify
 
                 <Icon
                   name="arrow"
@@ -3942,8 +5807,8 @@ export default function Home() {
 
         <footer className="footer">
           <div>
-            TasteMaker · Music discovery
-            based on what you already love
+            TasteMaker · Discovery built
+            around what you already love
           </div>
 
           <div>

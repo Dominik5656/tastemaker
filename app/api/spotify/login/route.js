@@ -23,6 +23,7 @@ export async function GET(request) {
     "playlist-modify-private",
     "playlist-modify-public",
     "user-read-private",
+    "user-top-read",
   ].join(" ");
 
   const params = new URLSearchParams({
@@ -33,10 +34,9 @@ export async function GET(request) {
     scope: scopes,
   });
 
-  const spotifyUrl =
-    `https://accounts.spotify.com/authorize?${params.toString()}`;
-
-  const response = NextResponse.redirect(spotifyUrl);
+  const response = NextResponse.redirect(
+    `https://accounts.spotify.com/authorize?${params.toString()}`
+  );
 
   response.cookies.set(
     "spotify_oauth_state",

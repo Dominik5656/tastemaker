@@ -973,7 +973,7 @@ export default function Home() {
           game,
         ].slice(
           0,
-          8
+          30
         )
     );
 
@@ -4413,9 +4413,10 @@ export default function Home() {
             </h2>
 
             <p className="sectionCopy">
-              Search for up to eight favorites. These become
-              the DNA of your recommendations.
-            </p>
+  Add up to 30 favorite games. The more you add,
+  the better TasteMaker can understand your taste.
+</p>
+            
           </div>
 
           <div className="builder">

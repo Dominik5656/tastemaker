@@ -532,7 +532,7 @@ export async function POST(
           ),
         ].slice(
           0,
-          8
+          30
         )
       : [];
 

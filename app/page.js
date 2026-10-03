@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useMemo, useState } from "react";
 
 function normalize(text = "") {
@@ -12,22 +13,17 @@ function normalize(text = "") {
 }
 
 function distance(a, b) {
-  const matrix = Array.from(
-    { length: b.length + 1 },
-    () => Array(a.length + 1).fill(0)
+  const matrix = Array.from({ length: b.length + 1 }, () =>
+    Array(a.length + 1).fill(0)
   );
 
-  for (let i = 0; i <= a.length; i++)
-    matrix[0][i] = i;
-
-  for (let j = 0; j <= b.length; j++)
-    matrix[j][0] = j;
+  for (let i = 0; i <= a.length; i++) matrix[0][i] = i;
+  for (let j = 0; j <= b.length; j++) matrix[j][0] = j;
 
   for (let j = 1; j <= b.length; j++) {
     for (let i = 1; i <= a.length; i++) {
       if (a[i - 1] === b[j - 1]) {
-        matrix[j][i] =
-          matrix[j - 1][i - 1];
+        matrix[j][i] = matrix[j - 1][i - 1];
       } else {
         matrix[j][i] = Math.min(
           matrix[j - 1][i] + 1,
@@ -41,10 +37,7 @@ function distance(a, b) {
   return matrix[b.length][a.length];
 }
 
-function Icon({
-  name,
-  size = 18,
-}) {
+function Icon({ name, size = 18 }) {
   const common = {
     width: size,
     height: size,
@@ -64,7 +57,6 @@ function Icon({
         <path d="M18.5 13.5l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7.7-2Z" />
       </>
     ),
-
     music: (
       <>
         <path d="M9 18V5l11-2v13" />
@@ -72,7 +64,6 @@ function Icon({
         <circle cx="17" cy="16" r="3" />
       </>
     ),
-
     spotify: (
       <>
         <circle cx="12" cy="12" r="9" />
@@ -81,31 +72,19 @@ function Icon({
         <path d="M8.5 15.4c2.15-.55 4.4-.4 6.4.5" />
       </>
     ),
-
-    plus: (
-      <path d="M12 5v14M5 12h14" />
-    ),
-
+    plus: <path d="M12 5v14M5 12h14" />,
     arrow: (
       <>
         <path d="M5 12h14" />
         <path d="m14 7 5 5-5 5" />
       </>
     ),
-
     copy: (
       <>
-        <rect
-          x="8"
-          y="8"
-          width="11"
-          height="11"
-          rx="2"
-        />
+        <rect x="8" y="8" width="11" height="11" rx="2" />
         <path d="M5 16H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v1" />
       </>
     ),
-
     trash: (
       <>
         <path d="M4 7h16" />
@@ -114,7 +93,6 @@ function Icon({
         <path d="M9 7V4h6v3" />
       </>
     ),
-
     refresh: (
       <>
         <path d="M20 7v5h-5" />
@@ -123,11 +101,7 @@ function Icon({
         <path d="M17.9 15A7 7 0 0 1 5.3 16.3L4 12" />
       </>
     ),
-
-    check: (
-      <path d="m5 12 4 4L19 6" />
-    ),
-
+    check: <path d="m5 12 4 4L19 6" />,
     up: (
       <>
         <path d="M7 10v11" />
@@ -135,7 +109,6 @@ function Icon({
         <path d="M7 19h9.4a2 2 0 0 0 1.9-1.4l2.1-7A2 2 0 0 0 18.5 8H14l.7-3.1A2.4 2.4 0 0 0 10.2 3L7 10Z" />
       </>
     ),
-
     down: (
       <>
         <path d="M7 14V3" />
@@ -143,14 +116,12 @@ function Icon({
         <path d="M7 5h9.4a2 2 0 0 1 1.9 1.4l2.1 7a2 2 0 0 1-1.9 2.6H14l.7 3.1a2.4 2.4 0 0 1-4.5 1.9L7 14Z" />
       </>
     ),
-
     ban: (
       <>
         <circle cx="12" cy="12" r="9" />
         <path d="m5.6 5.6 12.8 12.8" />
       </>
     ),
-
     history: (
       <>
         <path d="M3 12a9 9 0 1 0 3-6.7L3 8" />
@@ -160,37 +131,19 @@ function Icon({
     ),
   };
 
-  return (
-    <svg {...common}>
-      {icons[name] || null}
-    </svg>
-  );
+  return <svg {...common}>{icons[name] || null}</svg>;
 }
 
 function sourceLabel(source) {
-  if (source === "close")
-    return "Close match";
-
-  if (source === "collaborator")
-    return "Connected artist";
-
-  if (source === "genre")
-    return "Genre discovery";
-
-  if (source === "spotify-taste")
-    return "Your Spotify taste";
-
-  if (source === "feedback")
-    return "More like your picks";
-
+  if (source === "close") return "Close match";
+  if (source === "collaborator") return "Connected artist";
+  if (source === "genre") return "Genre discovery";
+  if (source === "spotify-taste") return "Your Spotify taste";
+  if (source === "feedback") return "More like your picks";
   return "Discovery";
 }
 
-function buildMixName(
-  discovery,
-  meta,
-  tracks
-) {
+function buildMixName(discovery, meta, tracks) {
   const soft = [
     "Velvet",
     "Quiet",
@@ -237,32 +190,18 @@ function buildMixName(
       : wild;
 
   const seed =
-    (tracks?.[0]?.id ||
-      "tastemaker") +
-    (meta?.usedGenres?.join("") ||
-      "") +
+    (tracks?.[0]?.id || "tastemaker") +
+    (meta?.usedGenres?.join("") || "") +
     String(Date.now());
 
   let total = 0;
 
-  for (
-    let i = 0;
-    i < seed.length;
-    i++
-  ) {
-    total +=
-      seed.charCodeAt(i);
+  for (let i = 0; i < seed.length; i++) {
+    total += seed.charCodeAt(i);
   }
 
-  return `${
-    firstPool[
-      total % firstPool.length
-    ]
-  } ${
-    nouns[
-      (total * 7) %
-        nouns.length
-    ]
+  return `${firstPool[total % firstPool.length]} ${
+    nouns[(total * 7) % nouns.length]
   }`;
 }
 
@@ -271,9 +210,7 @@ function CoverCollage({
   large = false,
 }) {
   const images = tracks
-    .filter(
-      (track) => track.image
-    )
+    .filter((track) => track.image)
     .slice(0, 4);
 
   if (!images.length) {
@@ -285,9 +222,7 @@ function CoverCollage({
       >
         <Icon
           name="music"
-          size={
-            large ? 42 : 26
-          }
+          size={large ? 42 : 26}
         />
       </div>
     );
@@ -303,10 +238,7 @@ function CoverCollage({
         length: 4,
       }).map((_, index) => {
         const item =
-          images[
-            index %
-              images.length
-          ];
+          images[index % images.length];
 
         return (
           <img
@@ -321,10 +253,8 @@ function CoverCollage({
 }
 
 export default function Home() {
-  const [
-    input,
-    setInput,
-  ] = useState("");
+  const [input, setInput] =
+    useState("");
 
   const [
     songInput,
@@ -504,21 +434,15 @@ export default function Home() {
 
   const discoveryLabel =
     useMemo(() => {
-      if (
-        discovery <= 25
-      ) {
+      if (discovery <= 25) {
         return "Familiar";
       }
 
-      if (
-        discovery <= 55
-      ) {
+      if (discovery <= 55) {
         return "Balanced";
       }
 
-      if (
-        discovery <= 80
-      ) {
+      if (discovery <= 80) {
         return "Explorer";
       }
 
@@ -527,21 +451,15 @@ export default function Home() {
 
   const discoveryHint =
     useMemo(() => {
-      if (
-        discovery <= 25
-      ) {
+      if (discovery <= 25) {
         return "Stay close to the artists you already know.";
       }
 
-      if (
-        discovery <= 55
-      ) {
+      if (discovery <= 55) {
         return "Mix familiar artists with fresh connections.";
       }
 
-      if (
-        discovery <= 80
-      ) {
+      if (discovery <= 80) {
         return "Reach further into collaborators and genres.";
       }
 
@@ -789,7 +707,6 @@ export default function Home() {
       query.length < 2
     ) {
       setArtistResults([]);
-
       setSearchingArtists(
         false
       );
@@ -801,11 +718,9 @@ export default function Home() {
       selectedArtist &&
       normalize(
         selectedArtist.name
-      ) ===
-        normalize(query)
+      ) === normalize(query)
     ) {
       setArtistResults([]);
-
       setSearchingArtists(
         false
       );
@@ -899,7 +814,6 @@ export default function Home() {
       query.length < 2
     ) {
       setSongResults([]);
-
       setSearchingSongs(
         false
       );
@@ -915,7 +829,6 @@ export default function Home() {
         normalize(query)
     ) {
       setSongResults([]);
-
       setSearchingSongs(
         false
       );
@@ -944,9 +857,7 @@ export default function Home() {
                 q: query,
               });
 
-            if (
-              artistName
-            ) {
+            if (artistName) {
               params.set(
                 "artist",
                 artistName
@@ -1028,7 +939,6 @@ export default function Home() {
       query.length < 2
     ) {
       setExcludedResults([]);
-
       setSearchingExcluded(
         false
       );
@@ -1044,7 +954,6 @@ export default function Home() {
         normalize(query)
     ) {
       setExcludedResults([]);
-
       setSearchingExcluded(
         false
       );
@@ -1119,7 +1028,8 @@ export default function Home() {
             }
           } finally {
             if (
-              !controller.signal
+              !controller
+                .signal
                 .aborted
             ) {
               setSearchingExcluded(
@@ -1147,7 +1057,6 @@ export default function Home() {
   useEffect(() => {
     if (!loading) {
       setLoadingStage("");
-
       return;
     }
 
@@ -1184,14 +1093,11 @@ export default function Home() {
     keepFeedback = false,
   } = {}) {
     setTracks([]);
-
     setMixMeta(null);
-
     setPlaylistUrl("");
 
     if (!keepFeedback) {
       setLikedTrackIds([]);
-
       setDislikedTrackIds(
         []
       );
@@ -1280,7 +1186,6 @@ export default function Home() {
     }
 
     setInput("");
-
     setSongInput("");
 
     setSelectedArtist(
@@ -1288,11 +1193,8 @@ export default function Home() {
     );
 
     setSelectedSong(null);
-
     setArtistResults([]);
-
     setSongResults([]);
-
     setMessage("");
 
     clearResults();
@@ -1371,8 +1273,7 @@ export default function Home() {
         await response.json();
 
       const spotifyArtists =
-        data.artists ||
-        [];
+        data.artists || [];
 
       if (
         !spotifyArtists.length
@@ -1509,8 +1410,7 @@ export default function Home() {
         };
 
         updated[key] = (
-          updated[key] ||
-          []
+          updated[key] || []
         ).filter(
           (song) =>
             normalize(
@@ -1522,8 +1422,7 @@ export default function Home() {
         );
 
         if (
-          !updated[key]
-            .length
+          !updated[key].length
         ) {
           delete updated[key];
         }
@@ -1623,10 +1522,7 @@ export default function Home() {
           : [
               ...previous,
               name,
-            ].slice(
-              0,
-              30
-            );
+            ].slice(0, 30);
       }
     );
 
@@ -1651,9 +1547,7 @@ export default function Home() {
             normalize(
               artist
             ) !==
-            normalize(
-              name
-            )
+            normalize(name)
         )
     );
 
@@ -1683,8 +1577,7 @@ export default function Home() {
       (previous) =>
         previous.filter(
           (id) =>
-            id !==
-            trackId
+            id !== trackId
         )
     );
   }
@@ -1712,8 +1605,7 @@ export default function Home() {
       (previous) =>
         previous.filter(
           (id) =>
-            id !==
-            trackId
+            id !== trackId
         )
     );
   }
@@ -1746,28 +1638,21 @@ export default function Home() {
       (previous) => [
         entry,
         ...previous,
-      ].slice(
-        0,
-        6
-      )
+      ].slice(0, 6)
     );
   }
 
   function loadHistoryMix(
     item
   ) {
-    setMixName(
-      item.name
-    );
+    setMixName(item.name);
 
     setTracks(
-      item.tracks ||
-        []
+      item.tracks || []
     );
 
     setMixMeta(
-      item.meta ||
-        null
+      item.meta || null
     );
 
     setDiscovery(
@@ -1776,9 +1661,7 @@ export default function Home() {
     );
 
     setLikedTrackIds([]);
-
     setDislikedTrackIds([]);
-
     setPlaylistUrl("");
 
     setMessage(
@@ -1805,16 +1688,12 @@ export default function Home() {
     }
 
     setFavorites([]);
-
     setFavoriteSongs({});
-
     setFavoriteArtistData(
       {}
     );
 
-    setExcludedArtists(
-      []
-    );
+    setExcludedArtists([]);
 
     clearResults();
 
@@ -1837,9 +1716,7 @@ export default function Home() {
     }
 
     setLoading(true);
-
     setMessage("");
-
     setPlaylistUrl("");
 
     const likedTracks =
@@ -1913,9 +1790,7 @@ export default function Home() {
       const data =
         await response.json();
 
-      if (
-        !response.ok
-      ) {
+      if (!response.ok) {
         throw new Error(
           data.error ||
             "Recommendation search failed."
@@ -1923,12 +1798,10 @@ export default function Home() {
       }
 
       const newTracks =
-        data.tracks ||
-        [];
+        data.tracks || [];
 
       const newMeta =
-        data.meta ||
-        null;
+        data.meta || null;
 
       const newName =
         buildMixName(
@@ -1950,7 +1823,6 @@ export default function Home() {
       );
 
       setLikedTrackIds([]);
-
       setDislikedTrackIds(
         []
       );
@@ -1975,18 +1847,14 @@ export default function Home() {
         );
       }
     } catch (error) {
-      console.error(
-        error
-      );
+      console.error(error);
 
       setMessage(
         error.message ||
           "Could not build your playlist."
       );
     } finally {
-      setLoading(
-        false
-      );
+      setLoading(false);
     }
   }
 
@@ -2022,7 +1890,6 @@ export default function Home() {
     }
 
     setSaving(true);
-
     setPlaylistUrl("");
 
     setMessage(
@@ -2068,9 +1935,7 @@ export default function Home() {
         );
       }
 
-      if (
-        !response.ok
-      ) {
+      if (!response.ok) {
         if (
           data.needsLogin
         ) {
@@ -2095,2039 +1960,2737 @@ export default function Home() {
         "Saving could not be confirmed."
       );
     } finally {
-      setSaving(
-        false
-      );
+      setSaving(false);
     }
   }
 
   return (
     <main className="tm">
       <style>{`
-:root{color-scheme:dark;}
-*{box-sizing:border-box;}
-html{scroll-behavior:smooth;background:#09090b;}
-body{margin:0;background:#09090b;}
-button,input,select{font:inherit;}
-button,a{-webkit-tap-highlight-color:transparent;}
-
-.tm{
-  --bg:#09090b;
-  --panel:#121216;
-  --panel2:#18181e;
-  --soft:#202027;
-  --line:#292930;
-  --text:#f7f4eb;
-  --muted:#aaa7a0;
-  --dim:#76736e;
-  --lime:#b7ff5a;
-  --purple:#8b78ff;
-  --pink:#ff7f9f;
-
-  min-height:100vh;
-  overflow-x:hidden;
-  color:var(--text);
-
-  background:
-    radial-gradient(
-      circle at 92% 8%,
-      rgba(139,120,255,.17),
-      transparent 28%
-    ),
-    radial-gradient(
-      circle at 5% 32%,
-      rgba(183,255,90,.10),
-      transparent 23%
-    ),
-    #09090b;
-
-  font-family:
-    Inter,
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
-}
-
-.tm::before{
-  content:"";
-  position:fixed;
-  inset:0;
-  pointer-events:none;
-  opacity:.45;
-
-  background-image:
-    radial-gradient(
-      rgba(255,255,255,.06) .7px,
-      transparent .7px
-    );
-
-  background-size:
-    18px 18px;
-
-  mask-image:
-    linear-gradient(
-      to bottom,
-      #000,
-      transparent 78%
-    );
-}
-
-.shell{
-  position:relative;
-  z-index:1;
-
-  width:min(
-    1220px,
-    calc(100% - 32px)
-  );
-
-  margin:0 auto;
-  padding:18px 0 64px;
-}
-
-.nav{
-  position:sticky;
-  top:12px;
-  z-index:500;
-
-  min-height:70px;
-  padding:10px 12px;
-
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-
-  gap:18px;
-
-  border:1px solid
-    rgba(255,255,255,.08);
-
-  border-radius:20px;
+        :root {
+          color-scheme: dark;
+        }
+
+        * {
+          box-sizing: border-box;
+        }
+
+        html {
+          scroll-behavior: smooth;
+          background: #09090b;
+        }
+
+        body {
+          margin: 0;
+          background: #09090b;
+        }
+
+        button,
+        input,
+        select {
+          font: inherit;
+        }
+
+        button,
+        a {
+          -webkit-tap-highlight-color: transparent;
+        }
+
+        .tm {
+          --bg: #09090b;
+          --panel: #121216;
+          --panel2: #18181e;
+          --soft: #202027;
+          --line: #292930;
+          --text: #f7f4eb;
+          --muted: #aaa7a0;
+          --dim: #76736e;
+          --lime: #b7ff5a;
+          --purple: #8b78ff;
+          --pink: #ff7f9f;
+
+          min-height: 100vh;
+          overflow-x: hidden;
+          color: var(--text);
+
+          background:
+            radial-gradient(
+              circle at 92% 8%,
+              rgba(139,120,255,.17),
+              transparent 28%
+            ),
+            radial-gradient(
+              circle at 5% 32%,
+              rgba(183,255,90,.10),
+              transparent 23%
+            ),
+            #09090b;
+
+          font-family:
+            Inter,
+            ui-sans-serif,
+            system-ui,
+            -apple-system,
+            BlinkMacSystemFont,
+            "Segoe UI",
+            sans-serif;
+        }
+
+        .tm::before {
+          content: "";
+          position: fixed;
+          inset: 0;
+          pointer-events: none;
+          opacity: .45;
+
+          background-image:
+            radial-gradient(
+              rgba(255,255,255,.06)
+              .7px,
+              transparent .7px
+            );
+
+          background-size:
+            18px 18px;
+
+          mask-image:
+            linear-gradient(
+              to bottom,
+              #000,
+              transparent 78%
+            );
+        }
+
+        .shell {
+          position: relative;
+          z-index: 1;
+
+          width:
+            min(
+              1220px,
+              calc(100% - 32px)
+            );
+
+          margin:
+            0 auto;
+
+          padding:
+            18px 0 64px;
+        }
+
+        .nav {
+          position: sticky;
+          top: 12px;
+          z-index: 500;
+
+          min-height: 70px;
+
+          padding:
+            10px 12px;
+
+          display: flex;
+          align-items: center;
+          justify-content:
+            space-between;
+
+          gap: 18px;
+
+          border:
+            1px solid
+            rgba(
+              255,
+              255,
+              255,
+              .08
+            );
+
+          border-radius:
+            20px;
+
+          background:
+            rgba(
+              11,
+              11,
+              14,
+              .86
+            );
+
+          backdrop-filter:
+            blur(20px);
+
+          box-shadow:
+            0 18px 60px
+            rgba(
+              0,
+              0,
+              0,
+              .30
+            );
+        }
+
+        .brand {
+          display: flex;
+          align-items: center;
+
+          gap: 12px;
+
+          min-width: 0;
+        }
+
+        .brandLogo {
+          width: 44px;
+          height: 44px;
+
+          border-radius:
+            12px;
+
+          object-fit:
+            cover;
+
+          background:
+            #050505;
+
+          box-shadow:
+            inset
+            0 0 0 1px
+            rgba(
+              255,
+              255,
+              255,
+              .08
+            );
+        }
+
+        .brandText {
+          display: flex;
+          flex-direction:
+            column;
+
+          line-height: 1;
+        }
+
+        .brandText strong {
+          font-size:
+            17px;
+
+          letter-spacing:
+            -.03em;
+        }
+
+        .brandText span {
+          margin-top:
+            5px;
+
+          color:
+            var(--dim);
 
-  background:
-    rgba(11,11,14,.86);
+          font-size:
+            11px;
+        }
 
-  backdrop-filter:
-    blur(20px);
+        .navRight {
+          display: flex;
+          align-items:
+            center;
+
+          gap: 10px;
+        }
 
-  box-shadow:
-    0 18px 60px
-    rgba(0,0,0,.30);
-}
-
-.brand{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  min-width:0;
-}
+        .connect,
+        .userPill {
+          min-height:
+            44px;
+
+          display:
+            inline-flex;
 
-.brandLogo{
-  width:44px;
-  height:44px;
+          align-items:
+            center;
 
-  border-radius:12px;
-  object-fit:cover;
+          justify-content:
+            center;
 
-  background:#050505;
+          gap: 9px;
 
-  box-shadow:
-    inset 0 0 0 1px
-    rgba(255,255,255,.08);
-}
+          border-radius:
+            14px;
 
-.brandText{
-  display:flex;
-  flex-direction:column;
-  line-height:1;
-}
+          text-decoration:
+            none;
 
-.brandText strong{
-  font-size:17px;
-  letter-spacing:-.03em;
-}
+          transition:
+            .16s ease;
+        }
 
-.brandText span{
-  margin-top:5px;
-  color:var(--dim);
-  font-size:11px;
-}
+        .connect {
+          padding:
+            0 16px;
 
-.navRight{
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
+          color:
+            #090b07;
 
-.connect,
-.userPill{
-  min-height:44px;
+          background:
+            var(--lime);
 
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
+          font-size:
+            14px;
 
-  gap:9px;
+          font-weight:
+            900;
+        }
 
-  border-radius:14px;
-  text-decoration:none;
+        .connect:hover,
+        .userPill:hover {
+          transform:
+            translateY(-2px);
+        }
+
+        .userPill {
+          max-width:
+            230px;
+
+          justify-content:
+            flex-start;
 
-  transition:.16s ease;
-}
+          padding:
+            5px 12px
+            5px 5px;
 
-.connect{
-  padding:0 16px;
-  color:#090b07;
-  background:var(--lime);
+          border:
+            1px solid
+            var(--line);
 
-  font-size:14px;
-  font-weight:900;
-}
+          background:
+            var(--panel2);
 
-.connect:hover,
-.userPill:hover{
-  transform:
-    translateY(-2px);
-}
+          color:
+            var(--text);
+        }
 
-.userPill{
-  max-width:230px;
+        .userAvatar,
+        .userAvatarFallback {
+          width: 34px;
+          height: 34px;
 
-  justify-content:flex-start;
+          flex:
+            0 0 auto;
 
-  padding:
-    5px 12px
-    5px 5px;
+          border-radius:
+            10px;
 
-  border:
-    1px solid
-    var(--line);
+          object-fit:
+            cover;
 
-  background:
-    var(--panel2);
+          background:
+            #0d0d10;
+        }
 
-  color:
-    var(--text);
-}
+        .userAvatarFallback {
+          display: grid;
+          place-items:
+            center;
 
-.userAvatar,
-.userAvatarFallback{
-  width:34px;
-  height:34px;
+          color:
+            var(--lime);
+        }
 
-  flex:0 0 auto;
+        .userText {
+          min-width: 0;
 
-  border-radius:10px;
-  object-fit:cover;
+          display: flex;
+          flex-direction:
+            column;
+        }
 
-  background:#0d0d10;
-}
+        .userText strong {
+          overflow:
+            hidden;
 
-.userAvatarFallback{
-  display:grid;
-  place-items:center;
-  color:var(--lime);
-}
+          text-overflow:
+            ellipsis;
 
-.userText{
-  min-width:0;
+          white-space:
+            nowrap;
 
-  display:flex;
-  flex-direction:column;
-}
+          font-size:
+            13px;
+        }
 
-.userText strong{
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
+        .userText small {
+          margin-top:
+            3px;
 
-  font-size:13px;
-}
+          color:
+            var(--lime);
 
-.userText small{
-  margin-top:3px;
+          font-size:
+            10px;
+        }
 
-  color:
-    var(--lime);
+        .hero {
+          min-height:
+            610px;
 
-  font-size:10px;
-}
+          padding:
+            92px 26px
+            72px;
 
-.hero{
-  min-height:610px;
+          display: grid;
 
-  padding:
-    92px 26px
-    72px;
+          grid-template-columns:
+            minmax(
+              0,
+              1.25fr
+            )
+            minmax(
+              300px,
+              .75fr
+            );
 
-  display:grid;
+          gap: 62px;
 
-  grid-template-columns:
-    minmax(0,1.25fr)
-    minmax(300px,.75fr);
+          align-items:
+            center;
+        }
 
-  gap:62px;
+        .heroEyebrow {
+          display:
+            inline-flex;
 
-  align-items:center;
-}
+          align-items:
+            center;
 
-.heroEyebrow{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
+          gap: 8px;
 
-  margin-bottom:24px;
+          margin-bottom:
+            24px;
 
-  color:var(--lime);
+          color:
+            var(--lime);
 
-  font-size:13px;
-  font-weight:850;
-}
+          font-size:
+            13px;
 
-.hero h1{
-  margin:0;
+          font-weight:
+            850;
+        }
 
-  max-width:820px;
+        .hero h1 {
+          margin: 0;
 
-  font-size:
-    clamp(
-      58px,
-      8.2vw,
-      110px
-    );
+          max-width:
+            820px;
 
-  line-height:.91;
+          font-size:
+            clamp(
+              58px,
+              8.2vw,
+              110px
+            );
 
-  letter-spacing:
-    -.068em;
+          line-height:
+            .91;
 
-  font-weight:950;
+          letter-spacing:
+            -.068em;
 
-  text-wrap:balance;
-}
+          font-weight:
+            950;
 
-.hero h1 .stroke{
-  color:transparent;
+          text-wrap:
+            balance;
+        }
 
-  -webkit-text-stroke:
-    1px
-    rgba(247,244,235,.55);
-}
+        .hero h1 .stroke {
+          color:
+            transparent;
 
-.hero h1 .lime{
-  color:var(--lime);
-}
+          -webkit-text-stroke:
+            1px
+            rgba(
+              247,
+              244,
+              235,
+              .55
+            );
+        }
 
-.heroCopy{
-  max-width:690px;
+        .hero h1 .lime {
+          color:
+            var(--lime);
+        }
 
-  margin:
-    28px 0 0;
+        .heroCopy {
+          max-width:
+            690px;
 
-  color:#b7b3ac;
+          margin:
+            28px 0 0;
 
-  font-size:18px;
-  line-height:1.7;
-}
+          color:
+            #b7b3ac;
 
-.heroActions{
-  display:flex;
-  flex-wrap:wrap;
+          font-size:
+            18px;
 
-  gap:10px;
+          line-height:
+            1.7;
+        }
 
-  margin-top:30px;
-}
+        .heroActions {
+          display: flex;
+          flex-wrap:
+            wrap;
 
-.heroBadge{
-  padding:
-    10px 13px;
+          gap: 10px;
 
-  display:inline-flex;
-  align-items:center;
+          margin-top:
+            30px;
+        }
 
-  gap:8px;
+        .heroBadge {
+          padding:
+            10px 13px;
 
-  border:
-    1px solid
-    var(--line);
+          display:
+            inline-flex;
 
-  border-radius:12px;
+          align-items:
+            center;
 
-  background:
-    rgba(255,255,255,.025);
+          gap: 8px;
 
-  color:#c9c6bf;
+          border:
+            1px solid
+            var(--line);
 
-  font-size:13px;
-  font-weight:700;
-}
+          border-radius:
+            12px;
 
-.heroArt{
-  position:relative;
+          background:
+            rgba(
+              255,
+              255,
+              255,
+              .025
+            );
 
-  min-height:370px;
+          color:
+            #c9c6bf;
+
+          font-size:
+            13px;
+
+          font-weight:
+            700;
+        }
+
+        .heroArt {
+          position:
+            relative;
+
+          min-height:
+            370px;
+
+          display: grid;
+
+          place-items:
+            center;
+        }
+
+        .orbit {
+          position:
+            absolute;
+
+          width:
+            340px;
+
+          height:
+            340px;
+
+          border:
+            1px solid
+            rgba(
+              255,
+              255,
+              255,
+              .09
+            );
+
+          border-radius:
+            50%;
+        }
+
+        .orbit::before,
+        .orbit::after {
+          content: "";
+
+          position:
+            absolute;
+
+          border-radius:
+            50%;
+
+          border:
+            1px solid
+            rgba(
+              255,
+              255,
+              255,
+              .07
+            );
+        }
+
+        .orbit::before {
+          inset: 36px;
+        }
+
+        .orbit::after {
+          inset: 76px;
+        }
+
+        .heroCard {
+          position:
+            relative;
+
+          width:
+            min(
+              310px,
+              100%
+            );
+
+          padding:
+            24px;
+
+          border:
+            1px solid
+            rgba(
+              255,
+              255,
+              255,
+              .10
+            );
+
+          border-radius:
+            26px;
+
+          background:
+            linear-gradient(
+              160deg,
+              rgba(
+                139,
+                120,
+                255,
+                .20
+              ),
+              rgba(
+                18,
+                18,
+                22,
+                .96
+              ) 48%,
+              rgba(
+                183,
+                255,
+                90,
+                .08
+              )
+            );
+
+          box-shadow:
+            0 35px 90px
+            rgba(
+              0,
+              0,
+              0,
+              .42
+            );
+
+          transform:
+            rotate(4deg);
+        }
+
+        .heroCardTop {
+          display: flex;
+
+          align-items:
+            center;
+
+          justify-content:
+            space-between;
+
+          gap: 12px;
+        }
+
+        .heroCardLabel {
+          color:
+            #d8d4cc;
+
+          font-size:
+            13px;
+
+          font-weight:
+            800;
+        }
+
+        .heroDot {
+          width: 10px;
+          height: 10px;
+
+          border-radius:
+            50%;
+
+          background:
+            var(--lime);
+
+          box-shadow:
+            0 0 20px
+            rgba(
+              183,
+              255,
+              90,
+              .8
+            );
+        }
+
+        .heroCardBig {
+          margin-top:
+            42px;
+
+          font-size:
+            52px;
+
+          font-weight:
+            950;
+
+          letter-spacing:
+            -.06em;
+        }
+
+        .heroCardSmall {
+          margin-top:
+            6px;
+
+          color:
+            #aaa7a0;
+
+          font-size:
+            14px;
+
+          line-height:
+            1.55;
+        }
+
+        .heroBars {
+          display: grid;
+
+          gap: 8px;
+
+          margin-top:
+            28px;
+        }
+
+        .heroBar {
+          height: 10px;
+
+          border-radius:
+            999px;
+
+          background:
+            #24242b;
+
+          overflow:
+            hidden;
+        }
+
+        .heroBar span {
+          display: block;
+
+          height: 100%;
+
+          border-radius:
+            inherit;
+
+          background:
+            linear-gradient(
+              90deg,
+              var(--purple),
+              var(--lime)
+            );
+        }
+
+        .section {
+          margin-top:
+            20px;
+
+          border:
+            1px solid
+            var(--line);
+
+          border-radius:
+            26px;
+
+          background:
+            var(--panel);
+
+          overflow:
+            visible;
+        }
+
+        .sectionHead {
+          padding:
+            28px 30px 0;
+
+          display: flex;
+
+          align-items:
+            flex-start;
+
+          justify-content:
+            space-between;
+
+          gap: 20px;
+        }
+
+        .kicker {
+          color:
+            var(--lime);
+
+          font-size:
+            13px;
+
+          font-weight:
+            850;
+        }
+
+        .sectionTitle {
+          margin:
+            7px 0 0;
+
+          font-size:
+            clamp(
+              30px,
+              4vw,
+              46px
+            );
+
+          line-height: 1;
+
+          letter-spacing:
+            -.045em;
+        }
+
+        .sectionCopy {
+          max-width:
+            650px;
+
+          margin:
+            12px 0 0;
+
+          color:
+            var(--muted);
+
+          font-size:
+            16px;
+
+          line-height:
+            1.65;
+        }
+
+        .builderGrid {
+          padding:
+            28px 30px
+            30px;
+
+          display: grid;
+
+          grid-template-columns:
+            minmax(
+              0,
+              1.35fr
+            )
+            minmax(
+              320px,
+              .65fr
+            );
+
+          gap: 18px;
+        }
+
+        .panel {
+          border:
+            1px solid
+            var(--line);
+
+          border-radius:
+            20px;
+
+          background:
+            #0d0d10;
+        }
+
+        .seedPanel {
+          padding:
+            22px;
+        }
 
-  display:grid;
-  place-items:center;
-}
+        .controlPanel {
+          padding:
+            22px;
+        }
 
-.orbit{
-  position:absolute;
+        .panelTitle {
+          margin: 0;
 
-  width:340px;
-  height:340px;
+          font-size:
+            20px;
 
-  border:
-    1px solid
-    rgba(255,255,255,.09);
+          letter-spacing:
+            -.025em;
+        }
 
-  border-radius:50%;
-}
+        .panelCopy {
+          margin:
+            7px 0 0;
 
-.orbit::before,
-.orbit::after{
-  content:"";
-  position:absolute;
+          color:
+            var(--muted);
 
-  border-radius:50%;
+          font-size:
+            14px;
+
+          line-height:
+            1.55;
+        }
+
+        .formGrid {
+          margin-top:
+            22px;
+
+          display: grid;
+
+          grid-template-columns:
+            minmax(
+              0,
+              1fr
+            )
+            minmax(
+              0,
+              1fr
+            )
+            auto;
 
-  border:
-    1px solid
-    rgba(255,255,255,.07);
-}
+          gap: 10px;
 
-.orbit::before{
-  inset:36px;
-}
+          align-items:
+            end;
+        }
 
-.orbit::after{
-  inset:76px;
-}
+        .field {
+          position:
+            relative;
 
-.heroCard{
-  position:relative;
+          min-width: 0;
+        }
 
-  width:min(
-    310px,
-    100%
-  );
+        .field label {
+          display: block;
 
-  padding:24px;
+          margin:
+            0 0 8px
+            2px;
 
-  border:
-    1px solid
-    rgba(255,255,255,.10);
+          color:
+            #c9c6bf;
 
-  border-radius:26px;
+          font-size:
+            13px;
 
-  background:
-    linear-gradient(
-      160deg,
-      rgba(139,120,255,.20),
-      rgba(18,18,22,.96) 48%,
-      rgba(183,255,90,.08)
-    );
+          font-weight:
+            750;
+        }
 
-  box-shadow:
-    0 35px 90px
-    rgba(0,0,0,.42);
+        .input {
+          width: 100%;
+          height: 54px;
 
-  transform:
-    rotate(4deg);
-}
+          padding:
+            0 15px;
 
-.heroCardTop{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
+          border:
+            1px solid
+            #303038;
 
-  gap:12px;
-}
+          border-radius:
+            13px;
 
-.heroCardLabel{
-  color:#d8d4cc;
+          outline: none;
 
-  font-size:13px;
-  font-weight:800;
-}
+          background:
+            #15151a;
 
-.heroDot{
-  width:10px;
-  height:10px;
+          color:
+            var(--text);
 
-  border-radius:50%;
+          font-size:
+            15px;
 
-  background:
-    var(--lime);
+          font-weight:
+            650;
 
-  box-shadow:
-    0 0 20px
-    rgba(183,255,90,.8);
-}
+          transition:
+            .15s ease;
+        }
 
-.heroCardBig{
-  margin-top:42px;
+        .input::placeholder {
+          color:
+            #68656f;
+        }
 
-  font-size:52px;
-  font-weight:950;
+        .input:focus {
+          border-color:
+            var(--purple);
 
-  letter-spacing:
-    -.06em;
-}
+          box-shadow:
+            0 0 0 3px
+            rgba(
+              139,
+              120,
+              255,
+              .12
+            );
+        }
 
-.heroCardSmall{
-  margin-top:6px;
+        .addBtn {
+          height: 54px;
 
-  color:#aaa7a0;
+          padding:
+            0 18px;
 
-  font-size:14px;
-  line-height:1.55;
-}
+          display:
+            inline-flex;
 
-.heroBars{
-  display:grid;
-  gap:8px;
+          align-items:
+            center;
 
-  margin-top:28px;
-}
+          justify-content:
+            center;
 
-.heroBar{
-  height:10px;
+          gap: 8px;
 
-  border-radius:999px;
+          border: 0;
 
-  background:#24242b;
-  overflow:hidden;
-}
+          border-radius:
+            13px;
 
-.heroBar span{
-  display:block;
+          background:
+            var(--text);
 
-  height:100%;
+          color:
+            #0c0c0f;
 
-  border-radius:inherit;
+          font-size:
+            14px;
 
-  background:
-    linear-gradient(
-      90deg,
-      var(--purple),
-      var(--lime)
-    );
-}
+          font-weight:
+            900;
 
-.section{
-  margin-top:20px;
+          cursor:
+            pointer;
 
-  border:
-    1px solid
-    var(--line);
+          white-space:
+            nowrap;
 
-  border-radius:26px;
+          transition:
+            .15s ease;
+        }
 
-  background:
-    var(--panel);
+        .addBtn:hover:not(:disabled) {
+          transform:
+            translateY(-2px);
+        }
 
-  overflow:visible;
-}
+        .dropdown {
+          position:
+            absolute;
 
-.sectionHead{
-  padding:
-    28px 30px 0;
+          left: 0;
+          right: 0;
 
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
+          top:
+            calc(
+              100% + 8px
+            );
 
-  gap:20px;
-}
+          z-index: 700;
 
-.kicker{
-  color:var(--lime);
+          max-height:
+            360px;
 
-  font-size:13px;
-  font-weight:850;
-}
+          overflow-y:
+            auto;
 
-.sectionTitle{
-  margin:
-    7px 0 0;
+          border:
+            1px solid
+            #34343c;
 
-  font-size:
-    clamp(
-      30px,
-      4vw,
-      46px
-    );
+          border-radius:
+            15px;
 
-  line-height:1;
+          background:
+            #111116;
 
-  letter-spacing:
-    -.045em;
-}
+          box-shadow:
+            0 24px 70px
+            rgba(
+              0,
+              0,
+              0,
+              .52
+            );
+        }
 
-.sectionCopy{
-  max-width:650px;
+        .searching {
+          padding:
+            15px;
 
-  margin:
-    12px 0 0;
+          color:
+            var(--muted);
 
-  color:var(--muted);
+          font-size:
+            14px;
+        }
 
-  font-size:16px;
-  line-height:1.65;
-}
+        .searchResult {
+          width: 100%;
 
-.builderGrid{
-  padding:
-    28px 30px 30px;
+          padding: 11px;
 
-  display:grid;
+          display: flex;
 
-  grid-template-columns:
-    minmax(0,1.35fr)
-    minmax(320px,.65fr);
+          align-items:
+            center;
 
-  gap:18px;
-}
+          gap: 12px;
 
-.panel{
-  border:
-    1px solid
-    var(--line);
+          border: 0;
 
-  border-radius:20px;
+          border-bottom:
+            1px solid
+            #24242a;
 
-  background:#0d0d10;
-}
+          background:
+            transparent;
 
-.seedPanel{
-  padding:22px;
-}
+          color:
+            var(--text);
 
-.controlPanel{
-  padding:22px;
-}
+          text-align:
+            left;
 
-.panelTitle{
-  margin:0;
+          cursor:
+            pointer;
+        }
 
-  font-size:20px;
+        .searchResult:hover {
+          background:
+            #19191f;
+        }
 
-  letter-spacing:
-    -.025em;
-}
+        .searchResult:last-child {
+          border-bottom: 0;
+        }
 
-.panelCopy{
-  margin:
-    7px 0 0;
+        .resultArt {
+          width: 48px;
+          height: 48px;
 
-  color:var(--muted);
+          flex:
+            0 0 auto;
 
-  font-size:14px;
-  line-height:1.55;
-}
+          object-fit:
+            cover;
 
-.formGrid{
-  margin-top:22px;
+          background:
+            #202027;
+        }
 
-  display:grid;
+        .resultArt.artist {
+          border-radius:
+            50%;
+        }
 
-  grid-template-columns:
-    minmax(0,1fr)
-    minmax(0,1fr)
-    auto;
+        .resultArt.song {
+          border-radius:
+            10px;
+        }
 
-  gap:10px;
+        .resultFallback {
+          display: grid;
 
-  align-items:end;
-}
+          place-items:
+            center;
 
-.field{
-  position:relative;
-  min-width:0;
-}
+          color:
+            var(--lime);
+        }
 
-.field label{
-  display:block;
+        .resultText {
+          min-width: 0;
+        }
 
-  margin:
-    0 0 8px
-    2px;
+        .resultName {
+          font-size:
+            14px;
 
-  color:#c9c6bf;
+          font-weight:
+            850;
 
-  font-size:13px;
-  font-weight:750;
-}
+          white-space:
+            nowrap;
 
-.input{
-  width:100%;
-  height:54px;
+          overflow:
+            hidden;
 
-  padding:
-    0 15px;
+          text-overflow:
+            ellipsis;
+        }
 
-  border:
-    1px solid
-    #303038;
+        .resultMeta {
+          margin-top:
+            4px;
 
-  border-radius:13px;
+          color:
+            var(--muted);
 
-  outline:none;
+          font-size:
+            12px;
 
-  background:#15151a;
+          white-space:
+            nowrap;
 
-  color:var(--text);
+          overflow:
+            hidden;
 
-  font-size:15px;
-  font-weight:650;
+          text-overflow:
+            ellipsis;
+        }
 
-  transition:.15s ease;
-}
+        .tasteGrid {
+          margin-top:
+            18px;
 
-.input::placeholder{
-  color:#68656f;
-}
+          display: grid;
 
-.input:focus{
-  border-color:
-    var(--purple);
+          grid-template-columns:
+            repeat(
+              2,
+              minmax(
+                0,
+                1fr
+              )
+            );
 
-  box-shadow:
-    0 0 0 3px
-    rgba(139,120,255,.12);
-}
+          gap: 9px;
+        }
 
-.addBtn{
-  height:54px;
+        .tasteCard {
+          min-width: 0;
 
-  padding:
-    0 18px;
+          padding: 12px;
 
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
+          display: grid;
 
-  gap:8px;
+          grid-template-columns:
+            auto
+            minmax(
+              0,
+              1fr
+            )
+            auto;
 
-  border:0;
-  border-radius:13px;
+          align-items:
+            center;
 
-  background:
-    var(--text);
+          gap: 11px;
 
-  color:#0c0c0f;
+          border:
+            1px solid
+            #292930;
 
-  font-size:14px;
-  font-weight:900;
+          border-radius:
+            15px;
 
-  cursor:pointer;
-  white-space:nowrap;
+          background:
+            #15151a;
+        }
 
-  transition:.15s ease;
-}
+        .tasteAvatar {
+          width: 46px;
+          height: 46px;
 
-.addBtn:hover:not(:disabled){
-  transform:
-    translateY(-2px);
-}
+          border-radius:
+            12px;
 
-.dropdown{
-  position:absolute;
+          object-fit:
+            cover;
 
-  left:0;
-  right:0;
+          background:
+            #202027;
+        }
 
-  top:
-    calc(100% + 8px);
+        .tasteFallback {
+          display: grid;
 
-  z-index:700;
+          place-items:
+            center;
 
-  max-height:360px;
+          color:
+            var(--lime);
+        }
 
-  overflow-y:auto;
+        .tasteText {
+          min-width: 0;
+        }
 
-  border:
-    1px solid
-    #34343c;
+        .tasteArtist {
+          font-size:
+            14px;
 
-  border-radius:15px;
+          font-weight:
+            900;
 
-  background:#111116;
+          white-space:
+            nowrap;
 
-  box-shadow:
-    0 24px 70px
-    rgba(0,0,0,.52);
-}
+          overflow:
+            hidden;
 
-.searching{
-  padding:15px;
+          text-overflow:
+            ellipsis;
+        }
 
-  color:var(--muted);
+        .seedText {
+          margin-top:
+            4px;
 
-  font-size:14px;
-}
+          color:
+            var(--muted);
 
-.searchResult{
-  width:100%;
+          font-size:
+            12px;
+        }
 
-  padding:11px;
+        .removeBtn {
+          width: 34px;
+          height: 34px;
 
-  display:flex;
-  align-items:center;
+          display: grid;
 
-  gap:12px;
+          place-items:
+            center;
 
-  border:0;
+          border:
+            1px solid
+            transparent;
 
-  border-bottom:
-    1px solid
-    #24242a;
+          border-radius:
+            10px;
 
-  background:transparent;
+          background:
+            transparent;
 
-  color:var(--text);
+          color:
+            #7c7981;
 
-  text-align:left;
+          cursor:
+            pointer;
+        }
 
-  cursor:pointer;
-}
+        .removeBtn:hover {
+          color: #fff;
 
-.searchResult:hover{
-  background:#19191f;
-}
+          border-color:
+            #323239;
 
-.searchResult:last-child{
-  border-bottom:0;
-}
+          background:
+            #202027;
+        }
 
-.resultArt{
-  width:48px;
-  height:48px;
+        .songSeeds {
+          grid-column:
+            2 / 4;
 
-  flex:0 0 auto;
+          display: flex;
 
-  object-fit:cover;
+          flex-wrap:
+            wrap;
 
-  background:#202027;
-}
+          gap: 6px;
+        }
 
-.resultArt.artist{
-  border-radius:50%;
-}
+        .songSeed {
+          padding:
+            6px 9px;
 
-.resultArt.song{
-  border-radius:10px;
-}
+          border:
+            1px solid
+            #2d2d34;
 
-.resultFallback{
-  display:grid;
-  place-items:center;
+          border-radius:
+            999px;
 
-  color:var(--lime);
-}
+          background:
+            #1b1b20;
 
-.resultText{
-  min-width:0;
-}
+          color:
+            #bbb8b1;
 
-.resultName{
-  font-size:14px;
-  font-weight:850;
+          font-size:
+            11px;
 
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
+          cursor:
+            pointer;
+        }
 
-.resultMeta{
-  margin-top:4px;
+        .controlBlock +
+        .controlBlock {
+          margin-top:
+            24px;
 
-  color:var(--muted);
+          padding-top:
+            24px;
 
-  font-size:12px;
+          border-top:
+            1px solid
+            #26262c;
+        }
 
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
+        .controlTop {
+          display: flex;
 
-.tasteGrid{
-  margin-top:18px;
+          align-items:
+            center;
 
-  display:grid;
+          justify-content:
+            space-between;
 
-  grid-template-columns:
-    repeat(
-      2,
-      minmax(
-        0,
-        1fr
-      )
-    );
+          gap: 12px;
+        }
 
-  gap:9px;
-}
+        .controlName {
+          font-size:
+            15px;
 
-.tasteCard{
-  min-width:0;
+          font-weight:
+            850;
+        }
 
-  padding:12px;
+        .controlHint {
+          margin-top:
+            6px;
 
-  display:grid;
+          color:
+            var(--muted);
 
-  grid-template-columns:
-    auto
-    minmax(0,1fr)
-    auto;
+          font-size:
+            13px;
 
-  align-items:center;
+          line-height:
+            1.5;
+        }
 
-  gap:11px;
+        .select {
+          height: 42px;
 
-  border:
-    1px solid
-    #292930;
+          padding:
+            0 32px
+            0 12px;
 
-  border-radius:15px;
+          border:
+            1px solid
+            #303038;
 
-  background:#15151a;
-}
+          border-radius:
+            11px;
 
-.tasteAvatar{
-  width:46px;
-  height:46px;
+          background:
+            #15151a;
 
-  border-radius:12px;
+          color:
+            var(--text);
 
-  object-fit:cover;
+          font-size:
+            14px;
 
-  background:#202027;
-}
+          font-weight:
+            800;
+        }
 
-.tasteFallback{
-  display:grid;
-  place-items:center;
+        .range {
+          width: 100%;
 
-  color:var(--lime);
-}
+          margin-top:
+            14px;
 
-.tasteText{
-  min-width:0;
-}
+          accent-color:
+            var(--lime);
 
-.tasteArtist{
-  font-size:14px;
-  font-weight:900;
+          cursor:
+            pointer;
+        }
 
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
+        .rangeLabels {
+          margin-top:
+            7px;
 
-.seedText{
-  margin-top:4px;
+          display: flex;
 
-  color:var(--muted);
+          justify-content:
+            space-between;
 
-  font-size:12px;
-}
+          color:
+            var(--dim);
 
-.removeBtn{
-  width:34px;
-  height:34px;
+          font-size:
+            11px;
+        }
 
-  display:grid;
-  place-items:center;
+        .excludeRow {
+          margin-top:
+            13px;
 
-  border:
-    1px solid
-    transparent;
+          display: flex;
 
-  border-radius:10px;
+          gap: 8px;
 
-  background:transparent;
+          align-items:
+            flex-start;
+        }
 
-  color:#7c7981;
+        .excludeSearchWrap {
+          position: relative;
 
-  cursor:pointer;
-}
+          flex: 1;
 
-.removeBtn:hover{
-  color:#fff;
+          min-width: 0;
+        }
 
-  border-color:#323239;
+        .excludeSearchWrap .dropdown {
+          top:
+            calc(100% + 8px);
+        }
 
-  background:#202027;
-}
+        .excludeRow .input {
+          height: 44px;
 
-.songSeeds{
-  grid-column:
-    2 / 4;
+          font-size:
+            14px;
+        }
 
-  display:flex;
-  flex-wrap:wrap;
+        .miniBtn {
+          min-width:
+            44px;
 
-  gap:6px;
-}
+          height: 44px;
 
-.songSeed{
-  padding:
-    6px 9px;
+          display: grid;
 
-  border:
-    1px solid
-    #2d2d34;
+          place-items:
+            center;
 
-  border-radius:999px;
+          border: 0;
 
-  background:#1b1b20;
+          border-radius:
+            11px;
 
-  color:#bbb8b1;
+          background:
+            var(--purple);
 
-  font-size:11px;
+          color: #fff;
 
-  cursor:pointer;
-}
+          cursor:
+            pointer;
+        }
 
-.controlBlock + .controlBlock{
-  margin-top:24px;
+        .excludeChips {
+          display: flex;
 
-  padding-top:24px;
+          flex-wrap:
+            wrap;
 
-  border-top:
-    1px solid
-    #26262c;
-}
+          gap: 7px;
 
-.controlTop{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
+          margin-top:
+            10px;
+        }
 
-  gap:12px;
-}
+        .excludeChip {
+          padding:
+            7px 9px;
 
-.controlName{
-  font-size:15px;
-  font-weight:850;
-}
+          display:
+            inline-flex;
 
-.controlHint{
-  margin-top:6px;
+          align-items:
+            center;
 
-  color:var(--muted);
+          gap: 6px;
 
-  font-size:13px;
-  line-height:1.5;
-}
+          border:
+            1px solid
+            rgba(
+              255,
+              127,
+              159,
+              .24
+            );
 
-.select{
-  height:42px;
+          border-radius:
+            999px;
 
-  padding:
-    0 32px
-    0 12px;
+          background:
+            rgba(
+              255,
+              127,
+              159,
+              .08
+            );
 
-  border:
-    1px solid
-    #303038;
+          color:
+            #ffb0c3;
 
-  border-radius:11px;
+          font-size:
+            12px;
 
-  background:#15151a;
+          cursor:
+            pointer;
+        }
 
-  color:var(--text);
+        .generate {
+          width: 100%;
 
-  font-size:14px;
-  font-weight:800;
-}
+          height: 60px;
 
-.range{
-  width:100%;
+          margin-top:
+            22px;
 
-  margin-top:14px;
+          display: flex;
 
-  accent-color:
-    var(--lime);
+          align-items:
+            center;
 
-  cursor:pointer;
-}
+          justify-content:
+            center;
 
-.rangeLabels{
-  margin-top:7px;
+          gap: 10px;
 
-  display:flex;
-  justify-content:space-between;
+          border: 0;
 
-  color:var(--dim);
+          border-radius:
+            15px;
 
-  font-size:11px;
-}
+          background:
+            var(--lime);
 
-.excludeRow{
-  margin-top:13px;
+          color:
+            #0b0d08;
 
-  display:flex;
+          font-size:
+            16px;
 
-  gap:8px;
+          font-weight:
+            950;
 
-  align-items:flex-start;
-}
+          cursor:
+            pointer;
 
-.excludeSearchWrap{
-  position:relative;
+          transition:
+            .16s ease;
+        }
 
-  flex:1;
+        .generate:hover:not(:disabled) {
+          transform:
+            translateY(-2px);
 
-  min-width:0;
-}
+          box-shadow:
+            0 14px 40px
+            rgba(
+              183,
+              255,
+              90,
+              .14
+            );
+        }
 
-.excludeSearchWrap .dropdown{
-  top:
-    calc(100% + 8px);
-}
+        .status {
+          min-height:
+            22px;
 
-.excludeRow .input{
-  height:44px;
+          margin:
+            14px 0 0;
 
-  font-size:14px;
-}
+          color:
+            var(--muted);
 
-.miniBtn{
-  min-width:44px;
-  height:44px;
+          text-align:
+            center;
 
-  display:grid;
-  place-items:center;
+          font-size:
+            13px;
 
-  border:0;
+          line-height:
+            1.5;
+        }
 
-  border-radius:11px;
+        .profileStrip {
+          margin-top:
+            18px;
 
-  background:
-    var(--purple);
+          padding:
+            16px 18px;
 
-  color:#fff;
+          display: grid;
 
-  cursor:pointer;
-}
+          grid-template-columns:
+            repeat(
+              4,
+              minmax(
+                0,
+                1fr
+              )
+            );
 
-.excludeChips{
-  display:flex;
-  flex-wrap:wrap;
+          gap: 8px;
 
-  gap:7px;
+          border:
+            1px solid
+            var(--line);
 
-  margin-top:10px;
-}
+          border-radius:
+            18px;
 
-.excludeChip{
-  padding:
-    7px 9px;
+          background:
+            #0d0d10;
+        }
 
-  display:inline-flex;
-  align-items:center;
+        .stat {
+          padding: 12px;
 
-  gap:6px;
+          border-radius:
+            12px;
 
-  border:
-    1px solid
-    rgba(255,127,159,.24);
+          background:
+            #15151a;
+        }
 
-  border-radius:999px;
+        .stat span {
+          color:
+            var(--muted);
 
-  background:
-    rgba(255,127,159,.08);
+          font-size:
+            12px;
+        }
 
-  color:#ffb0c3;
+        .stat strong {
+          display: block;
 
-  font-size:12px;
+          margin-top:
+            5px;
 
-  cursor:pointer;
-}
+          font-size:
+            22px;
 
-.generate{
-  width:100%;
-  height:60px;
+          letter-spacing:
+            -.03em;
+        }
 
-  margin-top:22px;
+        .stat.spotifyStat strong {
+          color:
+            var(--lime);
 
-  display:flex;
-  align-items:center;
-  justify-content:center;
+          font-size:
+            14px;
 
-  gap:10px;
+          line-height:
+            1.2;
+        }
 
-  border:0;
+        .results {
+          padding:
+            30px;
+        }
 
-  border-radius:15px;
+        .playlistHero {
+          display: grid;
 
-  background:
-    var(--lime);
+          grid-template-columns:
+            220px
+            minmax(
+              0,
+              1fr
+            );
 
-  color:#0b0d08;
+          gap: 28px;
 
-  font-size:16px;
-  font-weight:950;
+          align-items:
+            end;
+        }
 
-  cursor:pointer;
+        .coverCollage {
+          width: 100%;
 
-  transition:.16s ease;
-}
+          aspect-ratio:
+            1;
 
-.generate:hover:not(:disabled){
-  transform:
-    translateY(-2px);
+          display: grid;
 
-  box-shadow:
-    0 14px 40px
-    rgba(183,255,90,.14);
-}
+          grid-template-columns:
+            1fr 1fr;
 
-.status{
-  min-height:22px;
+          overflow:
+            hidden;
 
-  margin:
-    14px 0 0;
+          border-radius:
+            18px;
 
-  color:var(--muted);
+          background:
+            linear-gradient(
+              145deg,
+              #2a234c,
+              #17200e
+            );
 
-  text-align:center;
+          border:
+            1px solid
+            #34343c;
+        }
 
-  font-size:13px;
-  line-height:1.5;
-}
+        .coverCollage.large {
+          width: 220px;
 
-.profileStrip{
-  margin-top:18px;
+          border-radius:
+            24px;
 
-  padding:
-    16px 18px;
+          box-shadow:
+            0 28px 70px
+            rgba(
+              0,
+              0,
+              0,
+              .40
+            );
+        }
 
-  display:grid;
+        .coverCollage img {
+          width: 100%;
+          height: 100%;
 
-  grid-template-columns:
-    repeat(
-      4,
-      minmax(
-        0,
-        1fr
-      )
-    );
+          object-fit:
+            cover;
 
-  gap:8px;
+          min-width: 0;
+          min-height: 0;
+        }
 
-  border:
-    1px solid
-    var(--line);
+        .coverFallback {
+          display: grid;
 
-  border-radius:18px;
+          place-items:
+            center;
 
-  background:#0d0d10;
-}
+          color:
+            var(--lime);
+        }
 
-.stat{
-  padding:12px;
+        .mixKicker {
+          color:
+            var(--lime);
 
-  border-radius:12px;
+          font-size:
+            13px;
 
-  background:#15151a;
-}
+          font-weight:
+            850;
+        }
 
-.stat span{
-  color:var(--muted);
+        .resultsTitle {
+          margin:
+            8px 0 0;
 
-  font-size:12px;
-}
+          font-size:
+            clamp(
+              42px,
+              6vw,
+              74px
+            );
 
-.stat strong{
-  display:block;
+          line-height:
+            .92;
 
-  margin-top:5px;
+          letter-spacing:
+            -.055em;
+        }
 
-  font-size:22px;
+        .mixMeta {
+          margin-top:
+            13px;
 
-  letter-spacing:
-    -.03em;
-}
+          color:
+            var(--muted);
 
-.stat.spotifyStat strong{
-  color:var(--lime);
+          font-size:
+            14px;
 
-  font-size:14px;
-  line-height:1.2;
-}
+          line-height:
+            1.55;
+        }
 
-.results{
-  padding:30px;
-}
+        .genreTags {
+          margin-top:
+            12px;
 
-.playlistHero{
-  display:grid;
+          display: flex;
 
-  grid-template-columns:
-    220px
-    minmax(0,1fr);
+          flex-wrap:
+            wrap;
 
-  gap:28px;
+          gap: 7px;
+        }
 
-  align-items:end;
-}
+        .genreTag {
+          padding:
+            7px 10px;
 
-.coverCollage{
-  width:100%;
+          border:
+            1px solid
+            #303038;
 
-  aspect-ratio:1;
+          border-radius:
+            999px;
 
-  display:grid;
+          background:
+            #17171c;
 
-  grid-template-columns:
-    1fr 1fr;
+          color:
+            #cbc7c0;
 
-  overflow:hidden;
+          font-size:
+            12px;
+        }
 
-  border-radius:18px;
+        .resultsActions {
+          display: flex;
 
-  background:
-    linear-gradient(
-      145deg,
-      #2a234c,
-      #17200e
-    );
+          flex-wrap:
+            wrap;
 
-  border:
-    1px solid
-    #34343c;
-}
+          gap: 8px;
 
-.coverCollage.large{
-  width:220px;
+          margin-top:
+            19px;
+        }
 
-  border-radius:24px;
+        .ghostBtn,
+        .saveBtn {
+          min-height:
+            44px;
 
-  box-shadow:
-    0 28px 70px
-    rgba(0,0,0,.40);
-}
+          padding:
+            0 14px;
 
-.coverCollage img{
-  width:100%;
-  height:100%;
+          display:
+            inline-flex;
 
-  object-fit:cover;
+          align-items:
+            center;
 
-  min-width:0;
-  min-height:0;
-}
+          justify-content:
+            center;
 
-.coverFallback{
-  display:grid;
-  place-items:center;
+          gap: 8px;
 
-  color:var(--lime);
-}
+          border-radius:
+            12px;
 
-.mixKicker{
-  color:var(--lime);
+          font-size:
+            13px;
 
-  font-size:13px;
-  font-weight:850;
-}
+          font-weight:
+            850;
 
-.resultsTitle{
-  margin:
-    8px 0 0;
+          cursor:
+            pointer;
+        }
 
-  font-size:
-    clamp(
-      42px,
-      6vw,
-      74px
-    );
+        .ghostBtn {
+          border:
+            1px solid
+            #303038;
 
-  line-height:.92;
+          background:
+            #17171c;
 
-  letter-spacing:
-    -.055em;
-}
+          color:
+            var(--text);
+        }
 
-.mixMeta{
-  margin-top:13px;
+        .saveBtn {
+          border: 0;
 
-  color:var(--muted);
+          background:
+            var(--lime);
 
-  font-size:14px;
-  line-height:1.55;
-}
+          color:
+            #0b0d08;
+        }
 
-.genreTags{
-  margin-top:12px;
+        .feedbackNotice {
+          margin-top:
+            20px;
 
-  display:flex;
-  flex-wrap:wrap;
+          padding:
+            13px 15px;
 
-  gap:7px;
-}
+          border:
+            1px solid
+            rgba(
+              139,
+              120,
+              255,
+              .22
+            );
 
-.genreTag{
-  padding:
-    7px 10px;
+          border-radius:
+            13px;
 
-  border:
-    1px solid
-    #303038;
+          background:
+            rgba(
+              139,
+              120,
+              255,
+              .07
+            );
 
-  border-radius:999px;
+          color:
+            #c8c1ff;
 
-  background:#17171c;
+          font-size:
+            13px;
 
-  color:#cbc7c0;
+          line-height:
+            1.5;
+        }
 
-  font-size:12px;
-}
+        .trackList {
+          margin-top:
+            22px;
 
-.resultsActions{
-  display:flex;
-  flex-wrap:wrap;
+          display: grid;
 
-  gap:8px;
+          gap: 8px;
+        }
 
-  margin-top:19px;
-}
+        .track {
+          padding: 10px;
 
-.ghostBtn,
-.saveBtn{
-  min-height:44px;
+          display: grid;
 
-  padding:
-    0 14px;
+          grid-template-columns:
+            34px
+                        58px
+            minmax(
+              0,
+              1fr
+            )
+            auto;
 
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
+          align-items:
+            center;
 
-  gap:8px;
+          gap: 12px;
 
-  border-radius:12px;
+          border:
+            1px solid
+            #27272e;
 
-  font-size:13px;
-  font-weight:850;
+          border-radius:
+            15px;
 
-  cursor:pointer;
-}
+          background:
+            #111115;
 
-.ghostBtn{
-  border:
-    1px solid
-    #303038;
+          transition:
+            .14s ease;
+        }
 
-  background:#17171c;
+        .track:hover {
+          border-color:
+            #3a3a44;
 
-  color:var(--text);
-}
+          background:
+            #15151a;
+        }
 
-.saveBtn{
-  border:0;
+        .trackNumber {
+          color:
+            #66636d;
 
-  background:
-    var(--lime);
+          font-size:
+            12px;
 
-  color:#0b0d08;
-}
+          text-align:
+            center;
+        }
 
-.feedbackNotice{
-  margin-top:20px;
+        .cover {
+          width: 58px;
+          height: 58px;
 
-  padding:
-    13px 15px;
+          border-radius:
+            10px;
 
-  border:
-    1px solid
-    rgba(139,120,255,.22);
+          object-fit:
+            cover;
 
-  border-radius:13px;
+          background:
+            #202027;
+        }
 
-  background:
-    rgba(139,120,255,.07);
+        .coverFallbackSmall {
+          display: grid;
 
-  color:#c8c1ff;
+          place-items:
+            center;
 
-  font-size:13px;
-  line-height:1.5;
-}
+          color:
+            var(--lime);
+        }
 
-.trackList{
-  margin-top:22px;
+        .trackText {
+          min-width: 0;
+        }
 
-  display:grid;
+        .trackName {
+          margin: 0;
 
-  gap:8px;
-}
+          color:
+            var(--text);
 
-.track{
-  padding:10px;
+          font-size:
+            15px;
 
-  display:grid;
+          font-weight:
+            900;
 
-  grid-template-columns:
-    34px
-    58px
-    minmax(0,1fr)
-    auto;
+          white-space:
+            nowrap;
 
-  align-items:center;
+          overflow:
+            hidden;
 
-  gap:12px;
+          text-overflow:
+            ellipsis;
+        }
 
-  border:
-    1px solid
-    #27272e;
+        .trackArtist {
+          margin:
+            5px 0 0;
 
-  border-radius:15px;
+          color:
+            var(--muted);
 
-  background:#111115;
+          font-size:
+            13px;
 
-  transition:.14s ease;
-}
+          white-space:
+            nowrap;
 
-.track:hover{
-  border-color:#3a3a44;
+          overflow:
+            hidden;
 
-  background:#15151a;
-}
+          text-overflow:
+            ellipsis;
+        }
 
-.trackNumber{
-  color:#66636d;
+        .sourceBadge {
+          display:
+            inline-block;
 
-  font-size:12px;
+          margin-top:
+            6px;
 
-  text-align:center;
-}
+          color:
+            #8f88c9;
 
-.cover{
-  width:58px;
-  height:58px;
+          font-size:
+            11px;
 
-  border-radius:10px;
+          font-weight:
+            750;
+        }
 
-  object-fit:cover;
+        .trackActions {
+          display: flex;
 
-  background:#202027;
-}
+          align-items:
+            center;
 
-.coverFallbackSmall{
-  display:grid;
-  place-items:center;
+          gap: 6px;
+        }
 
-  color:var(--lime);
-}
+        .feedbackBtn,
+        .trackLink {
+          min-width:
+            38px;
 
-.trackText{
-  min-width:0;
-}
+          height: 38px;
 
-.trackName{
-  margin:0;
+          padding:
+            0 10px;
 
-  color:var(--text);
+          display:
+            inline-flex;
 
-  font-size:15px;
-  font-weight:900;
+          align-items:
+            center;
 
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
+          justify-content:
+            center;
 
-.trackArtist{
-  margin:
-    5px 0 0;
+          gap: 6px;
 
-  color:var(--muted);
+          border:
+            1px solid
+            #303038;
 
-  font-size:13px;
+          border-radius:
+            10px;
 
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
+          background:
+            #17171c;
 
-.sourceBadge{
-  display:inline-block;
+          color:
+            #aaa7b0;
 
-  margin-top:6px;
+          cursor:
+            pointer;
 
-  color:#8f88c9;
+          text-decoration:
+            none;
 
-  font-size:11px;
-  font-weight:750;
-}
+          transition:
+            .14s ease;
+        }
 
-.trackActions{
-  display:flex;
-  align-items:center;
+        .feedbackBtn:hover,
+        .trackLink:hover {
+          color: #fff;
 
-  gap:6px;
-}
+          border-color:
+            #44444f;
+        }
 
-.feedbackBtn,
-.trackLink{
-  min-width:38px;
-  height:38px;
+        .feedbackBtn.like.active {
+          color:
+            #101407;
 
-  padding:
-    0 10px;
+          border-color:
+            var(--lime);
 
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
+          background:
+            var(--lime);
+        }
 
-  gap:6px;
+        .feedbackBtn.dislike.active {
+          color: #fff;
 
-  border:
-    1px solid
-    #303038;
+          border-color:
+            var(--pink);
 
-  border-radius:10px;
+          background:
+            #a94360;
+        }
 
-  background:#17171c;
+        .trackLink {
+          color:
+            var(--lime);
 
-  color:#aaa7b0;
+          font-size:
+            12px;
 
-  cursor:pointer;
+          font-weight:
+            850;
+        }
 
-  text-decoration:none;
+        .playlistLink {
+          margin-top:
+            15px;
 
-  transition:.14s ease;
-}
+          display:
+            inline-flex;
 
-.feedbackBtn:hover,
-.trackLink:hover{
-  color:#fff;
+          align-items:
+            center;
 
-  border-color:#44444f;
-}
+          gap: 7px;
 
-.feedbackBtn.like.active{
-  color:#101407;
+          color:
+            var(--lime);
 
-  border-color:
-    var(--lime);
+          font-size:
+            14px;
 
-  background:
-    var(--lime);
-}
+          font-weight:
+            850;
 
-.feedbackBtn.dislike.active{
-  color:#fff;
+          text-decoration:
+            none;
+        }
 
-  border-color:
-    var(--pink);
+        .history {
+          padding:
+            26px 30px
+            30px;
+        }
 
-  background:#a94360;
-}
+        .historyGrid {
+          margin-top:
+            18px;
 
-.trackLink{
-  color:var(--lime);
+          display: grid;
 
-  font-size:12px;
-  font-weight:850;
-}
+          grid-template-columns:
+            repeat(
+              3,
+              minmax(
+                0,
+                1fr
+              )
+            );
 
-.playlistLink{
-  margin-top:15px;
+          gap: 10px;
+        }
 
-  display:inline-flex;
-  align-items:center;
+        .historyCard {
+          padding: 12px;
 
-  gap:7px;
+          display: grid;
 
-  color:var(--lime);
+          grid-template-columns:
+            72px
+            minmax(
+              0,
+              1fr
+            );
 
-  font-size:14px;
-  font-weight:850;
+          gap: 12px;
 
-  text-decoration:none;
-}
+          align-items:
+            center;
 
-.history{
-  padding:
-    26px 30px
-    30px;
-}
+          border:
+            1px solid
+            #292930;
 
-.historyGrid{
-  margin-top:18px;
+          border-radius:
+            16px;
 
-  display:grid;
+          background:
+            #111115;
 
-  grid-template-columns:
-    repeat(
-      3,
-      minmax(
-        0,
-        1fr
-      )
-    );
+          color:
+            var(--text);
 
-  gap:10px;
-}
+          text-align:
+            left;
 
-.historyCard{
-  padding:12px;
+          cursor:
+            pointer;
+        }
 
-  display:grid;
+        .historyCard:hover {
+          border-color:
+            #3d3d47;
 
-  grid-template-columns:
-    72px
-    minmax(0,1fr);
+          background:
+            #15151a;
+        }
 
-  gap:12px;
+        .historyCard
+        .coverCollage {
+          width: 72px;
 
-  align-items:center;
+          border-radius:
+            11px;
+        }
 
-  border:
-    1px solid
-    #292930;
+        .historyName {
+          font-size:
+            14px;
 
-  border-radius:16px;
+          font-weight:
+            900;
 
-  background:#111115;
+          white-space:
+            nowrap;
 
-  color:var(--text);
+          overflow:
+            hidden;
 
-  text-align:left;
+          text-overflow:
+            ellipsis;
+        }
 
-  cursor:pointer;
-}
+        .historyMeta {
+          margin-top:
+            5px;
 
-.historyCard:hover{
-  border-color:#3d3d47;
+          color:
+            var(--muted);
 
-  background:#15151a;
-}
+          font-size:
+            12px;
+        }
 
-.historyCard .coverCollage{
-  width:72px;
+        .clearBtn {
+          margin-top:
+            18px;
 
-  border-radius:11px;
-}
+          padding:
+            10px 12px;
 
-.historyName{
-  font-size:14px;
-  font-weight:900;
+          border:
+            1px solid
+            #303038;
 
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
+          border-radius:
+            11px;
 
-.historyMeta{
-  margin-top:5px;
+          background:
+            transparent;
 
-  color:var(--muted);
+          color:
+            #8b8790;
 
-  font-size:12px;
-}
+          font-size:
+            12px;
 
-.clearBtn{
-  margin-top:18px;
+          cursor:
+            pointer;
+        }
 
-  padding:
-    10px 12px;
+        .clearBtn:hover {
+          color: #fff;
 
-  border:
-    1px solid
-    #303038;
+          background:
+            #17171c;
+        }
 
-  border-radius:11px;
+        .footer {
+          padding:
+            38px 0 8px;
 
-  background:transparent;
+          text-align:
+            center;
 
-  color:#8b8790;
+          color:
+            #68656e;
 
-  font-size:12px;
+          font-size:
+            12px;
 
-  cursor:pointer;
-}
+          line-height:
+            1.7;
+        }
 
-.clearBtn:hover{
-  color:#fff;
+        .footer strong {
+          color:
+            #bdb8af;
+        }
 
-  background:#17171c;
-}
+        button:disabled,
+        input:disabled,
+        select:disabled {
+          opacity: .55;
 
-.footer{
-  padding:
-    38px 0 8px;
+          cursor: wait;
+        }
 
-  text-align:center;
+        @media (
+          max-width:
+            960px
+        ) {
+          .hero {
+            grid-template-columns:
+              1fr;
 
-  color:#68656e;
+            min-height:
+              auto;
 
-  font-size:12px;
+            padding-top:
+              80px;
+          }
 
-  line-height:1.7;
-}
+          .heroArt {
+            min-height:
+              320px;
+          }
 
-.footer strong{
-  color:#bdb8af;
-}
+          .builderGrid {
+            grid-template-columns:
+              1fr;
+          }
 
-button:disabled,
-input:disabled,
-select:disabled{
-  opacity:.55;
+          .profileStrip {
+            grid-template-columns:
+              repeat(
+                2,
+                minmax(
+                  0,
+                  1fr
+                )
+              );
+          }
 
-  cursor:wait;
-}
+          .historyGrid {
+            grid-template-columns:
+              repeat(
+                2,
+                minmax(
+                  0,
+                  1fr
+                )
+              );
+          }
+        }
 
-@media(max-width:960px){
-  .hero{
-    grid-template-columns:
-      1fr;
+        @media (
+          max-width:
+            760px
+        ) {
+          .shell {
+            width:
+              min(
+                100% - 18px,
+                1220px
+              );
 
-    min-height:auto;
+            padding-top:
+              9px;
+          }
 
-    padding-top:80px;
-  }
+          .nav {
+            top: 8px;
 
-  .heroArt{
-    min-height:320px;
-  }
+            min-height:
+              62px;
 
-  .builderGrid{
-    grid-template-columns:
-      1fr;
-  }
+            border-radius:
+              16px;
+          }
 
-  .profileStrip{
-    grid-template-columns:
-      repeat(
-        2,
-        minmax(
-          0,
-          1fr
-        )
-      );
-  }
+          .brandLogo {
+            width: 38px;
+            height: 38px;
+          }
 
-  .historyGrid{
-    grid-template-columns:
-      repeat(
-        2,
-        minmax(
-          0,
-          1fr
-        )
-      );
-  }
-}
+          .brandText span {
+            display: none;
+          }
 
-@media(max-width:760px){
-  .shell{
-    width:
-      min(
-        calc(100% - 18px),
-        1220px
-      );
+          .brandText strong {
+            font-size:
+              15px;
+          }
 
-    padding-top:9px;
-  }
+          .connect {
+            min-height:
+              40px;
 
-  .nav{
-    top:8px;
+            padding:
+              0 12px;
+          }
 
-    min-height:62px;
+          .hero {
+            padding:
+              65px 8px
+              46px;
 
-    border-radius:16px;
-  }
+            gap: 30px;
+          }
 
-  .brandLogo{
-    width:38px;
-    height:38px;
-  }
+          .hero h1 {
+            font-size:
+              clamp(
+                52px,
+                15vw,
+                78px
+              );
+          }
 
-  .brandText span{
-    display:none;
-  }
+          .heroCopy {
+            font-size:
+              16px;
+          }
 
-  .brandText strong{
-    font-size:15px;
-  }
+          .orbit {
+            width: 290px;
+            height: 290px;
+          }
 
-  .connect{
-    min-height:40px;
+          .sectionHead {
+            padding:
+              22px 20px 0;
+          }
 
-    padding:
-      0 12px;
-  }
+          .builderGrid,
+          .results,
+          .history {
+            padding:
+              20px;
+          }
 
-  .hero{
-    padding:
-      65px 8px
-      46px;
+          .formGrid {
+            grid-template-columns:
+              1fr;
+          }
 
-    gap:30px;
-  }
+          .addBtn {
+            width: 100%;
+          }
 
-  .hero h1{
-    font-size:
-      clamp(
-        52px,
-        15vw,
-        78px
-      );
-  }
+          .tasteGrid {
+            grid-template-columns:
+              1fr;
+          }
 
-  .heroCopy{
-    font-size:16px;
-  }
+          .playlistHero {
+            grid-template-columns:
+              140px
+              minmax(
+                0,
+                1fr
+              );
 
-  .orbit{
-    width:290px;
-    height:290px;
-  }
+            gap: 18px;
 
-  .sectionHead{
-    padding:
-      22px 20px 0;
-  }
+            align-items:
+              center;
+          }
 
-  .builderGrid,
-  .results,
-  .history{
-    padding:20px;
-  }
+          .coverCollage.large {
+            width: 140px;
 
-  .formGrid{
-    grid-template-columns:
-      1fr;
-  }
+            border-radius:
+              18px;
+          }
 
-  .addBtn{
-    width:100%;
-  }
+          .resultsTitle {
+            font-size:
+              clamp(
+                38px,
+                10vw,
+                58px
+              );
+          }
 
-  .tasteGrid{
-    grid-template-columns:
-      1fr;
-  }
+          .track {
+            grid-template-columns:
+              28px
+              52px
+              minmax(
+                0,
+                1fr
+              );
+          }
 
-  .playlistHero{
-    grid-template-columns:
-      140px
-      minmax(0,1fr);
+          .cover {
+            width: 52px;
+            height: 52px;
+          }
 
-    gap:18px;
+          .trackActions {
+            grid-column:
+              3 / -1;
 
-    align-items:center;
-  }
+            justify-content:
+              flex-start;
+          }
 
-  .coverCollage.large{
-    width:140px;
+          .historyGrid {
+            grid-template-columns:
+              1fr;
+          }
+        }
 
-    border-radius:18px;
-  }
+        @media (
+          max-width:
+            520px
+        ) {
+          .brandText {
+            display: none;
+          }
 
-  .resultsTitle{
-    font-size:
-      clamp(
-        38px,
-        10vw,
-        58px
-      );
-  }
+          .userText small {
+            display: none;
+          }
 
-  .track{
-    grid-template-columns:
-      28px
-      52px
-      minmax(0,1fr);
-  }
+          .userPill {
+            max-width:
+              135px;
+          }
 
-  .cover{
-    width:52px;
-    height:52px;
-  }
+          .connect span {
+            display: none;
+          }
 
-  .trackActions{
-    grid-column:
-      3 / -1;
+          .heroArt {
+            min-height:
+              280px;
+          }
 
-    justify-content:flex-start;
-  }
+          .heroCard {
+            width: 250px;
 
-  .historyGrid{
-    grid-template-columns:
-      1fr;
-  }
-}
+            padding:
+              20px;
+          }
 
-@media(max-width:520px){
-  .brandText{
-    display:none;
-  }
+          .heroCardBig {
+            font-size:
+              44px;
+          }
 
-  .userText small{
-    display:none;
-  }
+          .profileStrip {
+            grid-template-columns:
+              1fr 1fr;
+          }
 
-  .userPill{
-    max-width:135px;
-  }
+          .playlistHero {
+            grid-template-columns:
+              1fr;
 
-  .connect span{
-    display:none;
-  }
+            align-items:
+              start;
+          }
 
-  .heroArt{
-    min-height:280px;
-  }
+          .coverCollage.large {
+            width: 132px;
+          }
 
-  .heroCard{
-    width:250px;
+          .resultsActions {
+            display: grid;
 
-    padding:20px;
-  }
+            grid-template-columns:
+              1fr;
+          }
 
-  .heroCardBig{
-    font-size:44px;
-  }
-
-  .profileStrip{
-    grid-template-columns:
-      1fr 1fr;
-  }
-
-  .playlistHero{
-    grid-template-columns:
-      1fr;
-
-    align-items:start;
-  }
-
-  .coverCollage.large{
-    width:132px;
-  }
-
-  .resultsActions{
-    display:grid;
-
-    grid-template-columns:
-      1fr;
-  }
-
-  .ghostBtn,
-  .saveBtn{
-    width:100%;
-  }
-}
+          .ghostBtn,
+          .saveBtn {
+            width: 100%;
+          }
+        }
       `}</style>
 
       <div className="shell">
@@ -4154,19 +4717,24 @@ select:disabled{
             {spotifyUser ? (
               <a
                 className="userPill"
+
                 href={
                   spotifyUser.url ||
                   "https://open.spotify.com"
                 }
+
                 target="_blank"
+
                 rel="noopener noreferrer"
               >
                 {spotifyUser.image ? (
                   <img
                     className="userAvatar"
+
                     src={
                       spotifyUser.image
                     }
+
                     alt=""
                   />
                 ) : (
@@ -4193,6 +4761,7 @@ select:disabled{
             ) : (
               <a
                 href="/api/spotify/login"
+
                 className="connect"
               >
                 <Icon
@@ -4332,7 +4901,7 @@ select:disabled{
                         `${Math.max(
                           34,
                           discovery *
-                            0.72
+                            .72
                         )}%`,
                     }}
                   />
@@ -4373,9 +4942,7 @@ select:disabled{
 
               <form
                 className="formGrid"
-                onSubmit={
-                  addArtist
-                }
+                onSubmit={addArtist}
               >
                 <div className="field">
                   <label htmlFor="artist-search">
@@ -4384,9 +4951,13 @@ select:disabled{
 
                   <input
                     id="artist-search"
+
                     className="input"
+
                     placeholder="Search an artist..."
+
                     value={input}
+
                     onChange={(
                       event
                     ) => {
@@ -4398,7 +4969,9 @@ select:disabled{
                         null
                       );
                     }}
+
                     disabled={busy}
+
                     autoComplete="off"
                   />
 
@@ -4420,10 +4993,13 @@ select:disabled{
                           ) => (
                             <button
                               type="button"
+
                               className="searchResult"
+
                               key={
                                 artist.id
                               }
+
                               onClick={() => {
                                 setInput(
                                   artist.name
@@ -4441,15 +5017,18 @@ select:disabled{
                               {artist.image ? (
                                 <img
                                   className="resultArt artist"
+
                                   src={
                                     artist.image
                                   }
+
                                   alt=""
                                 />
                               ) : (
                                 <div className="resultArt artist resultFallback">
                                   <Icon
                                     name="music"
+
                                     size={17}
                                   />
                                 </div>
@@ -4480,11 +5059,15 @@ select:disabled{
 
                   <input
                     id="song-search"
+
                     className="input"
+
                     placeholder="Search a song..."
+
                     value={
                       songInput
                     }
+
                     onChange={(
                       event
                     ) => {
@@ -4496,7 +5079,9 @@ select:disabled{
                         null
                       );
                     }}
+
                     disabled={busy}
+
                     autoComplete="off"
                   />
 
@@ -4518,10 +5103,13 @@ select:disabled{
                           ) => (
                             <button
                               type="button"
+
                               className="searchResult"
+
                               key={
                                 song.id
                               }
+
                               onClick={() => {
                                 setSongInput(
                                   song.name
@@ -4539,15 +5127,18 @@ select:disabled{
                               {song.image ? (
                                 <img
                                   className="resultArt song"
+
                                   src={
                                     song.image
                                   }
+
                                   alt=""
                                 />
                               ) : (
                                 <div className="resultArt song resultFallback">
                                   <Icon
                                     name="music"
+
                                     size={17}
                                   />
                                 </div>
@@ -4575,7 +5166,9 @@ select:disabled{
 
                 <button
                   type="submit"
+
                   className="addBtn"
+
                   disabled={busy}
                 >
                   <Icon
@@ -4611,6 +5204,7 @@ select:disabled{
                       return (
                         <div
                           className="tasteCard"
+
                           key={
                             artist
                           }
@@ -4618,15 +5212,18 @@ select:disabled{
                           {artistData?.image ? (
                             <img
                               className="tasteAvatar"
+
                               src={
                                 artistData.image
                               }
+
                               alt=""
                             />
                           ) : (
                             <div className="tasteAvatar tasteFallback">
                               <Icon
                                 name="music"
+
                                 size={16}
                               />
                             </div>
@@ -4648,16 +5245,20 @@ select:disabled{
 
                           <button
                             type="button"
+
                             className="removeBtn"
+
                             onClick={() =>
                               removeArtist(
                                 artist
                               )
                             }
+
                             title="Remove artist"
                           >
                             <Icon
                               name="trash"
+
                               size={14}
                             />
                           </button>
@@ -4671,10 +5272,13 @@ select:disabled{
                                 ) => (
                                   <button
                                     type="button"
+
                                     className="songSeed"
+
                                     key={
                                       song
                                     }
+
                                     onClick={() =>
                                       removeSong(
                                         artist,
@@ -4713,10 +5317,13 @@ select:disabled{
 
                   <select
                     className="select"
+
                     value={
                       trackCount
                     }
+
                     disabled={busy}
+
                     onChange={(
                       event
                     ) => {
@@ -4743,6 +5350,7 @@ select:disabled{
                           key={
                             count
                           }
+
                           value={
                             count
                           }
@@ -4777,14 +5385,21 @@ select:disabled{
 
                 <input
                   className="range"
+
                   type="range"
+
                   min="0"
+
                   max="100"
+
                   step="5"
+
                   value={
                     discovery
                   }
+
                   disabled={busy}
+
                   onChange={(
                     event
                   ) => {
@@ -4815,18 +5430,22 @@ select:disabled{
                 </div>
 
                 <div className="controlHint">
-                  Search Spotify for artists you want completely removed from generated mixes.
+                  Add artists you want completely removed from generated mixes.
                 </div>
 
                 <div className="excludeRow">
                   <div className="excludeSearchWrap">
                     <input
                       className="input"
+
                       placeholder="Search an artist..."
+
                       value={
                         excludedInput
                       }
+
                       autoComplete="off"
+
                       onChange={(
                         event
                       ) => {
@@ -4838,6 +5457,7 @@ select:disabled{
                           null
                         );
                       }}
+
                       onKeyDown={(
                         event
                       ) => {
@@ -4870,10 +5490,13 @@ select:disabled{
                             ) => (
                               <button
                                 type="button"
+
                                 className="searchResult"
+
                                 key={
                                   artist.id
                                 }
+
                                 onClick={() => {
                                   setExcludedInput(
                                     artist.name
@@ -4891,15 +5514,18 @@ select:disabled{
                                 {artist.image ? (
                                   <img
                                     className="resultArt artist"
+
                                     src={
                                       artist.image
                                     }
+
                                     alt=""
                                   />
                                 ) : (
                                   <div className="resultArt artist resultFallback">
                                     <Icon
                                       name="music"
+
                                       size={17}
                                     />
                                   </div>
@@ -4925,14 +5551,18 @@ select:disabled{
 
                   <button
                     type="button"
+
                     className="miniBtn"
+
                     onClick={
                       addExcludedArtist
                     }
+
                     title="Exclude artist"
                   >
                     <Icon
                       name="ban"
+
                       size={17}
                     />
                   </button>
@@ -4947,10 +5577,13 @@ select:disabled{
                       ) => (
                         <button
                           type="button"
+
                           className="excludeChip"
+
                           key={
                             artist
                           }
+
                           onClick={() =>
                             removeExcludedArtist(
                               artist
@@ -4967,8 +5600,11 @@ select:disabled{
 
               <button
                 type="button"
+
                 className="generate"
+
                 disabled={busy}
+
                 onClick={() =>
                   findSongs(
                     false
@@ -4981,6 +5617,7 @@ select:disabled{
                   <>
                     <Icon
                       name="sparkles"
+
                       size={18}
                     />
 
@@ -4991,7 +5628,9 @@ select:disabled{
 
               <p
                 className="status"
+
                 role="status"
+
                 aria-live="polite"
               >
                 {message}
@@ -5059,7 +5698,9 @@ select:disabled{
             >
               <button
                 type="button"
+
                 className="clearBtn"
+
                 onClick={
                   clearTasteProfile
                 }
@@ -5110,6 +5751,7 @@ select:disabled{
                       ) => (
                         <span
                           className="genreTag"
+
                           key={
                             genre
                           }
@@ -5126,8 +5768,11 @@ select:disabled{
                 <div className="resultsActions">
                   <button
                     type="button"
+
                     className="ghostBtn"
+
                     disabled={busy}
+
                     onClick={() =>
                       findSongs(
                         true
@@ -5136,6 +5781,7 @@ select:disabled{
                   >
                     <Icon
                       name="refresh"
+
                       size={15}
                     />
 
@@ -5144,14 +5790,18 @@ select:disabled{
 
                   <button
                     type="button"
+
                     className="ghostBtn"
+
                     disabled={busy}
+
                     onClick={
                       copyTracks
                     }
                   >
                     <Icon
                       name="copy"
+
                       size={15}
                     />
 
@@ -5160,14 +5810,18 @@ select:disabled{
 
                   <button
                     type="button"
+
                     className="saveBtn"
+
                     disabled={busy}
+
                     onClick={
                       savePlaylist
                     }
                   >
                     <Icon
                       name="spotify"
+
                       size={15}
                     />
 
@@ -5214,6 +5868,7 @@ select:disabled{
                   return (
                     <div
                       className="track"
+
                       key={
                         track.id
                       }
@@ -5230,15 +5885,18 @@ select:disabled{
                       {track.image ? (
                         <img
                           className="cover"
+
                           src={
                             track.image
                           }
+
                           alt={`${track.title} album cover`}
                         />
                       ) : (
                         <div className="cover coverFallbackSmall">
                           <Icon
                             name="music"
+
                             size={18}
                           />
                         </div>
@@ -5267,42 +5925,52 @@ select:disabled{
                       <div className="trackActions">
                         <button
                           type="button"
+
                           className={`feedbackBtn like ${
                             liked
                               ? "active"
                               : ""
                           }`}
+
                           onClick={() =>
                             toggleLike(
                               track.id
                             )
                           }
+
                           title="More like this"
+
                           aria-label={`More like ${track.title}`}
                         >
                           <Icon
                             name="up"
+
                             size={15}
                           />
                         </button>
 
                         <button
                           type="button"
+
                           className={`feedbackBtn dislike ${
                             disliked
                               ? "active"
                               : ""
                           }`}
+
                           onClick={() =>
                             toggleDislike(
                               track.id
                             )
                           }
+
                           title="Less like this"
+
                           aria-label={`Less like ${track.title}`}
                         >
                           <Icon
                             name="down"
+
                             size={15}
                           />
                         </button>
@@ -5310,10 +5978,13 @@ select:disabled{
                         {track.url && (
                           <a
                             className="trackLink"
+
                             href={
                               track.url
                             }
+
                             target="_blank"
+
                             rel="noopener noreferrer"
                           >
                             Spotify
@@ -5329,16 +6000,20 @@ select:disabled{
             {playlistUrl && (
               <a
                 className="playlistLink"
+
                 href={
                   playlistUrl
                 }
+
                 target="_blank"
+
                 rel="noopener noreferrer"
               >
                 Open saved playlist in Spotify
 
                 <Icon
                   name="arrow"
+
                   size={14}
                 />
               </a>
@@ -5368,10 +6043,13 @@ select:disabled{
                 ) => (
                   <button
                     type="button"
+
                     className="historyCard"
+
                     key={
                       item.id
                     }
+
                     onClick={() =>
                       loadHistoryMix(
                         item

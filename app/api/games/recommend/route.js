@@ -949,9 +949,73 @@ export async function POST(
           `
         );
 
-      addCandidates(
+            addCandidates(
         discoveryGames,
         "discovery"
+      );
+
+    }
+
+    /*
+      Add a much wider candidate pool when Discovery is high.
+
+      The normal discovery search intentionally looks inside the
+      genres/themes the user already likes. That is useful at lower
+      Discovery values, but at 100% it makes the same games keep
+      winning.
+
+      Wild candidates give high Discovery genuinely different games
+      while still keeping rating, platform and vibe quality checks.
+    */
+    if (
+      discovery >= 35
+    ) {
+      const wildMinimumVotes =
+        discovery >= 80
+          ? 3
+          : 8;
+
+      const avoidGenres =
+        discovery >= 70 &&
+        genreIds.length
+          ? `& genres != (${genreIds.join(
+              ","
+            )})`
+          : "";
+
+      const wildGames =
+        await igdbRequest(
+          "games",
+          `
+            fields
+              name,
+              cover.image_id,
+              first_release_date,
+              genres.name,
+              themes.name,
+              platforms.name,
+              total_rating,
+              total_rating_count,
+              rating,
+              rating_count,
+              summary,
+              url;
+
+            where
+              version_parent = null
+              & themes != (42)
+              & total_rating_count >= ${wildMinimumVotes}
+              ${avoidGenres};
+
+            sort total_rating desc;
+
+            limit 150;
+          `
+        );
+
+      addCandidates(
+        wildGames,
+        "wild"
       );
     }
 
@@ -1042,40 +1106,88 @@ export async function POST(
               game.rating_count ||
               0;
 
+                        /*
+              0% Discovery:
+              strongly reward games close to the user's taste.
+
+              100% Discovery:
+              heavily reduce genre/theme similarity and reward
+              genuinely different high-quality games.
+            */
+
+            const familiarity =
+              1 -
+              discoveryFactor;
+
+            const cappedGenreScore =
+              Math.min(
+                genreScore,
+                12
+              );
+
+            const cappedThemeScore =
+              Math.min(
+                themeScore,
+                12
+              );
+
+            const overlap =
+              genreScore +
+              themeScore;
+
             let score = 0;
 
+            /*
+              Familiarity matters enormously near 0%,
+              but very little near 100%.
+
+              Capping the values is important now that users
+              can add many favorite games.
+            */
             score +=
-              genreScore *
+              cappedGenreScore *
               (
-                3.7 -
-                discoveryFactor *
-                  1.2
+                0.35 +
+                familiarity *
+                  3.65
               );
 
             score +=
-              themeScore *
+              cappedThemeScore *
               (
-                4.4 -
-                discoveryFactor *
-                  1.25
+                0.4 +
+                familiarity *
+                  4
               );
 
+            /*
+              Direct IGDB similar-game relationships should
+              dominate Familiar mode, but barely matter in
+              Wild Card mode.
+            */
             if (
               similarSeed
             ) {
               score +=
-                18 -
-                discoveryFactor *
-                  9;
+                2 +
+                familiarity *
+                  18;
             }
 
+            /*
+              Requested vibes still matter at every
+              Discovery level.
+            */
             if (
               vibeMatch
             ) {
-              score +=
-                8;
+              score += 8;
             }
 
+            /*
+              Keep some quality control so 100% Discovery
+              does not simply mean random garbage.
+            */
             score +=
               Math.min(
                 rating / 20,
@@ -1092,30 +1204,71 @@ export async function POST(
                 5
               );
 
+            /*
+              Normal discovery candidates get a small boost.
+            */
             if (
               game.sources.has(
                 "discovery"
               )
             ) {
               score +=
+                2 +
                 discoveryFactor *
-                5;
+                  3;
             }
 
-            const overlap =
-              genreScore +
-              themeScore;
-
+            /*
+              Wild candidates become much more valuable
+              as the slider moves toward 100%.
+            */
             if (
-              discovery >=
-                70 &&
-              overlap > 0 &&
-              overlap <= 5
+              game.sources.has(
+                "wild"
+              )
             ) {
               score +=
-                4;
+                discoveryFactor *
+                  16;
             }
 
+            /*
+              At higher Discovery levels, actively reward games
+              with little or no overlap with the existing profile.
+
+              Games that are extremely similar actually receive
+              a penalty near 100%.
+            */
+            if (
+              discovery >= 55
+            ) {
+              if (
+                overlap === 0
+              ) {
+                score +=
+                  discoveryFactor *
+                    18;
+              } else if (
+                overlap <= 5
+              ) {
+                score +=
+                  discoveryFactor *
+                    9;
+              } else {
+                score -=
+                  Math.min(
+                    overlap,
+                    20
+                  ) *
+                  discoveryFactor *
+                  0.75;
+              }
+            }
+
+            /*
+              Higher Discovery also allows more variation
+              between repeated generations.
+            */
             score +=
               randomFromSeed(
                 `${nonce}-${game.id}`
@@ -1123,7 +1276,7 @@ export async function POST(
               (
                 2 +
                 discoveryFactor *
-                  6
+                  12
               );
 
             let reason =

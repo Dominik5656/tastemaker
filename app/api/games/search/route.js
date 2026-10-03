@@ -23,13 +23,9 @@ function getYear(timestamp) {
     return null;
   }
 
-  try {
-    return new Date(
-      timestamp * 1000
-    ).getUTCFullYear();
-  } catch {
-    return null;
-  }
+  return new Date(
+    timestamp * 1000
+  ).getUTCFullYear();
 }
 
 function mapGame(game) {
@@ -139,8 +135,11 @@ async function getAccessToken() {
     await fetch(
       `https://id.twitch.tv/oauth2/token?${params.toString()}`,
       {
-        method: "POST",
-        cache: "no-store",
+        method:
+          "POST",
+
+        cache:
+          "no-store",
       }
     );
 
@@ -153,7 +152,9 @@ async function getAccessToken() {
   const data =
     await response.json();
 
-  if (!data.access_token) {
+  if (
+    !data.access_token
+  ) {
     throw new Error(
       "IGDB did not return an access token."
     );
@@ -172,7 +173,6 @@ async function getAccessToken() {
 }
 
 async function igdbRequest(
-  endpoint,
   query
 ) {
   const clientId =
@@ -184,9 +184,10 @@ async function igdbRequest(
 
   const response =
     await fetch(
-      `https://api.igdb.com/v4/${endpoint}`,
+      "https://api.igdb.com/v4/games",
       {
-        method: "POST",
+        method:
+          "POST",
 
         headers: {
           "Client-ID":
@@ -202,9 +203,11 @@ async function igdbRequest(
             "text/plain",
         },
 
-        body: query,
+        body:
+          query,
 
-        cache: "no-store",
+        cache:
+          "no-store",
       }
     );
 
@@ -213,7 +216,7 @@ async function igdbRequest(
       await response.text();
 
     console.error(
-      "IGDB error:",
+      "IGDB search error:",
       response.status,
       text
     );
@@ -263,7 +266,6 @@ export async function GET(
 
     const games =
       await igdbRequest(
-        "games",
         `
           search "${safeQuery}";
 

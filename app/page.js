@@ -125,6 +125,27 @@ function Icon({
       </>
     ),
 
+    search: (
+      <>
+        <circle cx="11" cy="11" r="7" />
+        <path d="m20 20-4-4" />
+      </>
+    ),
+
+    price: (
+      <>
+        <path d="M12 2v20" />
+        <path d="M17 6.5H9.5a3.5 3.5 0 0 0 0 7H14a3.5 3.5 0 0 1 0 7H6" />
+      </>
+    ),
+
+    shop: (
+      <>
+        <path d="M4 8h16l-1 12H5L4 8Z" />
+        <path d="M7 8a5 5 0 0 1 10 0" />
+      </>
+    ),
+
     sparkles: (
       <>
         <path d="M12 3l1.2 3.3 3.3 1.2-3.3 1.2L12 12l-1.2-3.3-3.3-1.2 3.3-1.2L12 3Z" />
@@ -323,6 +344,8 @@ function GameCover({
 }
 
 export default function Home() {
+  const [activeTab, setActiveTab] = useState("discover");
+
   const [
     query,
     setQuery,
@@ -429,6 +452,11 @@ export default function Home() {
     ready,
     setReady,
   ] = useState(false);
+
+  const [dealQuery, setDealQuery] = useState("");
+  const [dealResults, setDealResults] = useState([]);
+  const [dealLoading, setDealLoading] = useState(false);
+  const [dealMessage, setDealMessage] = useState("");
 
   const discoveryLabel =
     useMemo(() => {
@@ -1183,13 +1211,11 @@ export default function Home() {
       `Loaded ${item.name}.`
     );
 
-    window.scrollTo({
-      top:
-        document.body
-          .scrollHeight,
+    setActiveTab("discover");
 
-      behavior:
-        "smooth",
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
     });
   }
 
@@ -1383,6 +1409,64 @@ export default function Home() {
     );
   }
 
+  async function searchDeals(event) {
+    event?.preventDefault?.();
+
+    const value = dealQuery.trim();
+
+    if (value.length < 2) {
+      setDealMessage("Type at least two characters.");
+      return;
+    }
+
+    setDealLoading(true);
+    setDealMessage("");
+
+    try {
+      const response = await fetch(
+        `/api/games/deals?q=${encodeURIComponent(value)}`
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || "Could not search game prices."
+        );
+      }
+
+      const games = data.games || [];
+      const pricedGames = games.filter((game) => game.bestDeal).length;
+
+      setDealResults(games);
+      setDealMessage(
+        games.length
+          ? `${games.length} games found · ${pricedGames} with tracked PC prices`
+          : "No games found."
+      );
+    } catch (error) {
+      console.error("Deal search error:", error);
+      setDealResults([]);
+      setDealMessage(
+        error.message || "Could not search game prices."
+      );
+    } finally {
+      setDealLoading(false);
+    }
+  }
+
+  function openGameSearch(game) {
+    setDealQuery(game?.name || "");
+    setDealResults([]);
+    setDealMessage(
+      game?.name
+        ? `Press Search to check current tracked prices for ${game.name}.`
+        : ""
+    );
+    setActiveTab("search");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   return (
     <main className="tm">
       <style>{`
@@ -1397,7 +1481,7 @@ export default function Home() {
         html,
         body {
           margin: 0;
-          background: #09090b;
+          background: #070914;
         }
 
         button,
@@ -1407,16 +1491,17 @@ export default function Home() {
         }
 
         .tm {
-          --bg: #09090b;
-          --panel: #121216;
-          --panel2: #18181e;
-          --line: #2b2b32;
-          --text: #f7f4eb;
-          --muted: #aaa7a0;
-          --dim: #77747d;
-          --lime: #b7ff5a;
-          --purple: #8b78ff;
-          --pink: #ff7f9f;
+          --bg: #070914;
+          --panel: #0f1322;
+          --panel2: #151a2d;
+          --line: #252c46;
+          --text: #f7f8ff;
+          --muted: #9ba4c2;
+          --dim: #69718f;
+          --lime: #45d5ff;
+          --purple: #6676ff;
+          --pink: #ff708f;
+          --orange: #ffad6b;
 
           min-height: 100vh;
           color: var(--text);
@@ -1424,15 +1509,15 @@ export default function Home() {
           background:
             radial-gradient(
               circle at 90% 8%,
-              rgba(139,120,255,.18),
+              rgba(102,118,255,.18),
               transparent 28%
             ),
             radial-gradient(
               circle at 4% 32%,
-              rgba(183,255,90,.10),
+              rgba(69,213,255,.10),
               transparent 24%
             ),
-            #09090b;
+            #070914;
 
           font-family:
             Inter,
@@ -1554,9 +1639,9 @@ export default function Home() {
           border:
             1px solid
             rgba(
-              183,
+              69,
+              213,
               255,
-              90,
               .20
             );
 
@@ -1564,9 +1649,9 @@ export default function Home() {
 
           background:
             rgba(
-              183,
+              69,
+              213,
               255,
-              90,
               .07
             );
 
@@ -1768,16 +1853,16 @@ export default function Home() {
             linear-gradient(
               150deg,
               rgba(
-                139,
-                120,
+                102,
+                118,
                 255,
                 .24
               ),
               #141419 50%,
               rgba(
-                183,
                 255,
-                90,
+                112,
+                143,
                 .10
               )
             );
@@ -1919,7 +2004,7 @@ export default function Home() {
 
           border-radius: 20px;
 
-          background: #0e0e11;
+          background: #0b0e1a;
         }
 
         .panel h3 {
@@ -1953,13 +2038,13 @@ export default function Home() {
 
           border:
             1px solid
-            #303038;
+            #323a5a;
 
           border-radius: 13px;
 
           outline: none;
 
-          background: #17171c;
+          background: #111628;
 
           color: var(--text);
 
@@ -1974,8 +2059,8 @@ export default function Home() {
           box-shadow:
             0 0 0 3px
             rgba(
-              139,
-              120,
+              102,
+              118,
               255,
               .12
             );
@@ -2003,7 +2088,7 @@ export default function Home() {
 
           border:
             1px solid
-            #35353e;
+            #343d60;
 
           border-radius: 15px;
 
@@ -2047,7 +2132,7 @@ export default function Home() {
 
           border-bottom:
             1px solid
-            #24242a;
+            #20263d;
 
           background:
             transparent;
@@ -2060,7 +2145,7 @@ export default function Home() {
         }
 
         .searchResult:hover {
-          background: #19191f;
+          background: #151a2d;
         }
 
         .searchResult:last-child {
@@ -2075,7 +2160,7 @@ export default function Home() {
 
           object-fit: cover;
 
-          background: #202027;
+          background: #1b2138;
         }
 
         .coverFallback {
@@ -2138,7 +2223,7 @@ export default function Home() {
 
           border:
             1px solid
-            #292930;
+            #252c46;
 
           border-radius: 14px;
 
@@ -2186,17 +2271,17 @@ export default function Home() {
           background:
             transparent;
 
-          color: #77747d;
+          color: #69718f;
 
           cursor: pointer;
         }
 
         .iconBtn:hover {
           border-color:
-            #383840;
+            #3a4468;
 
           background:
-            #222228;
+            #1b2138;
 
           color: #fff;
         }
@@ -2251,11 +2336,11 @@ export default function Home() {
 
           border:
             1px solid
-            #303038;
+            #323a5a;
 
           border-radius: 10px;
 
-          background: #17171c;
+          background: #111628;
 
           color: var(--text);
 
@@ -2299,11 +2384,11 @@ export default function Home() {
 
           border:
             1px solid
-            #303038;
+            #323a5a;
 
           border-radius: 999px;
 
-          background: #17171c;
+          background: #111628;
 
           color: #aaa7b0;
 
@@ -2401,9 +2486,9 @@ export default function Home() {
           box-shadow:
             0 14px 40px
             rgba(
-              183,
+              69,
+              213,
               255,
-              90,
               .14
             );
         }
@@ -2453,7 +2538,7 @@ export default function Home() {
 
           border-radius: 13px;
 
-          background: #0e0e11;
+          background: #0b0e1a;
         }
 
         .stat span {
@@ -2536,11 +2621,11 @@ export default function Home() {
 
           border:
             1px solid
-            #303038;
+            #323a5a;
 
           border-radius: 11px;
 
-          background: #17171c;
+          background: #111628;
 
           color: var(--text);
 
@@ -2571,11 +2656,11 @@ export default function Home() {
 
           border:
             1px solid
-            #292930;
+            #252c46;
 
           border-radius: 17px;
 
-          background: #111115;
+          background: #0f1322;
         }
 
         .cover {
@@ -2584,7 +2669,7 @@ export default function Home() {
 
           object-fit: cover;
 
-          background: #202027;
+          background: #1b2138;
         }
 
         .gameBody {
@@ -2674,7 +2759,7 @@ export default function Home() {
 
           border:
             1px solid
-            #303038;
+            #323a5a;
 
           border-radius: 9px;
 
@@ -2729,8 +2814,8 @@ export default function Home() {
           border:
             1px solid
             rgba(
-              139,
-              120,
+              102,
+              118,
               255,
               .22
             );
@@ -2739,8 +2824,8 @@ export default function Home() {
 
           background:
             rgba(
-              139,
-              120,
+              102,
+              118,
               255,
               .07
             );
@@ -2774,11 +2859,11 @@ export default function Home() {
 
           border:
             1px solid
-            #292930;
+            #252c46;
 
           border-radius: 14px;
 
-          background: #111115;
+          background: #0f1322;
 
           color: var(--text);
 
@@ -2808,7 +2893,7 @@ export default function Home() {
 
           border:
             1px solid
-            #303038;
+            #323a5a;
 
           border-radius: 10px;
 
@@ -2839,9 +2924,64 @@ export default function Home() {
           color: #bdb8af;
         }
 
+        .navTabs { display:flex; align-items:center; gap:4px; padding:4px; border:1px solid var(--line); border-radius:14px; background:rgba(15,19,34,.86); }
+        .navTab { min-height:39px; padding:0 13px; display:inline-flex; align-items:center; justify-content:center; gap:6px; border:0; border-radius:10px; background:transparent; color:var(--muted); font-size:11px; font-weight:850; cursor:pointer; transition:background .18s ease,color .18s ease; }
+        .navTab:hover { color:#fff; }
+        .navTab.active { background:linear-gradient(135deg,rgba(102,118,255,.22),rgba(154,112,255,.14)); color:#fff; box-shadow:inset 0 0 0 1px rgba(132,144,255,.20); }
+
+        .dealPage { padding:76px 0 0; }
+        .dealHero { padding:56px 30px 40px; text-align:center; }
+        .dealHero h1 { max-width:860px; margin:17px auto 0; font-size:clamp(52px,8vw,92px); line-height:.94; letter-spacing:-.068em; font-weight:950; }
+        .dealHeroAccent { background:linear-gradient(100deg,#6676ff,#45d5ff 52%,#ff708f); -webkit-background-clip:text; background-clip:text; color:transparent; }
+        .dealHeroCopy { max-width:700px; margin:20px auto 0; color:var(--muted); font-size:15px; line-height:1.65; }
+        .dealSearchForm { max-width:760px; margin:29px auto 0; padding:7px; display:grid; grid-template-columns:minmax(0,1fr) auto; gap:7px; border:1px solid #343d60; border-radius:17px; background:rgba(15,19,34,.94); box-shadow:0 24px 60px rgba(0,0,0,.28); }
+        .dealSearchInput { width:100%; min-height:52px; padding:0 13px; border:0; outline:0; background:transparent; color:#fff; font-size:14px; font-weight:700; }
+        .dealSearchInput::placeholder { color:var(--dim); }
+        .dealSearchButton { min-width:128px; border:0; border-radius:11px; background:linear-gradient(135deg,var(--purple),#9a70ff); color:#fff; font-size:12px; font-weight:900; cursor:pointer; }
+        .dealSearchButton:hover:not(:disabled) { filter:brightness(1.08); }
+        .dealInfoRow { margin-top:12px; display:flex; justify-content:center; flex-wrap:wrap; gap:6px; }
+        .dealInfoPill { padding:7px 10px; border:1px solid var(--line); border-radius:999px; background:rgba(17,22,40,.62); color:var(--muted); font-size:9px; font-weight:750; }
+        .dealInfoPill.price { color:var(--orange); }
+        .dealStatus { min-height:19px; margin-top:13px; color:var(--muted); font-size:11px; }
+
+        .dealResults { margin-top:18px; padding:28px 30px 30px; }
+        .dealResultsHead { display:flex; align-items:flex-end; justify-content:space-between; gap:20px; flex-wrap:wrap; }
+        .dealResultsTitle { margin:7px 0 0; font-size:clamp(31px,5vw,50px); line-height:1; letter-spacing:-.05em; }
+        .dealResultsCount { color:var(--muted); font-size:10px; }
+        .dealGrid { margin-top:20px; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:11px; }
+        .dealCard { min-width:0; padding:13px; display:grid; grid-template-columns:118px minmax(0,1fr); gap:15px; border:1px solid var(--line); border-radius:18px; background:linear-gradient(145deg,rgba(21,26,45,.94),rgba(10,13,26,.95)); }
+        .dealCover { width:118px; aspect-ratio:264/374; display:grid; place-items:center; border-radius:12px; object-fit:cover; background:var(--panel2); color:var(--purple); }
+        .dealContent { min-width:0; }
+        .dealTopLine { display:flex; align-items:flex-start; justify-content:space-between; gap:9px; }
+        .dealTitle { margin:0; font-size:18px; line-height:1.18; letter-spacing:-.035em; }
+        .saleBadge { flex:0 0 auto; padding:5px 7px; border:1px solid rgba(255,112,143,.34); border-radius:7px; background:rgba(255,112,143,.11); color:#ff9ab0; font-size:9px; font-weight:950; }
+        .dealMeta { margin-top:8px; color:var(--muted); font-size:9px; line-height:1.5; }
+        .platformChips { margin-top:8px; display:flex; flex-wrap:wrap; gap:4px; }
+        .platformChip { padding:4px 6px; border:1px solid var(--line); border-radius:6px; background:#101526; color:#abb4d0; font-size:8px; font-weight:700; }
+        .priceArea { margin-top:12px; padding-top:11px; border-top:1px solid var(--line); }
+        .priceLabel { color:var(--dim); font-size:9px; font-weight:850; letter-spacing:.07em; text-transform:uppercase; }
+        .priceLine { margin-top:3px; display:flex; align-items:baseline; flex-wrap:wrap; gap:7px; }
+        .salePrice { font-size:24px; font-weight:950; letter-spacing:-.045em; }
+        .normalPrice { color:var(--dim); font-size:11px; text-decoration:line-through; }
+        .storeName { margin-top:3px; color:var(--lime); font-size:9px; font-weight:800; }
+        .offerList { margin-top:9px; display:flex; flex-wrap:wrap; gap:4px; }
+        .offerChip { padding:5px 7px; border:1px solid var(--line); border-radius:7px; background:#101526; color:#afb7d2; font-size:8px; }
+        .noPrice { margin-top:12px; padding:9px 10px; border:1px dashed #343d60; border-radius:9px; color:var(--dim); font-size:9px; line-height:1.5; }
+        .dealActions { margin-top:10px; display:flex; flex-wrap:wrap; gap:6px; }
+        .dealButton { min-height:34px; padding:0 10px; display:inline-flex; align-items:center; justify-content:center; gap:5px; border-radius:9px; text-decoration:none; font-size:9px; font-weight:900; }
+        .dealButton.primary { border:0; background:linear-gradient(135deg,var(--purple),#9a70ff); color:#fff; }
+        .dealButton.secondary { border:1px solid #343d60; background:#12172a; color:#d8def1; }
+        .dealEmpty { margin-top:18px; padding:52px 25px; text-align:center; }
+        .dealEmptyIcon { width:72px; height:72px; margin:0 auto; display:grid; place-items:center; border:1px solid var(--line); border-radius:20px; background:linear-gradient(145deg,rgba(102,118,255,.14),rgba(154,112,255,.06)); color:var(--purple); }
+        .dealEmptyTitle { margin-top:16px; font-size:19px; font-weight:900; }
+        .dealEmptyCopy { max-width:450px; margin:7px auto 0; color:var(--muted); font-size:11px; line-height:1.55; }
+        .recentHero { margin-top:62px; }
+
         @media (
           max-width: 1000px
         ) {
+          .dealGrid { grid-template-columns: 1fr; }
+
           .hero {
             grid-template-columns:
               1fr;
@@ -2864,6 +3004,18 @@ export default function Home() {
         @media (
           max-width: 760px
         ) {
+          .nav { flex-wrap: wrap; }
+          .navTabs { order: 3; width: 100%; }
+          .navTab { flex: 1 1 0; }
+          .dealPage { padding-top: 25px; }
+          .dealHero { padding: 52px 12px 30px; }
+          .dealSearchForm { grid-template-columns: 1fr; }
+          .dealSearchButton { min-height: 44px; }
+          .dealResults { padding: 20px; }
+          .dealCard { grid-template-columns: 92px minmax(0,1fr); gap: 11px; }
+          .dealCover { width: 92px; }
+          .dealTitle { font-size: 15px; }
+
           .shell {
             width:
               min(
@@ -2984,7 +3136,12 @@ export default function Home() {
 
       <div className="shell">
         <nav className="nav">
-          <div className="brand">
+          <button
+            type="button"
+            className="brand"
+            style={{ border: 0, padding: 0, background: "transparent", color: "inherit", cursor: "pointer", textAlign: "left" }}
+            onClick={() => { setActiveTab("discover"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+          >
             <img
               src="/tastemaker-logo.png"
               alt="TasteMaker"
@@ -2992,29 +3149,35 @@ export default function Home() {
             />
 
             <div className="brandWords">
-              <strong>
-                TasteMaker
-              </strong>
-
-              <span>
-                game discovery
-              </span>
+              <strong>TasteMaker</strong>
+              <span>game discovery</span>
             </div>
+          </button>
+
+          <div className="navTabs">
+            <button type="button" className={`navTab ${activeTab === "discover" ? "active" : ""}`} onClick={() => { setActiveTab("discover"); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
+              <Icon name="sparkles" size={14} />
+              Discover
+            </button>
+
+            <button type="button" className={`navTab ${activeTab === "search" ? "active" : ""}`} onClick={() => { setActiveTab("search"); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
+              <Icon name="search" size={14} />
+              Game Search
+            </button>
+
+            <button type="button" className={`navTab ${activeTab === "recent" ? "active" : ""}`} onClick={() => { setActiveTab("recent"); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
+              <Icon name="history" size={14} />
+              Recent
+            </button>
           </div>
 
           <div className="mode">
-            <Icon
-              name="game"
-              size={16}
-            />
-
-            <span>
-              Games Mode
-            </span>
+            <Icon name="game" size={16} />
+            <span>Games Mode</span>
           </div>
         </nav>
 
-        <section className="hero">
+        <section className="hero" style={{ display: activeTab === "discover" ? undefined : "none" }}>
           <div>
             <div className="eyebrow">
               <Icon
@@ -3112,7 +3275,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="section">
+        <section className="section" style={{ display: activeTab === "discover" ? undefined : "none" }}>
           <div className="sectionHead">
             <div className="kicker">
               01 · BUILD YOUR TASTE
@@ -3758,8 +3921,7 @@ export default function Home() {
           )}
         </section>
 
-        {recommendations.length >
-          0 && (
+        {activeTab === "discover" && recommendations.length > 0 && (
           <section className="section results">
             <div className="resultsTop">
               <div>
@@ -4016,6 +4178,11 @@ export default function Home() {
                             />
                           </button>
 
+                          <button type="button" className="mini openLink" title="Search current prices" onClick={() => openGameSearch(game)}>
+                            <Icon name="price" size={13} />
+                            Price
+                          </button>
+
                           {game.url && (
                             <a
                               href={
@@ -4046,9 +4213,117 @@ export default function Home() {
           </section>
         )}
 
-        {history.length >
-          0 && (
-          <section className="section history">
+        {activeTab === "search" && (
+          <div className="dealPage">
+            <section className="dealHero">
+              <div className="eyebrow"><Icon name="price" size={15} /> GAME SEARCH &amp; PRICE CHECK</div>
+              <h1>Find the game.<br /><span className="dealHeroAccent">Find the deal.</span></h1>
+              <p className="dealHeroCopy">Search a game to see its release year, genres, rating, supported platforms and currently tracked digital PC prices. Sale information comes from participating PC stores, while platform and game data come from IGDB.</p>
+
+              <form className="dealSearchForm" onSubmit={searchDeals}>
+                <input className="dealSearchInput" value={dealQuery} onChange={(event) => setDealQuery(event.target.value)} placeholder="Search Elden Ring, Minecraft, Cyberpunk..." autoComplete="off" disabled={dealLoading} />
+                <button type="submit" className="dealSearchButton" disabled={dealLoading}>{dealLoading ? "Searching..." : "Search"}</button>
+              </form>
+
+              <div className="dealInfoRow">
+                <span className="dealInfoPill">Platforms from IGDB</span>
+                <span className="dealInfoPill">PC deals from CheapShark</span>
+                <span className="dealInfoPill price">Prices shown in USD</span>
+              </div>
+              <div className="dealStatus" role="status">{dealMessage}</div>
+            </section>
+
+            {dealResults.length > 0 ? (
+              <section className="section dealResults">
+                <div className="dealResultsHead">
+                  <div>
+                    <div className="kicker">SEARCH RESULTS</div>
+                    <h2 className="dealResultsTitle">Games matching “{dealQuery}”</h2>
+                  </div>
+                  <div className="dealResultsCount">{dealResults.length} results</div>
+                </div>
+
+                <div className="dealGrid">
+                  {dealResults.map((game) => {
+                    const deal = game.bestDeal;
+
+                    return (
+                      <article className="dealCard" key={game.id}>
+                        {game.cover ? (
+                          <img className="dealCover" src={game.cover} alt={`${game.name} cover`} />
+                        ) : (
+                          <div className="dealCover"><Icon name="game" size={28} /></div>
+                        )}
+
+                        <div className="dealContent">
+                          <div className="dealTopLine">
+                            <h3 className="dealTitle">{game.name}</h3>
+                            {deal?.isOnSale && <div className="saleBadge">-{deal.savings}%</div>}
+                          </div>
+
+                          <div className="dealMeta">
+                            {game.year || "Unknown year"}
+                            {game.rating ? ` · ${game.rating}/100 rating` : ""}
+                            {game.genres?.length ? ` · ${game.genres.slice(0,2).join(", ")}` : ""}
+                          </div>
+
+                          {game.platforms?.length > 0 && (
+                            <div className="platformChips">
+                              {game.platforms.slice(0,6).map((platformName) => (
+                                <span className="platformChip" key={platformName}>{platformName}</span>
+                              ))}
+                            </div>
+                          )}
+
+                          {deal ? (
+                            <div className="priceArea">
+                              <div className="priceLabel">Best tracked PC price</div>
+                              <div className="priceLine">
+                                <span className="salePrice">${Number(deal.salePrice).toFixed(2)}</span>
+                                {deal.isOnSale && <span className="normalPrice">${Number(deal.normalPrice).toFixed(2)}</span>}
+                              </div>
+                              <div className="storeName">{deal.storeName}</div>
+
+                              {game.offers?.length > 1 && (
+                                <div className="offerList">
+                                  {game.offers.slice(1,4).map((offer) => (
+                                    <span className="offerChip" key={offer.dealId}>{offer.storeName}: ${Number(offer.salePrice).toFixed(2)}</span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="noPrice">No matching PC store price is currently tracked for this title. The game may still be available on PlayStation, Xbox, Switch or other platforms.</div>
+                          )}
+
+                          <div className="dealActions">
+                            {deal && (
+                              <a className="dealButton primary" href={deal.url} target="_blank" rel="noopener noreferrer"><Icon name="shop" size={12} /> View deal</a>
+                            )}
+                            {game.url && (
+                              <a className="dealButton secondary" href={game.url} target="_blank" rel="noopener noreferrer">Game info <Icon name="arrow" size={11} /></a>
+                            )}
+                          </div>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              </section>
+            ) : (
+              !dealLoading && (
+                <section className="section dealEmpty">
+                  <div className="dealEmptyIcon"><Icon name="search" size={29} /></div>
+                  <div className="dealEmptyTitle">Search the game library</div>
+                  <div className="dealEmptyCopy">Type a game above and TasteMaker will combine game information with tracked PC store prices, discounts and sale information.</div>
+                </section>
+              )
+            )}
+          </div>
+        )}
+
+        {activeTab === "recent" && history.length > 0 && (
+          <section className="section history recentHero">
             <div className="kicker">
               03 · RECENT PICKS
             </div>
@@ -4103,9 +4378,17 @@ export default function Home() {
           </section>
         )}
 
+        {activeTab === "recent" && history.length === 0 && (
+          <section className="section dealEmpty recentHero">
+            <div className="dealEmptyIcon"><Icon name="history" size={28} /></div>
+            <div className="dealEmptyTitle">Nothing here yet</div>
+            <div className="dealEmptyCopy">Generate your first recommendation list and it will appear here automatically.</div>
+          </section>
+        )}
+
         <footer className="footer">
           <div>
-            TasteMaker · Find your next game without scrolling through the same charts forever.
+            TasteMaker · Game discovery &amp; price search.
           </div>
 
           <div>

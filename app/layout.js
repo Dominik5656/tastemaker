@@ -12,20 +12,23 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "TasteMaker | Find Your Next Game",
+  title: "TasteMaker | Discover Games & Deals",
   description:
-    "Discover games based on what you already love. Tune the vibe, control discovery, and find your next favorite game.",
+    "Discover games based on your taste, search game details, compare PC prices and find current deals.",
+};
+
+export const viewport = {
+  themeColor: "#070914",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable}`}
     >
-      <body className="min-h-full flex flex-col">
-        {children}
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

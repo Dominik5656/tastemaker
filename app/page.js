@@ -1625,6 +1625,30 @@ export default function Home() {
           ? `Built a fresh list with ${games.length} games.`
           : `Found ${games.length} games for you.`
       );
+
+      if (
+        !regenerate &&
+        !surprise
+      ) {
+        window.requestAnimationFrame(
+          () => {
+            window.requestAnimationFrame(
+              () => {
+                document
+                  .getElementById(
+                    "recommendation-results"
+                  )
+                  ?.scrollIntoView({
+                    behavior:
+                      "smooth",
+                    block:
+                      "start",
+                  });
+              }
+            );
+          }
+        );
+      }
     } catch (
       error
     ) {
@@ -3042,6 +3066,7 @@ export default function Home() {
 
         .results {
           padding: 30px;
+          scroll-margin-top: 96px;
         }
 
         .resultsTop {
@@ -5753,7 +5778,10 @@ export default function Home() {
           "discover" &&
           recommendations.length >
             0 && (
-          <section className="section results">
+          <section
+            id="recommendation-results"
+            className="section results"
+          >
             <div className="resultsTop">
               <div>
                 <div className="kicker">
